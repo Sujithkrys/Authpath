@@ -23,6 +23,7 @@ const CandidatePages = z.object({
 });
 
 const MAX_OUTPUT_TOKENS = 16_000;
+const CALL_TIMEOUT_MS = 60_000;
 const PAGE_FETCH_TIMEOUT_MS = 10_000;
 const MAX_PAGE_BYTES = 3_000_000;
 const REDIRECT_TIMEOUT_MS = 5_000;
@@ -70,13 +71,19 @@ async function generate(
   signal: AbortSignal,
 ): Promise<GenerateContentResponse> {
   const tried = models();
+  const failures: string[] = [];
 
   for (const [index, model] of tried.entries()) {
     try {
       const response = await client().models.generateContent({
         model,
         contents,
-        config: { maxOutputTokens: MAX_OUTPUT_TOKENS, abortSignal: signal, ...config },
+        config: {
+          maxOutputTokens: MAX_OUTPUT_TOKENS,
+          // A stalled model shouldn't use up the whole run.
+          abortSignal: AbortSignal.any([signal, AbortSignal.timeout(CALL_TIMEOUT_MS)]),
+          ...config,
+        },
       });
 
       const usage = response.usageMetadata;
@@ -88,8 +95,18 @@ async function generate(
       });
       return response;
     } catch (error) {
-      if (index === tried.length - 1 || !worthTryingAnother(error)) throw plainError(error);
-      console.warn("gemini fallback", model, error);
+      if (signal.aborted) throw error;
+
+      const stalled = !(error instanceof ApiError) && error instanceof Error && /abort|timeout/i.test(`${error.name} ${error.message}`);
+      failures.push(`${model}: ${stalled ? `no reply in ${CALL_TIMEOUT_MS / 1000}s` : String(error).slice(0, 220)}`);
+      console.warn("gemini call failed", failures.at(-1));
+
+      if (index < tried.length - 1 && (stalled || worthTryingAnother(error))) continue;
+
+      const detail = failures.join(" | ");
+      if (stalled) throw new AgentError(QUOTA_BUSY, true, detail);
+      const plain = plainError(error);
+      throw plain instanceof AgentError ? new AgentError(plain.message, plain.retryable, detail) : plain;
     }
   }
 
