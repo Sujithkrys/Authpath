@@ -10,8 +10,10 @@ export interface GuideStep {
   d: string;
   /** Who does the step. */
   o: StepOwner;
-  /** How we know the step is right. */
+  /** How we know the step is right. "verified" is only ever set by hand, on library guides. */
   e: Evidence;
+  /** The page this step rests on. Generated guides only. */
+  source?: string;
 }
 
 export interface GuideBlocker {
@@ -19,6 +21,8 @@ export interface GuideBlocker {
   b: string;
   /** Explanation. */
   s: string;
+  /** The page this blocker rests on. Generated guides only. */
+  source?: string;
 }
 
 /** [title, url without protocol] */
@@ -30,12 +34,14 @@ export interface Guide {
   name: string;
   /** Letters for the fallback tile. */
   init: string;
-  /** Brand colour for the logo tile. */
+  /** Background of the letter tile. */
   color: string;
   diff: Difficulty;
   tested: boolean;
   /** True for the agent's output. These stay out of the library. */
   generated?: boolean;
+  /** ISO timestamp. Generated guides only. */
+  generatedAt?: string;
   setup: string;
   wait: string;
   review: string;
@@ -50,7 +56,7 @@ export interface Guide {
   sources: GuideSource[];
 }
 
-/** A guide plus its simple-icons path, or null when it uses the letter tile. */
+/** A guide plus its logo file, or null when it uses the letter tile. */
 export interface GuideWithLogo extends Guide {
-  logoPath: string | null;
+  logoSrc: string | null;
 }

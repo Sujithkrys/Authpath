@@ -33,28 +33,42 @@ export function DifficultyTag({ diff, className = "" }: { diff: Difficulty; clas
 }
 
 interface AppLogoProps {
-  guide: Pick<GuideWithLogo, "color" | "init" | "logoPath">;
+  guide: Pick<GuideWithLogo, "color" | "init" | "logoSrc">;
   size?: "md" | "lg";
 }
 
-/** Brand-coloured tile with the simple-icons logo, or letters when there isn't one. */
+/**
+ * Full-colour logo on a white tile, in both themes so that dark marks like
+ * GitHub's stay visible. Apps without a logo get a brand-coloured letter tile.
+ */
 export function AppLogo({ guide, size = "md" }: AppLogoProps) {
-  const tile = size === "lg" ? "size-14 text-[20px]" : "size-11 text-[16px]";
-  const glyph = size === "lg" ? "size-7" : "size-[22px]";
+  const large = size === "lg";
+
+  if (guide.logoSrc) {
+    return (
+      <span
+        aria-hidden="true"
+        className={`grid flex-none place-items-center rounded-lg border border-border bg-logo-tile shadow-card ${large ? "size-14" : "size-11"}`}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element -- next/image refuses SVG by default */}
+        <img
+          src={guide.logoSrc}
+          alt=""
+          width={large ? 44 : 34}
+          height={large ? 36 : 28}
+          className="object-contain"
+        />
+      </span>
+    );
+  }
 
   return (
     <span
       aria-hidden="true"
-      className={`grid flex-none place-items-center rounded-md font-display font-bold tracking-[-.02em] text-on-accent ${tile}`}
+      className={`grid flex-none place-items-center rounded-lg font-display font-bold tracking-[-.02em] text-on-accent ${large ? "size-14 text-[20px]" : "size-11 text-[16px]"}`}
       style={{ backgroundColor: guide.color }}
     >
-      {guide.logoPath ? (
-        <svg viewBox="0 0 24 24" fill="currentColor" className={glyph}>
-          <path d={guide.logoPath} />
-        </svg>
-      ) : (
-        guide.init
-      )}
+      {guide.init}
     </span>
   );
 }

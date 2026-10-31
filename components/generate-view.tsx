@@ -1,61 +1,184 @@
 "use client";
 
-import { Check, Sparkles } from "lucide-react";
+import { Check, RotateCcw, Sparkles } from "lucide-react";
 import Link from "next/link";
-import type { FormEvent } from "react";
+import type { FormEvent, ReactNode } from "react";
 
-import { useAppState } from "@/components/app-state";
+import { useAppState, type TraceOutcome, type TraceRun, type TraceStage } from "@/components/app-state";
 import { SearchField, buttonPrimary, heroTitle } from "@/components/ui";
-import { FAKE_TRACE, FAKE_TRACE_RESULT_SLUG, type TraceStep } from "@/lib/fake-trace";
+import { STAGES } from "@/lib/agent/events";
 
 const EXAMPLES = ["linear.app", "Calendly", "Xero"];
 
-type StepState = "done" | "active" | "waiting";
-
-const STEP_ICON_STYLE: Record<StepState, string> = {
+const STEP_ICON_STYLE: Record<TraceStage["status"], string> = {
   done: "border-accent bg-accent text-on-accent",
   active: "border-accent text-accent",
   waiting: "border-border-strong text-text-3",
 };
 
-function TraceRow({ step, state }: { step: TraceStep; state: StepState }) {
-  const waiting = state === "waiting";
+const domainOf = (url: string) => new URL(url).hostname.replace(/^www\./, "");
+
+interface TraceRowProps {
+  title: string;
+  working: string;
+  stage: TraceStage;
+  /** The run has finished, so a stage that isn't done will never run. */
+  ended: boolean;
+}
+
+function stageDetail({ working, stage, ended }: TraceRowProps) {
+  if (stage.status === "done") return stage.detail;
+  if (stage.status === "active") return ended ? "Stopped" : working;
+  return ended ? "Skipped" : "Waiting";
+}
+
+function TraceRow(props: TraceRowProps) {
+  const { title, stage, ended } = props;
+  const waiting = stage.status === "waiting";
 
   return (
     <li className="grid grid-cols-[28px_minmax(0,1fr)_auto] items-start gap-3 px-[18px] py-3 max-sm:grid-cols-[28px_minmax(0,1fr)]">
-      <span className={`mt-px grid size-[22px] place-items-center rounded-full border-[1.5px] ${STEP_ICON_STYLE[state]}`}>
-        {state === "done" && <Check size={12} strokeWidth={2.4} aria-hidden="true" />}
-        {state === "active" && (
+      <span
+        className={`mt-px grid size-[22px] place-items-center rounded-full border-[1.5px] ${STEP_ICON_STYLE[stage.status]}`}
+      >
+        {stage.status === "done" && <Check size={12} strokeWidth={2.4} aria-hidden="true" />}
+        {stage.status === "active" && !ended && (
           <span className="size-3 animate-spinner rounded-full border-2 border-accent-soft border-t-accent" />
         )}
       </span>
       <div>
-        <div className={`text-[14px] font-semibold ${waiting ? "text-text-3" : ""}`}>{step.title}</div>
-        <div className={`mt-0.5 text-[13px] ${waiting ? "text-text-3" : "text-text-2"}`}>
-          {waiting ? "Waiting" : step.detail}
-        </div>
+        <div className={`text-[14px] font-semibold ${waiting ? "text-text-3" : ""}`}>{title}</div>
+        <div className={`mt-0.5 text-[13px] ${waiting ? "text-text-3" : "text-text-2"}`}>{stageDetail(props)}</div>
       </div>
-      {step.source && state === "done" && (
-        <span className="rounded-sm bg-accent-soft px-[7px] py-0.5 font-mono text-[11.5px] whitespace-nowrap text-accent-ink max-sm:col-start-2 max-sm:justify-self-start">
-          {step.source}
-        </span>
+      {stage.domains.length > 0 && (
+        <div className="flex max-w-[260px] flex-wrap justify-end gap-1 max-sm:col-start-2 max-sm:max-w-none max-sm:justify-start">
+          {stage.domains.map((domain) => (
+            <span
+              key={domain}
+              className="rounded-sm bg-accent-soft px-[7px] py-0.5 font-mono text-[11.5px] break-all text-accent-ink"
+            >
+              {domain}
+            </span>
+          ))}
+        </div>
       )}
     </li>
   );
 }
 
+function Footer({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-surface-2 px-[18px] py-3.5">
+      {children}
+    </div>
+  );
+}
+
+const footerText = "min-w-0 text-[13px] text-text-2";
+
+function OutcomePanel({ outcome, run, onRun }: { outcome: TraceOutcome; run: TraceRun; onRun: (input: string) => void }) {
+  switch (outcome.kind) {
+    case "guide":
+      return (
+        <Footer>
+          <span className={footerText}>
+            Guide ready · {outcome.uncertainCount} {outcome.uncertainCount === 1 ? "item" : "items"} marked not confirmed
+          </span>
+          <Link href={`/guides/${outcome.slug}`} className={buttonPrimary}>
+            Open guide
+          </Link>
+        </Footer>
+      );
+
+    case "no_oauth":
+      return (
+        <Footer>
+          <div className={footerText}>
+            <b className="block text-[14px] text-text">{outcome.appName} doesn&apos;t appear to support OAuth</b>
+            <p className="mt-1">{outcome.summary}</p>
+            {outcome.authMethods.length > 0 && <p className="mt-1">It uses: {outcome.authMethods.join(", ")}.</p>}
+            <ul className="mt-2 flex flex-wrap gap-1">
+              {outcome.sources.map((url) => (
+                <li key={url}>
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-sm bg-accent-soft px-[7px] py-0.5 font-mono text-[11.5px] break-all text-accent-ink hover:underline"
+                  >
+                    {domainOf(url)}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Footer>
+      );
+
+    case "ambiguous":
+      return (
+        <Footer>
+          <div className="w-full">
+            <span className={footerText}>That name could mean a few different apps. Which one?</span>
+            <div className="mt-2 flex flex-col gap-2">
+              {outcome.options.map((option) => (
+                <button
+                  key={`${option.name}-${option.website}`}
+                  type="button"
+                  onClick={() => onRun(`${option.name} (${option.website})`)}
+                  className="rounded-md border border-border-strong bg-surface px-3 py-2 text-left hover:bg-hover"
+                >
+                  <b className="block text-[14px] font-semibold">{option.name}</b>
+                  <span className="text-[13px] text-text-2">{option.description}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </Footer>
+      );
+
+    case "not_found":
+      return (
+        <Footer>
+          <span className={footerText}>{outcome.message}</span>
+        </Footer>
+      );
+
+    case "error":
+      return (
+        <Footer>
+          <span className={footerText}>{outcome.message}</span>
+          {outcome.retryable && (
+            <button type="button" onClick={() => onRun(run.input)} className={buttonPrimary}>
+              <RotateCcw size={15} strokeWidth={1.8} aria-hidden="true" />
+              Retry
+            </button>
+          )}
+        </Footer>
+      );
+  }
+}
+
+function statusLabel(outcome: TraceOutcome | null) {
+  if (!outcome) return "Working";
+  if (outcome.kind === "error") return "Stopped";
+  if (outcome.kind === "ambiguous") return "Needs a choice";
+  return "Done";
+}
+
 export function GenerateView() {
   const { generateInput, setGenerateInput, trace, startTrace } = useAppState();
-  const finished = trace !== null && trace.step >= FAKE_TRACE.length;
+  const running = trace !== null && trace.outcome === null;
+  const stopped = trace?.outcome?.kind === "error";
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
     startTrace(generateInput);
   };
 
-  const runExample = (example: string) => {
-    setGenerateInput(example);
-    startTrace(example);
+  const run = (input: string) => {
+    setGenerateInput(input);
+    startTrace(input);
   };
 
   return (
@@ -75,11 +198,12 @@ export function GenerateView() {
             iconSize={18}
             placeholder="App name or website, e.g. linear.app"
             required
+            maxLength={200}
             value={generateInput}
             onChange={(event) => setGenerateInput(event.target.value)}
             fieldClassName="h-12 flex-1 max-sm:flex-none"
           />
-          <button type="submit" className={`${buttonPrimary} h-12 px-[22px] text-[15px]`}>
+          <button type="submit" disabled={running} className={`${buttonPrimary} h-12 px-[22px] text-[15px] disabled:opacity-60`}>
             <Sparkles size={16} strokeWidth={1.8} aria-hidden="true" />
             Generate
           </button>
@@ -91,8 +215,9 @@ export function GenerateView() {
             <button
               key={example}
               type="button"
-              onClick={() => runExample(example)}
-              className="rounded-full border border-border px-[11px] py-[3px] text-[13px] text-text-2 hover:bg-hover"
+              disabled={running}
+              onClick={() => run(example)}
+              className="rounded-full border border-border px-[11px] py-[3px] text-[13px] text-text-2 hover:bg-hover disabled:opacity-60"
             >
               {example}
             </button>
@@ -104,31 +229,22 @@ export function GenerateView() {
         <div className="mx-auto mt-10 max-w-[720px]">
           <div className="overflow-hidden rounded-lg border border-border bg-surface">
             <div className="flex items-center justify-between gap-3 border-b border-border px-[18px] py-3.5">
-              <b className="min-w-0 text-[15px] break-words">Investigating {trace.name}</b>
-              <span className="flex items-center gap-2 font-mono text-[12px] text-text-2">
-                <span className={`size-2 rounded-full ${finished ? "bg-ok" : "animate-live bg-accent"}`} />
-                <span role="status">{finished ? "Done" : "Working"}</span>
+              <b className="min-w-0 text-[15px] break-words">Investigating {trace.input}</b>
+              <span className="flex items-center gap-2 font-mono text-[12px] whitespace-nowrap text-text-2">
+                <span
+                  className={`size-2 rounded-full ${running ? "animate-live bg-accent" : stopped ? "bg-bad" : "bg-ok"}`}
+                />
+                <span role="status">{statusLabel(trace.outcome)}</span>
               </span>
             </div>
 
             <ol className="py-2">
-              {FAKE_TRACE.map((step, index) => (
-                <TraceRow
-                  key={step.title}
-                  step={step}
-                  state={index < trace.step ? "done" : index === trace.step ? "active" : "waiting"}
-                />
+              {STAGES.map(({ id, title, working }) => (
+                <TraceRow key={id} title={title} working={working} stage={trace.stages[id]} ended={!running} />
               ))}
             </ol>
 
-            {finished && (
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-surface-2 px-[18px] py-3.5">
-                <span className="text-[13px] text-text-2">Guide ready · 2 items marked not confirmed</span>
-                <Link href={`/guides/${FAKE_TRACE_RESULT_SLUG}`} className={buttonPrimary}>
-                  Open guide
-                </Link>
-              </div>
-            )}
+            {trace.outcome && <OutcomePanel outcome={trace.outcome} run={trace} onRun={run} />}
           </div>
         </div>
       )}

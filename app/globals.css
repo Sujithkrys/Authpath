@@ -23,6 +23,7 @@
   --warn-soft: #fdf3e6;
   --bad: #c62f2f;
   --bad-soft: #fdeded;
+  --logo-tile: #ffffff; /* Stays white in dark mode: logos need a light background. */
   --r-sm: 3px;
   --r: 5px;
   --r-lg: 8px;
@@ -106,6 +107,7 @@
   --color-warn-soft: var(--warn-soft);
   --color-bad: var(--bad);
   --color-bad-soft: var(--bad-soft);
+  --color-logo-tile: var(--logo-tile);
 
   --radius-sm: var(--r-sm);
   --radius-md: var(--r);
