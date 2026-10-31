@@ -12,8 +12,8 @@ import { AgentError, type LlmProvider, type ResearchRequest, type WriteRequest }
  * for a key that can use it.
  * https://ai.google.dev/gemini-api/docs/pricing
  */
-const DEFAULT_MODEL = "gemini-3.8-flash";
-const BACKUP_MODEL = "gemini-3.5-flash-lite";
+const DEFAULT_MODEL = "gemini-3.5-flash-lite";
+const BACKUP_MODEL = "gemini-3.8-flash";
 const searchEnabled = () => process.env.GEMINI_SEARCH === "true";
 
 const NO_SEARCH_NOTE = `Web search isn't available in this run. Work from what you know about this provider, and name the official pages you're confident exist. Those URLs get checked by loading them, so a guess that doesn't load is simply discarded. If you don't recognise the app, say not_found.`;

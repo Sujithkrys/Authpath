@@ -48,7 +48,8 @@ export interface GenerationStats {
 export type GenerateEvent =
   | { type: "stage_start"; stage: StageId }
   | { type: "sources"; stage: StageId; domains: string[] }
-  | { type: "stage_done"; stage: StageId; detail: string }
+  /** `findings` is for debugging a run. The page doesn't show it. */
+  | { type: "stage_done"; stage: StageId; detail: string; findings?: unknown }
   /** The app is already in the library. */
   | { type: "redirect"; slug: string }
   /** A guide from the last 7 days, served instead of generating again. */

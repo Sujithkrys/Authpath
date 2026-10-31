@@ -129,7 +129,7 @@ export async function runPipeline(input: string, emit: (event: GenerateEvent) =>
   const stage = async <T>(id: StageId, run: () => Promise<T>, detail: (result: T) => string): Promise<T> => {
     emit({ type: "stage_start", stage: id });
     const result = await run();
-    emit({ type: "stage_done", stage: id, detail: detail(result) });
+    emit({ type: "stage_done", stage: id, detail: detail(result), ...(id === "write" ? {} : { findings: result }) });
     return result;
   };
   const showDomains = (id: StageId) => (domains: string[]) => emit({ type: "sources", stage: id, domains });
