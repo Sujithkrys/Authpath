@@ -1,0 +1,53 @@
+{
+  "id": "linear",
+  "name": "Linear",
+  "init": "L",
+  "color": "#5E6AD2",
+  "diff": "easy",
+  "tested": false,
+  "generated": true,
+  "setup": "~10 min",
+  "wait": "Not found",
+  "review": "Unclear",
+  "site": "linear.app/settings/api",
+  "steps": [
+    {
+      "t": "Create an OAuth application",
+      "d": "Settings → API → OAuth applications → New.",
+      "o": "you",
+      "e": "docs"
+    },
+    {
+      "t": "Add callback URL",
+      "d": "Paste <code>https://yourapp.com/oauth/callback</code> and choose scopes.",
+      "o": "agent",
+      "e": "docs"
+    },
+    {
+      "t": "Make the app public",
+      "d": "Needed for workspaces outside yours. No public review process found.",
+      "o": "you",
+      "e": "uncertain"
+    }
+  ],
+  "blockers": [
+    {
+      "b": "Approval timeline unknown",
+      "s": "Docs don't describe a review for public apps. Ask Linear before launch."
+    }
+  ],
+  "agent": [
+    "Fill the callback URL and scopes",
+    "Draft app name and description"
+  ],
+  "you": [
+    "Create the app in workspace settings",
+    "Confirm public-app rules with Linear"
+  ],
+  "sources": [
+    [
+      "OAuth 2.0 authentication",
+      "developers.linear.app/docs/oauth/authentication"
+    ]
+  ]
+}

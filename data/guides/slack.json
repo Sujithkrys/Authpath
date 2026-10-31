@@ -1,0 +1,65 @@
+{
+  "id": "slack",
+  "name": "Slack",
+  "init": "SL",
+  "color": "#4A154B",
+  "diff": "moderate",
+  "tested": true,
+  "setup": "~20 min",
+  "wait": "Days–weeks",
+  "review": "Marketplace only",
+  "waitKey": "weeks",
+  "site": "api.slack.com/apps",
+  "steps": [
+    {
+      "t": "Create the app",
+      "d": "api.slack.com/apps → Create New App → From scratch, pick a dev workspace.",
+      "o": "you",
+      "e": "verified"
+    },
+    {
+      "t": "Add redirect URL and scopes",
+      "d": "OAuth & Permissions → add redirect URL and only the bot scopes you use.",
+      "o": "agent",
+      "e": "verified"
+    },
+    {
+      "t": "Turn on public distribution",
+      "d": "Manage Distribution → activate. Lets other workspaces install without a review.",
+      "o": "you",
+      "e": "docs"
+    },
+    {
+      "t": "Submit to the Marketplace (optional)",
+      "d": "Only needed to be listed. Review time varies.",
+      "o": "you",
+      "e": "uncertain"
+    }
+  ],
+  "blockers": [
+    {
+      "b": "Sensitive scopes",
+      "s": "Some scopes draw extra scrutiny in Marketplace review; request less up front."
+    }
+  ],
+  "agent": [
+    "Pick minimum scopes for your use case",
+    "Write the redirect URL",
+    "Draft Marketplace listing copy"
+  ],
+  "you": [
+    "Create the app in your workspace",
+    "Activate distribution",
+    "Submit and respond to review"
+  ],
+  "sources": [
+    [
+      "Installing with OAuth",
+      "api.slack.com/authentication/oauth-v2"
+    ],
+    [
+      "Distributing your app",
+      "api.slack.com/start/distributing"
+    ]
+  ]
+}

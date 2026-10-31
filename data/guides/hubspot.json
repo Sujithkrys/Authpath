@@ -1,0 +1,45 @@
+{
+  "id": "hubspot",
+  "name": "HubSpot",
+  "init": "H",
+  "color": "#FF7A59",
+  "diff": "moderate",
+  "tested": false,
+  "setup": "~20 min",
+  "wait": "Weeks",
+  "review": "Marketplace only",
+  "waitKey": "weeks",
+  "site": "developers.hubspot.com",
+  "steps": [
+    {
+      "t": "Create a developer account",
+      "d": "Separate from your regular HubSpot login.",
+      "o": "you",
+      "e": "docs"
+    },
+    {
+      "t": "Create a public app",
+      "d": "Set redirect URL and required scopes.",
+      "o": "agent",
+      "e": "docs"
+    }
+  ],
+  "blockers": [
+    {
+      "b": "Install minimums",
+      "s": "Marketplace listing has install-count requirements."
+    }
+  ],
+  "agent": [
+    "Choose scopes"
+  ],
+  "you": [
+    "Create the dev account"
+  ],
+  "sources": [
+    [
+      "OAuth quickstart",
+      "developers.hubspot.com/docs/api/oauth-quickstart-guide"
+    ]
+  ]
+}

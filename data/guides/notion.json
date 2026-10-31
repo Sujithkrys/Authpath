@@ -1,0 +1,40 @@
+{
+  "id": "notion",
+  "name": "Notion",
+  "init": "N",
+  "color": "#191919",
+  "diff": "easy",
+  "tested": false,
+  "setup": "~15 min",
+  "wait": "None",
+  "review": "No",
+  "waitKey": "none",
+  "site": "notion.so/my-integrations",
+  "steps": [
+    {
+      "t": "Create a public integration",
+      "d": "notion.so/my-integrations → New integration → Public.",
+      "o": "you",
+      "e": "docs"
+    },
+    {
+      "t": "Add company details",
+      "d": "Public integrations need a website, privacy policy and redirect URI.",
+      "o": "agent",
+      "e": "docs"
+    }
+  ],
+  "blockers": [],
+  "agent": [
+    "Draft privacy and terms links checklist"
+  ],
+  "you": [
+    "Create the integration"
+  ],
+  "sources": [
+    [
+      "Authorization",
+      "developers.notion.com/docs/authorization"
+    ]
+  ]
+}

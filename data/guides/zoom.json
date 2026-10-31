@@ -1,0 +1,40 @@
+{
+  "id": "zoom",
+  "name": "Zoom",
+  "init": "Z",
+  "color": "#0B5CFF",
+  "diff": "moderate",
+  "tested": false,
+  "setup": "~20 min",
+  "wait": "Days–weeks",
+  "review": "To publish",
+  "waitKey": "weeks",
+  "site": "marketplace.zoom.us",
+  "steps": [
+    {
+      "t": "Build a General App",
+      "d": "marketplace.zoom.us → Develop → Build App.",
+      "o": "you",
+      "e": "docs"
+    },
+    {
+      "t": "Submit for publishing",
+      "d": "Needed for other accounts to install.",
+      "o": "you",
+      "e": "uncertain"
+    }
+  ],
+  "blockers": [],
+  "agent": [
+    "Fill redirect and scopes"
+  ],
+  "you": [
+    "Submit app for review"
+  ],
+  "sources": [
+    [
+      "OAuth for apps",
+      "developers.zoom.us/docs/integrations/oauth"
+    ]
+  ]
+}

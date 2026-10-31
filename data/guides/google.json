@@ -1,0 +1,67 @@
+{
+  "id": "google",
+  "name": "Google",
+  "init": "G",
+  "color": "#4285F4",
+  "diff": "hard",
+  "tested": false,
+  "setup": "~30 min",
+  "wait": "Weeks",
+  "review": "Sensitive scopes",
+  "waitKey": "weeks",
+  "site": "console.cloud.google.com",
+  "steps": [
+    {
+      "t": "Create a Cloud project",
+      "d": "console.cloud.google.com → new project.",
+      "o": "you",
+      "e": "docs"
+    },
+    {
+      "t": "Configure the consent screen",
+      "d": "Add app name, support email, privacy policy and authorised domains.",
+      "o": "agent",
+      "e": "docs"
+    },
+    {
+      "t": "Create OAuth client credentials",
+      "d": "APIs & Services → Credentials → OAuth client ID.",
+      "o": "you",
+      "e": "docs"
+    },
+    {
+      "t": "Submit for verification",
+      "d": "Required for sensitive or restricted scopes (e.g. Gmail). Restricted scopes may need a security assessment.",
+      "o": "you",
+      "e": "uncertain"
+    }
+  ],
+  "blockers": [
+    {
+      "b": "Restricted scopes",
+      "s": "Gmail read access can require a third-party security assessment."
+    },
+    {
+      "b": "Domain verification",
+      "s": "Authorised domains must be verified in Search Console."
+    }
+  ],
+  "agent": [
+    "Write consent-screen text and privacy copy",
+    "Map your features to the least sensitive scopes"
+  ],
+  "you": [
+    "Verify your domain",
+    "Submit verification and answer Google's questions"
+  ],
+  "sources": [
+    [
+      "Setting up OAuth 2.0",
+      "support.google.com/cloud/answer/6158849"
+    ],
+    [
+      "OAuth app verification",
+      "support.google.com/cloud/answer/13463073"
+    ]
+  ]
+}

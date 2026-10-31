@@ -1,0 +1,45 @@
+{
+  "id": "stripe",
+  "name": "Stripe",
+  "init": "S",
+  "color": "#635BFF",
+  "diff": "moderate",
+  "tested": false,
+  "setup": "~20 min",
+  "wait": "Days",
+  "review": "Platform profile",
+  "waitKey": "days",
+  "site": "dashboard.stripe.com",
+  "steps": [
+    {
+      "t": "Complete platform profile",
+      "d": "Connect → settings → describe your platform.",
+      "o": "you",
+      "e": "docs"
+    },
+    {
+      "t": "Get your client ID",
+      "d": "Shown in Connect settings once the profile is done.",
+      "o": "you",
+      "e": "docs"
+    }
+  ],
+  "blockers": [
+    {
+      "b": "OAuth vs account links",
+      "s": "Stripe steers new platforms to Account Links over OAuth; confirm which fits."
+    }
+  ],
+  "agent": [
+    "Recommend OAuth vs Account Links"
+  ],
+  "you": [
+    "Complete the platform profile"
+  ],
+  "sources": [
+    [
+      "Connect OAuth",
+      "docs.stripe.com/connect/oauth-reference"
+    ]
+  ]
+}

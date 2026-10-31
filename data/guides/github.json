@@ -1,0 +1,65 @@
+{
+  "id": "github",
+  "name": "GitHub",
+  "init": "GH",
+  "color": "#181717",
+  "diff": "easy",
+  "tested": true,
+  "setup": "~10 min",
+  "wait": "None",
+  "review": "No",
+  "waitKey": "none",
+  "site": "github.com/settings/developers",
+  "steps": [
+    {
+      "t": "Pick OAuth App or GitHub App",
+      "d": "GitHub Apps get fine-grained permissions and are GitHub's recommended option; OAuth Apps act as the user.",
+      "o": "you",
+      "e": "docs"
+    },
+    {
+      "t": "Register the app",
+      "d": "Settings → Developer settings → OAuth Apps → New OAuth App.",
+      "o": "you",
+      "e": "verified"
+    },
+    {
+      "t": "Set the callback URL",
+      "d": "Paste your redirect URI, e.g. <code>https://yourapp.com/api/auth/callback/github</code>",
+      "o": "agent",
+      "e": "verified"
+    },
+    {
+      "t": "Generate a client secret",
+      "d": "Copy it once — GitHub won't show it again. Store it as an env var.",
+      "o": "you",
+      "e": "verified"
+    }
+  ],
+  "blockers": [
+    {
+      "b": "Org access restrictions",
+      "s": "Orgs with OAuth app restrictions must approve your app before members can connect."
+    }
+  ],
+  "agent": [
+    "Draft app name, homepage and description",
+    "Generate the correct callback URL for your stack",
+    "Check your scopes are the minimum needed"
+  ],
+  "you": [
+    "Sign in and click Register",
+    "Copy and store the client secret",
+    "Ask org admins to approve, if restricted"
+  ],
+  "sources": [
+    [
+      "Creating an OAuth app",
+      "docs.github.com/apps/oauth-apps"
+    ],
+    [
+      "Differences between GitHub Apps and OAuth Apps",
+      "docs.github.com/apps/oauth-apps"
+    ]
+  ]
+}

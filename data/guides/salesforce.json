@@ -1,0 +1,52 @@
+{
+  "id": "salesforce",
+  "name": "Salesforce",
+  "init": "SF",
+  "color": "#00A1E0",
+  "diff": "hard",
+  "tested": false,
+  "setup": "~45 min",
+  "wait": "Weeks",
+  "review": "AppExchange only",
+  "waitKey": "weeks",
+  "site": "developer.salesforce.com",
+  "steps": [
+    {
+      "t": "Get a Developer Edition org",
+      "d": "Free signup at developer.salesforce.com.",
+      "o": "you",
+      "e": "docs"
+    },
+    {
+      "t": "Create an External Client App",
+      "d": "Setup → App Manager. Older orgs call this a Connected App.",
+      "o": "you",
+      "e": "docs"
+    },
+    {
+      "t": "AppExchange security review",
+      "d": "Only to list publicly. Timelines vary widely.",
+      "o": "you",
+      "e": "uncertain"
+    }
+  ],
+  "blockers": [
+    {
+      "b": "Naming changed",
+      "s": "Docs mix \"Connected App\" and \"External Client App\" — check your org version."
+    }
+  ],
+  "agent": [
+    "Fill callback URL and scopes"
+  ],
+  "you": [
+    "Create the org and app",
+    "Submit for security review"
+  ],
+  "sources": [
+    [
+      "External Client Apps",
+      "help.salesforce.com"
+    ]
+  ]
+}

@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+/* Design tokens, copied from the mockup's :root. Components never use raw hex. */
+:root {
+  --bg: #ffffff;
+  --side: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f5f5f5;
+  --hover: #f0f0f0;
+  --border: #e6e6e6;
+  --border-strong: #d4d4d4;
+  --text: #0a0a0a;
+  --text-2: #525252;
+  --text-3: #8a8a8a;
+  --accent: #1a2be0;
+  --accent-hover: #1222c2;
+  --accent-soft: #eef0ff;
+  --accent-ink: #1a2be0;
+  --on-accent: #ffffff;
+  --ok: #14804a;
+  --ok-soft: #e7f6ee;
+  --warn: #b25e09;
+  --warn-soft: #fdf3e6;
+  --bad: #c62f2f;
+  --bad-soft: #fdeded;
+  --r-sm: 3px;
+  --r: 5px;
+  --r-lg: 8px;
+  --shadow: 0 1px 2px rgba(10, 10, 10, 0.04), 0 2px 8px rgba(10, 10, 10, 0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c0c0d;
+    --side: #111113;
+    --surface: #141416;
+    --surface-2: #1b1b1e;
+    --hover: #202024;
+    --border: #26262a;
+    --border-strong: #34343a;
+    --text: #f2f2f2;
+    --text-2: #b0b0b4;
+    --text-3: #76767c;
+    --accent: #4d5cff;
+    --accent-hover: #6370ff;
+    --accent-soft: #191c3a;
+    --accent-ink: #9aa3ff;
+    --on-accent: #ffffff;
+    --ok: #4fd08b;
+    --ok-soft: #10261a;
+    --warn: #f0a24e;
+    --warn-soft: #2a1d0c;
+    --bad: #f07a7a;
+    --bad-soft: #2b1313;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0c0c0d;
+  --side: #111113;
+  --surface: #141416;
+  --surface-2: #1b1b1e;
+  --hover: #202024;
+  --border: #26262a;
+  --border-strong: #34343a;
+  --text: #f2f2f2;
+  --text-2: #b0b0b4;
+  --text-3: #76767c;
+  --accent: #4d5cff;
+  --accent-hover: #6370ff;
+  --accent-soft: #191c3a;
+  --accent-ink: #9aa3ff;
+  --on-accent: #ffffff;
+  --ok: #4fd08b;
+  --ok-soft: #10261a;
+  --warn: #f0a24e;
+  --warn-soft: #2a1d0c;
+  --bad: #f07a7a;
+  --bad-soft: #2b1313;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Connects the tokens to Tailwind. Tailwind's default palette is removed so
+   bg-*, text-* and border-* can only resolve to the variables above. */
+@theme inline {
+  --color-*: initial;
+  --color-bg: var(--bg);
+  --color-side: var(--side);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-hover: var(--hover);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-on-accent: var(--on-accent);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r);
+  --radius-lg: var(--r-lg);
+  --shadow-card: var(--shadow);
+
+  --font-body: var(--font-inter), "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-inter-tight), var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  /* The mockup's max-width breakpoints: use as max-lg, max-md and max-sm.
+     xl is new: below it, three cards beside the rail are too narrow for their
+     difficulty tags, which would cover the app name. */
+  --breakpoint-*: initial;
+  --breakpoint-sm: 601px;
+  --breakpoint-md: 861px;
+  --breakpoint-lg: 1181px;
+  --breakpoint-xl: 1420px;
+
+  --animate-live: live-pulse 1.4s infinite;
+  --animate-spinner: spinner 0.8s linear infinite;
+
+  @keyframes live-pulse {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent);
+    }
+    100% {
+      box-shadow: 0 0 0 8px transparent;
+    }
+  }
+
+  @keyframes spinner {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--bg);
+  }
+
+  body {
+    margin: 0;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  svg {
+    flex: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
