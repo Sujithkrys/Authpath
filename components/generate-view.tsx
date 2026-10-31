@@ -7,6 +7,7 @@ import type { FormEvent, ReactNode } from "react";
 import { useAppState, type TraceOutcome, type TraceRun, type TraceStage } from "@/components/app-state";
 import { SearchField, buttonPrimary, heroTitle } from "@/components/ui";
 import { STAGES } from "@/lib/agent/events";
+import { formatGeneratedAt } from "@/lib/format";
 
 const EXAMPLES = ["linear.app", "Calendly", "Xero"];
 
@@ -84,6 +85,16 @@ function OutcomePanel({ outcome, run, onRun }: { outcome: TraceOutcome; run: Tra
           <span className={footerText}>
             Guide ready · {outcome.uncertainCount} {outcome.uncertainCount === 1 ? "item" : "items"} marked not confirmed
           </span>
+          <Link href={`/guides/${outcome.slug}`} className={buttonPrimary}>
+            Open guide
+          </Link>
+        </Footer>
+      );
+
+    case "cached":
+      return (
+        <Footer>
+          <span className={footerText}>Already generated on {formatGeneratedAt(outcome.generatedAt)}</span>
           <Link href={`/guides/${outcome.slug}`} className={buttonPrimary}>
             Open guide
           </Link>

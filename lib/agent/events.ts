@@ -1,5 +1,7 @@
 /** The stream contract between /api/generate and the trace UI. Safe to import on the client. */
 
+import type { Guide } from "@/types/guide";
+
 export const STAGES = [
   {
     id: "find",
@@ -33,6 +35,7 @@ export interface AppOption {
 
 export interface GenerationStats {
   durationMs: number;
+  modelCalls: number;
   inputTokens: number;
   outputTokens: number;
   cacheReadTokens: number;
@@ -48,7 +51,9 @@ export type GenerateEvent =
   | { type: "stage_done"; stage: StageId; detail: string }
   /** The app is already in the library. */
   | { type: "redirect"; slug: string }
-  | { type: "guide"; slug: string; uncertainCount: number; stats: GenerationStats }
+  /** A guide from the last 7 days, served instead of generating again. */
+  | { type: "cached"; slug: string; generatedAt: string }
+  | { type: "guide"; slug: string; uncertainCount: number; guide: Guide; stats: GenerationStats }
   | { type: "no_oauth"; appName: string; summary: string; authMethods: string[]; sources: string[]; stats: GenerationStats }
   | { type: "ambiguous"; options: AppOption[]; stats: GenerationStats }
   | { type: "not_found"; message: string; stats: GenerationStats }

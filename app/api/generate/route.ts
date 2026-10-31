@@ -1,12 +1,12 @@
-import Anthropic from "@anthropic-ai/sdk";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 
 import type { GenerateEvent } from "@/lib/agent/events";
 import { runPipeline } from "@/lib/agent/pipeline";
-import { AgentError } from "@/lib/agent/run-stage";
 import { findLibraryGuide } from "@/lib/guides";
-import { RATE_LIMIT, checkRateLimit, isStoreConfigured } from "@/lib/store";
+import { getProvider } from "@/lib/llm";
+import { AgentError } from "@/lib/llm/types";
+import { RATE_LIMIT, checkRateLimit, findRecentGuide, isStoreConfigured } from "@/lib/store";
 
 // 300s is the most Vercel's Hobby plan allows, and also the default on Pro, so
 // this is safe on either. The agent stops first so it can still report back.
@@ -17,9 +17,11 @@ const Body = z.object({ input: z.string().trim().min(1).max(200) });
 
 const line = (event: GenerateEvent) => `${JSON.stringify(event)}\n`;
 
-function refuse(event: GenerateEvent, status: number) {
+function reply(event: GenerateEvent, status: number) {
   return new Response(line(event), { status, headers: { "Content-Type": "application/x-ndjson" } });
 }
+
+const notSetUp = () => reply({ type: "error", message: "The generator isn't set up yet.", retryable: false }, 503);
 
 function clientIp(request: NextRequest): string {
   return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
@@ -32,29 +34,29 @@ function toErrorEvent(error: unknown, timedOut: boolean): GenerateEvent {
   if (error instanceof AgentError) {
     return { type: "error", message: error.message, retryable: error.retryable };
   }
-  if (error instanceof Anthropic.RateLimitError) {
-    return { type: "error", message: "The research service is busy. Try again in a minute.", retryable: true };
-  }
-  if (error instanceof Anthropic.AuthenticationError) {
-    return { type: "error", message: "The generator isn't set up correctly.", retryable: false };
-  }
   return { type: "error", message: "Something went wrong while researching this app.", retryable: true };
 }
 
 export async function POST(request: NextRequest) {
   const body = Body.safeParse(await request.json().catch(() => null));
   if (!body.success) {
-    return refuse({ type: "error", message: "Enter an app name or website.", retryable: false }, 400);
+    return reply({ type: "error", message: "Enter an app name or website.", retryable: false }, 400);
   }
   const { input } = body.data;
 
-  // Checked first: an app we already have costs nothing and counts against no one.
+  // These two are free, so they come before the rate limit and any model call.
   const inLibrary = findLibraryGuide(input);
-  if (inLibrary) return refuse({ type: "redirect", slug: inLibrary.id }, 200);
+  if (inLibrary) return reply({ type: "redirect", slug: inLibrary.id }, 200);
 
-  if (!process.env.ANTHROPIC_API_KEY || !isStoreConfigured()) {
-    return refuse({ type: "error", message: "The generator isn't set up yet.", retryable: false }, 503);
-  }
+  if (!isStoreConfigured()) return notSetUp();
+
+  const recent = await findRecentGuide(input).catch((error: unknown) => {
+    console.error("recent guide lookup failed", error);
+    return null;
+  });
+  if (recent) return reply({ type: "cached", slug: recent.id, generatedAt: recent.generatedAt! }, 200);
+
+  if (!getProvider().isConfigured()) return notSetUp();
 
   // Fails closed: if the limit can't be checked, nothing runs on the API key.
   const limit = await checkRateLimit(clientIp(request)).catch((error: unknown) => {
@@ -62,11 +64,11 @@ export async function POST(request: NextRequest) {
     return null;
   });
   if (!limit) {
-    return refuse({ type: "error", message: "Something went wrong. Please try again.", retryable: true }, 503);
+    return reply({ type: "error", message: "Something went wrong. Please try again.", retryable: true }, 503);
   }
   if (!limit.success) {
     const minutes = Math.max(1, Math.ceil((limit.reset - Date.now()) / 60_000));
-    return refuse(
+    return reply(
       {
         type: "error",
         message: `You've reached the limit of ${RATE_LIMIT.requests} guides an hour. Try again in ${minutes} ${minutes === 1 ? "minute" : "minutes"}.`,

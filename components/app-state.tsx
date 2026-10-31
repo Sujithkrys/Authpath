@@ -17,6 +17,7 @@ export interface TraceStage {
 
 export type TraceOutcome =
   | { kind: "guide"; slug: string; uncertainCount: number }
+  | { kind: "cached"; slug: string; generatedAt: string }
   | { kind: "no_oauth"; appName: string; summary: string; authMethods: string[]; sources: string[] }
   | { kind: "ambiguous"; options: AppOption[] }
   | { kind: "not_found"; message: string }
@@ -68,6 +69,8 @@ function applyEvent(run: TraceRun, event: GenerateEvent): TraceRun {
       return updateStage(event.stage, { status: "done", detail: event.detail });
     case "guide":
       return { ...run, outcome: { kind: "guide", slug: event.slug, uncertainCount: event.uncertainCount } };
+    case "cached":
+      return { ...run, outcome: { kind: "cached", slug: event.slug, generatedAt: event.generatedAt } };
     case "no_oauth":
       return {
         ...run,

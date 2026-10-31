@@ -60,7 +60,39 @@ function initials(name: string): string {
   return letters.toUpperCase().replace(/[^A-Z0-9]/g, "") || "?";
 }
 
-const flatten = (text: string) => text.toLowerCase().replace(/\s+/g, " ").trim();
+/** Smart quotes and long dashes differ between a page and a model's copy of it, without changing the words. */
+const flatten = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/[–—]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const HTML_ENTITIES: Record<string, string> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  nbsp: " ",
+  rsquo: "’",
+  lsquo: "‘",
+  rdquo: "”",
+  ldquo: "“",
+  ndash: "–",
+  mdash: "—",
+};
+
+/** Reduces a page to its readable text, for checking quotes against it. */
+export function htmlToText(html: string): string {
+  return html
+    .replace(/<(script|style|noscript|svg)\b[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&#(\d+);/g, (_match, code) => String.fromCodePoint(Number(code)))
+    .replace(/&([a-z]+);/gi, (match, name: string) => HTML_ENTITIES[name.toLowerCase()] ?? match);
+}
 
 /** True only when the quote really is in the page, ignoring case and spacing. */
 export function quoteAppearsIn(quote: string, text: string): boolean {
@@ -162,8 +194,8 @@ export function buildGuide({
     tested: false,
     generated: true,
     generatedAt,
-    // An estimate from the step count, because nothing the model says about
-    // hands-on time could be sourced.
+    // A placeholder from the step count, shown as "Rough estimate". Nothing the
+    // model says about hands-on time could be sourced.
     setup: `~${steps.length * MINUTES_PER_STEP} min`,
     wait: verdict.wait,
     review: approval.reviewLabel.trim() || "Unclear",

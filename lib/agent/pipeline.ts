@@ -2,10 +2,12 @@ import { ZodError } from "zod";
 
 import { buildGuide, hostOf, isUnder, stripProtocol, urlKey } from "@/lib/agent/evidence";
 import type { GenerateEvent, StageId } from "@/lib/agent/events";
-import { AgentError, RunLedger, runStage, webFetchTool, webSearchTool } from "@/lib/agent/run-stage";
 import { ApprovalResult, FindResult, GeneratedGuideSchema, GuideDraft, ReadResult } from "@/lib/agent/schemas";
 import { findLibraryGuide } from "@/lib/guides";
-import { saveGeneratedGuide } from "@/lib/store";
+import { getProvider } from "@/lib/llm";
+import { RunLedger } from "@/lib/llm/ledger";
+import { AgentError } from "@/lib/llm/types";
+import { findRecentGuide, saveGeneratedGuide } from "@/lib/store";
 import type { Guide } from "@/types/guide";
 
 const WRITE_ATTEMPTS = 2;
@@ -40,15 +42,15 @@ Search for the app's developer docs and OAuth or authentication docs. Use only p
 - ambiguous: the name could fairly mean several different products, so the user must choose. List them. A well-known product with obscure namesakes is not ambiguous, and an input that names a website is never ambiguous.
 - not_found: no real software product with developer docs could be identified.
 
-Copy URLs exactly from search results.
+Give real URLs that your search returned. Don't construct URLs.
 
 ${SHARED_RULES}`;
 
 const READ_PROMPT = `You read a provider's official docs and extract how to register an OAuth app.
 
-Fetch the pages listed, plus any linked official pages you need. Extract where to create the app, required fields, redirect URI rules, scopes and how credentials are issued. Every fact needs the URL of the page you actually fetched it from.
+Read the pages listed, plus any linked official pages you need. Extract where to create the app, required fields, redirect URI rules, scopes and how credentials are issued. Every fact needs the URL of the page you actually read it on.
 
-A fetch can fail, and pages that need JavaScript come back empty or useless. Try a different official page if that happens, and never state a fact from a page you couldn't read.
+A page can fail to load, and pages that need JavaScript can come back empty or useless. Never state a fact from a page you couldn't read.
 
 Set supportsOAuth to no only when the docs show third-party OAuth isn't offered, and list the auth they do offer. Set it to unclear when you couldn't read enough to tell.
 
@@ -56,9 +58,9 @@ ${SHARED_RULES}`;
 
 const APPROVAL_PROMPT = `You find out whether an OAuth app needs approval from the provider before other people can use it.
 
-Search the provider's official pages for any review, verification, marketplace listing or security assessment, plus any stated timelines. Fetch what you find.
+Look through the provider's official pages for any review, verification, marketplace listing or security assessment, plus any stated timelines.
 
-Never estimate a timeline. Fill timelineLabel only if a fetched page states one, and copy the sentence word for word into evidenceQuote with its URL in evidenceUrl. If the docs say outright that no review exists, set reviewRequired to no and quote that sentence the same way. If the docs say nothing, reviewRequired is unknown and all three fields stay null.
+Never estimate a timeline. Fill timelineLabel only if a page you read states one, and copy the sentence word for word into evidenceQuote with its URL in evidenceUrl. If the docs say outright that no review exists, set reviewRequired to no and quote that sentence the same way. If the docs say nothing, reviewRequired is unknown and all three fields stay null.
 
 ${SHARED_RULES}`;
 
@@ -85,21 +87,26 @@ function normaliseDomain(value: string): string | null {
   return /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(domain) ? domain : null;
 }
 
+const baseDomain = (host: string) => host.split(".").slice(-2).join(".");
+
 const count = (amount: number, noun: string) => `${amount} ${noun}${amount === 1 ? "" : "s"}`;
 
 /**
- * Keeps only docs that search really returned, and only domains those results
- * came from. Stages 2 and 3 are then locked to these domains by the API.
+ * Keeps docs on sites search really returned, and only domains those came from.
+ * A deep link needn't be a search result itself, because it only becomes a
+ * source if it's then retrieved. Stages 2 and 3 are locked to these domains.
  */
 function resolveOfficialSources(find: FindResult, ledger: RunLedger, input: string) {
-  const inputUrl = /^https?:\/\//.test(input) ? input : null;
-  const known = new Set(ledger.searched.keys());
-  if (inputUrl) known.add(urlKey(inputUrl));
+  const inputHost = /^https?:\/\//.test(input) ? hostOf(input) : null;
+  const searchedHosts = new Set(
+    [...ledger.searched.values(), ...(inputHost ? [`https://${inputHost}`] : [])].flatMap((url) => hostOf(url) ?? []),
+  );
+  const searchedBases = new Set([...searchedHosts].map(baseDomain));
 
   const isThirdParty = (host: string) => THIRD_PARTY_DOMAINS.some((domain) => isUnder(host, domain));
   const docsUrls = find.docsUrls.filter((url) => {
     const host = hostOf(url);
-    return host && !isThirdParty(host) && known.has(urlKey(url));
+    return host && !isThirdParty(host) && searchedBases.has(baseDomain(host));
   });
 
   const hosts = docsUrls.map(hostOf).filter((host): host is string => Boolean(host));
@@ -110,11 +117,13 @@ function resolveOfficialSources(find: FindResult, ledger: RunLedger, input: stri
   return { docsUrls, domains: [...new Set(claimed.length > 0 ? claimed : hosts)] };
 }
 
-const listPages = (ledger: RunLedger) =>
-  [...ledger.fetched.values()].map((page) => `<page url="${page.url}">${page.title}</page>`).join("\n");
+const fetchedUrls = (ledger: RunLedger) => [...ledger.fetched.values()].map((page) => page.url);
+
+const listPages = (ledger: RunLedger) => fetchedUrls(ledger).map((url) => `<page url="${url}" />`).join("\n");
 
 export async function runPipeline(input: string, emit: (event: GenerateEvent) => void, signal: AbortSignal) {
-  const ledger = new RunLedger();
+  const provider = getProvider();
+  const ledger = new RunLedger(provider.estimateCost);
   const appInput = `<app_input>${input}</app_input>`;
 
   const stage = async <T>(id: StageId, run: () => Promise<T>, detail: (result: T) => string): Promise<T> => {
@@ -130,11 +139,11 @@ export async function runPipeline(input: string, emit: (event: GenerateEvent) =>
   const { find, official } = await stage(
     "find",
     async () => {
-      const result = await runStage({
+      const result = await provider.research({
         system: FIND_PROMPT,
         user: `Find the official developer docs for this app.\n${appInput}`,
         schema: FindResult,
-        webTools: [webSearchTool(3, { blocked: THIRD_PARTY_DOMAINS })],
+        search: { maxUses: 3, blockedDomains: THIRD_PARTY_DOMAINS },
         ledger,
         signal,
       });
@@ -169,15 +178,24 @@ export async function runPipeline(input: string, emit: (event: GenerateEvent) =>
     return;
   }
 
+  // The real name can match a guide the raw input didn't, e.g. "linear.app".
+  const recent = await findRecentGuide(appName);
+  if (recent) {
+    emit({ type: "cached", slug: recent.id, generatedAt: recent.generatedAt! });
+    return;
+  }
+
+  ledger.restrictTo(official.domains);
+
   // 2. Read the registration requirements.
   const read = await stage(
     "read",
     () =>
-      runStage({
+      provider.research({
         system: READ_PROMPT,
-        user: `App: ${appName}\n\nStart with these official pages:\n${official.docsUrls.join("\n")}`,
+        user: `App: ${appName}`,
         schema: ReadResult,
-        webTools: [webFetchTool(5, official.domains), webSearchTool(1, { allowed: official.domains })],
+        read: { maxUses: 5, allowedDomains: official.domains, urls: official.docsUrls },
         ledger,
         onDomains: showDomains("read"),
         signal,
@@ -195,7 +213,7 @@ export async function runPipeline(input: string, emit: (event: GenerateEvent) =>
       appName,
       summary: read.summary,
       authMethods: read.otherAuthMethods,
-      sources: [...ledger.fetched.values()].map((page) => page.url),
+      sources: fetchedUrls(ledger),
       stats: ledger.stats(),
     });
     return;
@@ -205,17 +223,26 @@ export async function runPipeline(input: string, emit: (event: GenerateEvent) =>
   const approval = await stage(
     "approval",
     () =>
-      runStage({
+      provider.research({
         system: APPROVAL_PROMPT,
-        user: `App: ${appName}\n\nWhat we know about its auth so far: ${read.summary}\n\nPages already read:\n${[...ledger.fetched.values()].map((page) => page.url).join("\n")}`,
+        user: `App: ${appName}\n\nWhat we know about its auth so far: ${read.summary}`,
         schema: ApprovalResult,
-        webTools: [webSearchTool(2, { allowed: official.domains }), webFetchTool(3, official.domains)],
+        search: { maxUses: 2, allowedDomains: official.domains },
+        read: { maxUses: 3, allowedDomains: official.domains, urls: fetchedUrls(ledger) },
         ledger,
         onDomains: showDomains("approval"),
         signal,
       }),
     (result) => (result.processes.length > 0 ? result.summary : "No review process documented"),
   );
+
+  // A provider may not hand back page text, so get it for the one page whose
+  // quote must be checked. Failing to get it just means the quote can't stand.
+  if (approval.evidenceUrl) {
+    await provider.pageText(approval.evidenceUrl, ledger, signal).catch((error: unknown) => {
+      console.error("couldn't read page to check quote", error);
+    });
+  }
 
   // 4. Write the guide, then check it. An invalid guide gets one retry.
   const guide = await stage(
@@ -225,7 +252,7 @@ export async function runPipeline(input: string, emit: (event: GenerateEvent) =>
 
       for (let attempt = 0; attempt < WRITE_ATTEMPTS; attempt++) {
         try {
-          const draft = await runStage({
+          const draft = await provider.write({
             system: WRITE_PROMPT,
             user: `App: ${appName}
 
@@ -273,12 +300,22 @@ ${lastProblem ? `\nYour previous attempt was rejected: ${lastProblem}` : ""}`,
   await saveGeneratedGuide(guide);
 
   const stats = ledger.stats();
-  console.info("generation", JSON.stringify({ slug: guide.id, stats, pages: [...ledger.fetched.values()].map((page) => stripProtocol(page.url)) }));
+  console.info(
+    "generation",
+    JSON.stringify({
+      provider: provider.name,
+      slug: guide.id,
+      stats,
+      pages: fetchedUrls(ledger).map(stripProtocol),
+      rejected: ledger.rejected,
+    }),
+  );
 
   emit({
     type: "guide",
     slug: guide.id,
     uncertainCount: guide.steps.filter((step) => step.e === "uncertain").length,
+    guide,
     stats,
   });
 }
