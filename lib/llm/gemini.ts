@@ -13,6 +13,7 @@ import { AgentError, type LlmProvider, type ResearchRequest, type WriteRequest }
  * https://ai.google.dev/gemini-api/docs/pricing
  */
 const DEFAULT_MODEL = "gemini-3.8-flash";
+const BACKUP_MODEL = "gemini-3.5-flash-lite";
 const searchEnabled = () => process.env.GEMINI_SEARCH === "true";
 
 const NO_SEARCH_NOTE = `Web search isn't available in this run. Work from what you know about this provider, and name the official pages you're confident exist. Those URLs get checked by loading them, so a guess that doesn't load is simply discarded. If you don't recognise the app, say not_found.`;
@@ -29,27 +30,37 @@ const REDIRECT_TIMEOUT_MS = 5_000;
 const QUOTA_BUSY = "The free AI quota is busy, try again in a minute.";
 const QUOTA_USED_UP = "The free AI quota for today has run out. It resets at midnight Pacific time.";
 
-const model = () => process.env.GEMINI_MODEL || DEFAULT_MODEL;
+/** Free-tier quotas are per model, so a second model covers the first being busy. An explicit GEMINI_MODEL is used alone. */
+const models = () => (process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : [DEFAULT_MODEL, BACKUP_MODEL]);
 
 function client() {
   return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 }
 
-/** Puts the SDK's errors into words a person can act on. */
+/** Busy, out of quota, or not open to this key: all reasons another model might still work. */
+const worthTryingAnother = (error: unknown) =>
+  error instanceof ApiError && (error.status === 429 || error.status === 503 || error.status === 404);
+
+/** Puts the SDK's errors into words a person can act on. The technical reason stays in `detail`. */
 function plainError(error: unknown): unknown {
   if (!(error instanceof ApiError)) return error;
 
   console.error("gemini error", error.status, error.message);
-  if (error.status === 429) {
-    return /per.?day|daily/i.test(error.message) ? new AgentError(QUOTA_USED_UP, false) : new AgentError(QUOTA_BUSY);
-  }
-  if (error.status === 503) return new AgentError(QUOTA_BUSY);
-  if (error.status === 401 || error.status === 403) return new AgentError("The generator isn't set up correctly.", false);
-
   const reason = error.message.match(/"message":\s*"([^"]+)"/)?.[1] ?? error.message;
-  if (/api.?key/i.test(reason)) return new AgentError("The Gemini API key isn't valid.", false);
-  if (error.status === 404) return new AgentError(`The model ${model()} isn't available to this Gemini key.`, false);
-  return new AgentError("Something went wrong while researching this app.", true, `${error.status}: ${reason.slice(0, 200)}`);
+  const detail = `${error.status}: ${reason.slice(0, 300)}`;
+
+  if (error.status === 429) {
+    return /per.?day|daily/i.test(error.message)
+      ? new AgentError(QUOTA_USED_UP, false, detail)
+      : new AgentError(QUOTA_BUSY, true, detail);
+  }
+  if (error.status === 503) return new AgentError(QUOTA_BUSY, true, detail);
+  if (error.status === 401 || error.status === 403) {
+    return new AgentError("The generator isn't set up correctly.", false, detail);
+  }
+  if (/api.?key/i.test(reason)) return new AgentError("The Gemini API key isn't valid.", false, detail);
+  if (error.status === 404) return new AgentError("This Gemini key can't use the configured model.", false, detail);
+  return new AgentError("Something went wrong while researching this app.", true, detail);
 }
 
 async function generate(
@@ -58,24 +69,31 @@ async function generate(
   ledger: RunLedger,
   signal: AbortSignal,
 ): Promise<GenerateContentResponse> {
-  try {
-    const response = await client().models.generateContent({
-      model: model(),
-      contents,
-      config: { maxOutputTokens: MAX_OUTPUT_TOKENS, abortSignal: signal, ...config },
-    });
+  const tried = models();
 
-    const usage = response.usageMetadata;
-    ledger.addUsage({
-      modelCalls: 1,
-      input: (usage?.promptTokenCount ?? 0) + (usage?.toolUsePromptTokenCount ?? 0),
-      output: (usage?.candidatesTokenCount ?? 0) + (usage?.thoughtsTokenCount ?? 0),
-      cacheRead: usage?.cachedContentTokenCount ?? 0,
-    });
-    return response;
-  } catch (error) {
-    throw plainError(error);
+  for (const [index, model] of tried.entries()) {
+    try {
+      const response = await client().models.generateContent({
+        model,
+        contents,
+        config: { maxOutputTokens: MAX_OUTPUT_TOKENS, abortSignal: signal, ...config },
+      });
+
+      const usage = response.usageMetadata;
+      ledger.addUsage({
+        modelCalls: 1,
+        input: (usage?.promptTokenCount ?? 0) + (usage?.toolUsePromptTokenCount ?? 0),
+        output: (usage?.candidatesTokenCount ?? 0) + (usage?.thoughtsTokenCount ?? 0),
+        cacheRead: usage?.cachedContentTokenCount ?? 0,
+      });
+      return response;
+    } catch (error) {
+      if (index === tried.length - 1 || !worthTryingAnother(error)) throw plainError(error);
+      console.warn("gemini fallback", model, error);
+    }
   }
+
+  throw new AgentError("Something went wrong while researching this app.");
 }
 
 /**
