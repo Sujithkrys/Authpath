@@ -36,7 +36,11 @@ function plainError(error: unknown): unknown {
   }
   if (error.status === 503) return new AgentError(QUOTA_BUSY);
   if (error.status === 401 || error.status === 403) return new AgentError("The generator isn't set up correctly.", false);
-  return error;
+
+  const reason = error.message.match(/"message":\s*"([^"]+)"/)?.[1] ?? error.message;
+  if (/api.?key/i.test(reason)) return new AgentError("The Gemini API key isn't valid.", false);
+  if (error.status === 404) return new AgentError(`The model ${model()} isn't available to this Gemini key.`, false);
+  return new AgentError(`Gemini refused the request (${error.status}): ${reason.slice(0, 160)}`, false);
 }
 
 async function generate(
