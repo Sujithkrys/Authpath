@@ -42,7 +42,7 @@ Search for the app's developer docs and OAuth or authentication docs. Use only p
 - ambiguous: the name could fairly mean several different products, so the user must choose. List them. A well-known product with obscure namesakes is not ambiguous, and an input that names a website is never ambiguous.
 - not_found: no real software product with developer docs could be identified.
 
-Give real URLs that your search returned. Don't construct URLs.
+Give real URLs. Never make up a path you aren't sure of.
 
 ${SHARED_RULES}`;
 
@@ -144,6 +144,11 @@ export async function runPipeline(input: string, emit: (event: GenerateEvent) =>
         user: `Find the official developer docs for this app.\n${appInput}`,
         schema: FindResult,
         search: { maxUses: 3, blockedDomains: THIRD_PARTY_DOMAINS },
+        candidates: (found) => {
+          const website = /^(https?:\/\/)?[a-z0-9-]+(\.[a-z0-9-]+)+(\/\S*)?$/i.test(input) ? input : null;
+          const typed = website ? [website.startsWith("http") ? website : `https://${website}`] : [];
+          return found.outcome === "found" ? [...new Set([...found.docsUrls, ...typed])].slice(0, 6) : [];
+        },
         ledger,
         signal,
       });
@@ -162,7 +167,11 @@ export async function runPipeline(input: string, emit: (event: GenerateEvent) =>
     return;
   }
 
-  if (find.outcome !== "found" || official.docsUrls.length === 0) {
+  if (find.outcome === "found" && official.docsUrls.length === 0) {
+    throw new AgentError(`Couldn't open ${find.appName.trim() || "this app"}'s docs. Their pages may need a browser to load.`);
+  }
+
+  if (find.outcome !== "found") {
     emit({
       type: "not_found",
       message: `Couldn't find an app called "${input}" with official developer docs. Check the spelling, or try its website.`,
@@ -228,7 +237,7 @@ export async function runPipeline(input: string, emit: (event: GenerateEvent) =>
         user: `App: ${appName}\n\nWhat we know about its auth so far: ${read.summary}`,
         schema: ApprovalResult,
         search: { maxUses: 2, allowedDomains: official.domains },
-        read: { maxUses: 3, allowedDomains: official.domains, urls: fetchedUrls(ledger) },
+        read: { maxUses: 5, allowedDomains: official.domains, urls: fetchedUrls(ledger) },
         ledger,
         onDomains: showDomains("approval"),
         signal,

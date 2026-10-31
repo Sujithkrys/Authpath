@@ -57,4 +57,4 @@ export type GenerateEvent =
   | { type: "no_oauth"; appName: string; summary: string; authMethods: string[]; sources: string[]; stats: GenerationStats }
   | { type: "ambiguous"; options: AppOption[]; stats: GenerationStats }
   | { type: "not_found"; message: string; stats: GenerationStats }
-  | { type: "error"; message: string; retryable: boolean };
+  | { type: "error"; message: string; retryable: boolean; detail?: string };

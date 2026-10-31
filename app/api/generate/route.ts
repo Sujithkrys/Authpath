@@ -42,7 +42,7 @@ function toErrorEvent(error: unknown, timedOut: boolean): GenerateEvent {
     return { type: "error", message: "This took too long and was stopped. Please try again.", retryable: true };
   }
   if (error instanceof AgentError) {
-    return { type: "error", message: error.message, retryable: error.retryable };
+    return { type: "error", message: error.message, retryable: error.retryable, detail: error.detail };
   }
   return { type: "error", message: "Something went wrong while researching this app.", retryable: true };
 }

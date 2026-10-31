@@ -7,6 +7,8 @@ export class AgentError extends Error {
   constructor(
     message: string,
     readonly retryable = true,
+    /** The technical reason. Sent with the error for debugging, never shown on the page. */
+    readonly detail?: string,
   ) {
     super(message);
   }
@@ -25,6 +27,8 @@ export interface ResearchRequest<T extends z.ZodType> extends StageRequest<T> {
   search?: { maxUses: number; allowedDomains?: string[]; blockedDomains?: string[] };
   /** Let the model read specific pages. */
   read?: { maxUses: number; allowedDomains: string[]; urls: string[] };
+  /** Pages to confirm exist when a provider can't search, taken from the stage's result. */
+  candidates?: (result: z.infer<T>) => string[];
   onDomains?: (domains: string[]) => void;
 }
 

@@ -6,11 +6,20 @@ import type { RunLedger } from "@/lib/llm/ledger";
 import { AgentError, type LlmProvider, type ResearchRequest, type WriteRequest } from "@/lib/llm/types";
 
 /**
- * The only Flash text model with Google Search on the free tier: up to 500
- * requests a day. Gemini 3 and newer list Search as "Not available" for free.
+ * Google Search isn't available on the free tier for Gemini 3 and newer, and
+ * the 2.5 models that have it are closed to accounts that haven't used them, so
+ * by default this runs on URL context alone. GEMINI_SEARCH=true turns Search on
+ * for a key that can use it.
  * https://ai.google.dev/gemini-api/docs/pricing
  */
-const DEFAULT_MODEL = "gemini-2.5-flash";
+const DEFAULT_MODEL = "gemini-3.8-flash";
+const searchEnabled = () => process.env.GEMINI_SEARCH === "true";
+
+const NO_SEARCH_NOTE = `Web search isn't available in this run. Work from what you know about this provider, and name the official pages you're confident exist. Those URLs get checked by loading them, so a guess that doesn't load is simply discarded. If you don't recognise the app, say not_found.`;
+
+const CandidatePages = z.object({
+  urls: z.array(z.string()).describe("Up to 3 official URLs most likely to cover this."),
+});
 
 const MAX_OUTPUT_TOKENS = 16_000;
 const PAGE_FETCH_TIMEOUT_MS = 10_000;
@@ -40,7 +49,7 @@ function plainError(error: unknown): unknown {
   const reason = error.message.match(/"message":\s*"([^"]+)"/)?.[1] ?? error.message;
   if (/api.?key/i.test(reason)) return new AgentError("The Gemini API key isn't valid.", false);
   if (error.status === 404) return new AgentError(`The model ${model()} isn't available to this Gemini key.`, false);
-  return new AgentError(`Gemini refused the request (${error.status}): ${reason.slice(0, 160)}`, false);
+  return new AgentError("Something went wrong while researching this app.", true, `${error.status}: ${reason.slice(0, 200)}`);
 }
 
 async function generate(
@@ -53,7 +62,7 @@ async function generate(
     const response = await client().models.generateContent({
       model: model(),
       contents,
-      config: { temperature: 0.2, maxOutputTokens: MAX_OUTPUT_TOKENS, abortSignal: signal, ...config },
+      config: { maxOutputTokens: MAX_OUTPUT_TOKENS, abortSignal: signal, ...config },
     });
 
     const usage = response.usageMetadata;
@@ -100,19 +109,19 @@ async function recordSearch(response: GenerateContentResponse, ledger: RunLedger
   return urls.filter((url): url is string => Boolean(url));
 }
 
-function recordRetrievals(response: GenerateContentResponse, ledger: RunLedger): string[] {
+/** The pages URL context really retrieved, whatever the model says it read. */
+function retrievedUrls(response: GenerateContentResponse, ledger: RunLedger): string[] {
   const entries = response.candidates?.[0]?.urlContextMetadata?.urlMetadata ?? [];
   ledger.addUsage({ fetches: entries.length });
 
-  const domains: (string | null)[] = [];
-  for (const entry of entries) {
-    if (entry.retrievedUrl && entry.urlRetrievalStatus === UrlRetrievalStatus.URL_RETRIEVAL_STATUS_SUCCESS) {
-      // Gemini doesn't return the page text, so pageText fetches it when needed.
-      domains.push(ledger.addFetched({ url: entry.retrievedUrl, title: "", text: "" }));
-    }
-  }
-  return [...new Set(domains.filter((domain): domain is string => Boolean(domain)))];
+  return entries.flatMap((entry) =>
+    entry.retrievedUrl && entry.urlRetrievalStatus === UrlRetrievalStatus.URL_RETRIEVAL_STATUS_SUCCESS
+      ? [entry.retrievedUrl]
+      : [],
+  );
 }
+
+const present = (domains: (string | null)[]) => [...new Set(domains.filter((domain): domain is string => Boolean(domain)))];
 
 /** Gemini's schema format has no anyOf, so nullable fields become type arrays. */
 function toGeminiSchema(node: unknown): unknown {
@@ -170,52 +179,88 @@ function siteHint(domains: string[] | undefined): string {
   return `\n\nOnly use the provider's own sites. Put ${domains.map((domain) => `site:${domain}`).join(" OR ")} in your search queries.`;
 }
 
-async function research<T extends z.ZodType>(request: ResearchRequest<T>): Promise<z.infer<T>> {
-  const { system, user, schema, search, read, ledger, onDomains, signal } = request;
-  const report = (domains: string[]) => {
-    if (domains.length > 0) onDomains?.(domains);
-  };
-  const addSearchResults = (urls: string[]) =>
-    report([...new Set(urls.map((url) => ledger.addSearched(url)).filter((domain): domain is string => Boolean(domain)))]);
-
-  let text = "";
-
-  if (search) {
-    // One tool per call: Google documents combining tools for Gemini 3 and newer only.
-    const prompt = `${user}${siteHint(search.allowedDomains)}${read ? "" : askForJson(schema)}`;
-    const config = { systemInstruction: system, tools: [{ googleSearch: {} }] };
-
-    let response = await generate(prompt, config, ledger, signal);
-    let urls = await recordSearch(response, ledger);
-
-    // The model can answer from memory without searching, which proves nothing.
-    if (urls.length === 0) {
-      response = await generate(`${prompt}\n\nYou must run a Google Search for this. Don't answer from memory.`, config, ledger, signal);
-      urls = await recordSearch(response, ledger);
-    }
-
-    addSearchResults(urls);
-    text = response.text ?? "";
-
-    if (!read) return finish(text, schema, ledger, signal);
-
-    const onOfficialSite = (url: string) => {
-      const host = hostOf(url);
-      return host !== null && read.allowedDomains.some((domain) => isUnder(host, domain));
-    };
-    read.urls = [...new Set([...urls.filter(onOfficialSite), ...read.urls])].slice(0, read.maxUses);
-  }
+/**
+ * Research with no web search. The model names the pages from what it knows,
+ * then URL context loads them, so a page only counts if it really came back.
+ */
+async function researchWithoutSearch<T extends z.ZodType>(request: ResearchRequest<T>): Promise<z.infer<T>> {
+  const { system, user, schema, read, candidates, ledger, onDomains, signal } = request;
 
   if (read) {
-    const pages = read.urls.join("\n");
-    const found = text ? `\n\nA search found this:\n${text}` : "";
-    const prompt = `${user}${found}\n\nRead these pages:\n${pages}${askForJson(schema)}`;
-    const response = await generate(prompt, { systemInstruction: system, tools: [{ urlContext: {} }] }, ledger, signal);
-    report(recordRetrievals(response, ledger));
-    text = response.text ?? "";
+    const { urls } = await structured({
+      system: `${system}\n\n${NO_SEARCH_NOTE}`,
+      user: `${user}\n\nName the pages to read. Official sites: ${read.allowedDomains.join(", ")}`,
+      schema: CandidatePages,
+      ledger,
+      signal,
+    });
+    const official = urls.filter((url) => {
+      const host = hostOf(url);
+      return host !== null && read.allowedDomains.some((domain) => isUnder(host, domain));
+    });
+    const pages = [...new Set([...official, ...read.urls])].slice(0, read.maxUses);
+    return readPages({ ...request, read: { ...read, urls: pages } }, "");
   }
 
-  return finish(text, schema, ledger, signal);
+  const result = await structured({ system: `${system}\n\n${NO_SEARCH_NOTE}`, user, schema, ledger, signal });
+  const pages = candidates?.(result) ?? [];
+
+  if (pages.length > 0) {
+    const response = await generate(
+      `Read these pages, then say in one line what each one is:\n${pages.join("\n")}`,
+      { tools: [{ urlContext: {} }] },
+      ledger,
+      signal,
+    );
+    const domains = retrievedUrls(response, ledger).map((url) => ledger.addSearched(url));
+    if (domains.length > 0) onDomains?.(present(domains));
+  }
+  return result;
+}
+
+async function readPages<T extends z.ZodType>(request: ResearchRequest<T>, found: string): Promise<z.infer<T>> {
+  const { system, user, schema, read, ledger, onDomains, signal } = request;
+  const note = found ? `\n\nA search found this:\n${found}` : "";
+  const prompt = `${user}${note}\n\nRead these pages:\n${read!.urls.join("\n")}${askForJson(schema)}`;
+  const response = await generate(prompt, { systemInstruction: system, tools: [{ urlContext: {} }] }, ledger, signal);
+
+  // Gemini doesn't return the page text, so pageText fetches it when needed.
+  const domains = present(retrievedUrls(response, ledger).map((url) => ledger.addFetched({ url, title: "", text: "" })));
+  if (domains.length > 0) onDomains?.(domains);
+  return finish(response.text ?? "", schema, ledger, signal);
+}
+
+async function research<T extends z.ZodType>(request: ResearchRequest<T>): Promise<z.infer<T>> {
+  const { system, user, schema, search, read, ledger, onDomains, signal } = request;
+
+  if (search && !searchEnabled()) return researchWithoutSearch(request);
+  if (!search) return readPages(request, "");
+
+  // One tool per call: Google documents combining tools for Gemini 3 and newer only.
+  const prompt = `${user}${siteHint(search.allowedDomains)}${read ? "" : askForJson(schema)}`;
+  const config = { systemInstruction: system, tools: [{ googleSearch: {} }] };
+
+  let response = await generate(prompt, config, ledger, signal);
+  let urls = await recordSearch(response, ledger);
+
+  // The model can answer from memory without searching, which proves nothing.
+  if (urls.length === 0) {
+    response = await generate(`${prompt}\n\nYou must run a Google Search for this. Don't answer from memory.`, config, ledger, signal);
+    urls = await recordSearch(response, ledger);
+  }
+
+  const domains = present(urls.map((url) => ledger.addSearched(url)));
+  if (domains.length > 0) onDomains?.(domains);
+
+  const text = response.text ?? "";
+  if (!read) return finish(text, schema, ledger, signal);
+
+  const onOfficialSite = (url: string) => {
+    const host = hostOf(url);
+    return host !== null && read.allowedDomains.some((domain) => isUnder(host, domain));
+  };
+  const pages = [...new Set([...urls.filter(onOfficialSite), ...read.urls])].slice(0, read.maxUses);
+  return readPages({ ...request, read: { ...read, urls: pages } }, text);
 }
 
 /** Validates a research reply. A garbled one gets one tool-free call to fix its shape, using only what it said. */
