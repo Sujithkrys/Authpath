@@ -34,7 +34,7 @@ function GuideCard({ guide }: { guide: GuideWithLogo }) {
           {guide.name}
           {guide.tested && <ShieldCheck size={15} strokeWidth={1.8} className="text-accent" aria-hidden="true" />}
         </span>
-        <span className="flex flex-col gap-[3px] text-[13px] text-text-2">
+        <span className="flex flex-col gap-[3px] text-[14px] text-text-2">
           <span className="flex items-center gap-1.5">
             <Clock size={13} strokeWidth={1.8} aria-hidden="true" />
             Setup {guide.setup}
@@ -60,7 +60,7 @@ function GuideGrid({ guides }: { guides: GuideWithLogo[] }) {
   );
 }
 
-const sectionHeading = "font-display text-[22px] font-bold tracking-[-.01em]";
+const sectionHeading = "text-[20px] font-semibold tracking-[-.015em]";
 
 export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
   const { difficulty, setDifficulty, wait, setWait, query, setQuery } = useAppState();
@@ -98,7 +98,7 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
               type="button"
               aria-pressed={difficulty === key}
               onClick={() => setDifficulty(key)}
-              className="group flex items-center justify-center gap-[7px] rounded-sm px-3 py-1.5 text-[14px] text-text-2 aria-pressed:bg-surface aria-pressed:font-semibold aria-pressed:text-text aria-pressed:shadow-card max-sm:flex-1 max-sm:px-2"
+              className="group flex items-center justify-center gap-[7px] rounded-sm px-3 py-1.5 text-[15px] text-text-2 aria-pressed:bg-surface aria-pressed:font-semibold aria-pressed:text-text aria-pressed:shadow-card max-sm:flex-1 max-sm:px-2"
             >
               {label}
               <span className="rounded-full border border-border bg-surface-2 px-1.5 font-mono text-[11px] text-text-2 group-aria-pressed:bg-hover">
@@ -166,7 +166,7 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
                   type="button"
                   aria-pressed={wait === key}
                   onClick={() => setWait(key)}
-                  className="flex w-full items-center justify-between rounded-md px-2.5 py-[9px] text-left text-[14px] text-text-2 hover:bg-hover aria-pressed:bg-hover aria-pressed:font-semibold aria-pressed:text-text"
+                  className="flex w-full items-center justify-between rounded-md px-2.5 py-[9px] text-left text-[15px] text-text-2 hover:bg-hover aria-pressed:bg-hover aria-pressed:font-medium aria-pressed:text-text"
                 >
                   <span>{label}</span>
                   <span className="font-mono text-[12px] font-normal text-text-3">{waitCount(key)}</span>

@@ -115,7 +115,8 @@
   --shadow-card: var(--shadow);
 
   --font-body: var(--font-inter), "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: var(--font-inter-tight), var(--font-inter), system-ui, sans-serif;
+  /* One family for headings and body, like the Composio dashboard. */
+  --font-display: var(--font-inter), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", monospace;
 
   /* The mockup's max-width breakpoints: use as max-lg, max-md and max-sm.
@@ -156,8 +157,8 @@
     margin: 0;
     color: var(--text);
     font-family: var(--font-body);
-    font-size: 14px;
-    line-height: 1.5;
+    font-size: 15px;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
   }
 

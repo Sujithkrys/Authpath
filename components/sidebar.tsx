@@ -43,7 +43,7 @@ export function Sidebar() {
             key={href}
             href={href}
             aria-current={isCurrent(href, pathname) ? "page" : undefined}
-            className="flex w-full items-center gap-3 rounded-md px-3 py-[9px] text-left text-[15px] text-text-2 transition-colors duration-150 hover:bg-hover hover:text-text aria-[current=page]:bg-hover aria-[current=page]:font-semibold aria-[current=page]:text-text max-md:px-2.5 max-md:py-2 max-md:text-[14px] max-md:whitespace-nowrap"
+            className="flex w-full items-center gap-3 rounded-md px-3 py-[9px] text-left text-[15px] text-text-2 transition-colors duration-150 hover:bg-hover hover:text-text aria-[current=page]:bg-hover aria-[current=page]:font-medium aria-[current=page]:text-text max-md:px-2.5 max-md:py-2 max-md:text-[15px] max-md:whitespace-nowrap"
           >
             <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
             {label}
@@ -52,12 +52,12 @@ export function Sidebar() {
       </nav>
 
       <div className="mx-3 mt-auto mb-3 rounded-lg border border-border bg-surface p-3.5 shadow-card max-md:hidden">
-        <h2 className="mb-1.5 flex items-center gap-2 text-[14px] font-bold">
+        <h2 className="mb-1.5 flex items-center gap-2 text-[15px] font-semibold">
           <ShieldCheck size={16} strokeWidth={1.8} className="text-accent" aria-hidden="true" />
           Evidence levels
         </h2>
         <p className="mb-3 text-[13px] leading-[1.45] text-text-2">Every step says how we know it.</p>
-        <div className="flex flex-col gap-[7px] text-[12.5px] text-text-2">
+        <div className="flex flex-col gap-[7px] text-[13px] text-text-2">
           <span className="flex items-center gap-2">
             <Check size={14} strokeWidth={2.4} className="text-ok" aria-hidden="true" />
             Tested in a real setup
@@ -74,11 +74,11 @@ export function Sidebar() {
       </div>
 
       <div className="flex items-center gap-2.5 border-t border-border px-[18px] py-3.5 max-md:hidden">
-        <div className="grid size-[30px] place-items-center rounded-full bg-accent text-[13px] font-semibold text-on-accent">
+        <div className="grid size-[30px] place-items-center rounded-full bg-accent text-[14px] font-semibold text-on-accent">
           S
         </div>
         <div>
-          <b className="block text-[14px] leading-[1.2] font-semibold">Sujith T.</b>
+          <b className="block text-[15px] leading-[1.2] font-semibold">Sujith T.</b>
           <small className="text-[12px] text-text-3">APM take-home</small>
         </div>
         <ThemeToggle />

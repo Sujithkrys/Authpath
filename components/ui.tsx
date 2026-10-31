@@ -4,7 +4,7 @@ import type { ComponentProps } from "react";
 import type { Difficulty, GuideWithLogo } from "@/types/guide";
 
 export const buttonBase =
-  "inline-flex items-center justify-center gap-2 h-10 px-4 rounded-sm font-semibold text-[14px] whitespace-nowrap transition-colors duration-150";
+  "inline-flex items-center justify-center gap-2 h-10 px-4 rounded-sm font-semibold text-[15px] whitespace-nowrap transition-colors duration-150";
 export const buttonPrimary = `${buttonBase} bg-accent text-on-accent hover:bg-accent-hover`;
 export const buttonGhost = `${buttonBase} border border-border-strong bg-surface hover:bg-hover`;
 
@@ -14,7 +14,7 @@ export const panelHeader =
 export const rail =
   "sticky top-7 flex flex-col gap-4 max-lg:static max-lg:grid max-lg:grid-cols-2 max-sm:grid-cols-1";
 export const pill = "rounded-full bg-accent-soft px-2 py-px text-[11.5px] font-semibold text-accent-ink";
-export const heroTitle = "font-display font-extrabold tracking-[-.03em] text-balance";
+export const heroTitle = "font-semibold tracking-[-.025em] text-balance";
 
 const DIFFICULTY_STYLE: Record<Difficulty, string> = {
   easy: "text-ok bg-ok-soft",
@@ -65,7 +65,7 @@ export function AppLogo({ guide, size = "md" }: AppLogoProps) {
   return (
     <span
       aria-hidden="true"
-      className={`grid flex-none place-items-center rounded-lg font-display font-bold tracking-[-.02em] text-on-accent ${large ? "size-14 text-[20px]" : "size-11 text-[16px]"}`}
+      className={`grid flex-none place-items-center rounded-lg font-semibold tracking-[-.02em] text-on-accent ${large ? "size-14 text-[20px]" : "size-11 text-[16px]"}`}
       style={{ backgroundColor: guide.color }}
     >
       {guide.init}
@@ -88,7 +88,7 @@ export function SearchField({ label, iconSize = 16, fieldClassName, ...input }: 
       <Search size={iconSize} aria-hidden="true" />
       <span className="sr-only">{label}</span>
       <input
-        className="min-w-0 flex-1 bg-transparent text-[14px] text-text outline-none placeholder:text-text-3"
+        className="min-w-0 flex-1 bg-transparent text-[15px] text-text outline-none placeholder:text-text-3"
         {...input}
       />
     </label>

@@ -48,8 +48,8 @@ function TraceRow(props: TraceRowProps) {
         )}
       </span>
       <div>
-        <div className={`text-[14px] font-semibold ${waiting ? "text-text-3" : ""}`}>{title}</div>
-        <div className={`mt-0.5 text-[13px] ${waiting ? "text-text-3" : "text-text-2"}`}>{stageDetail(props)}</div>
+        <div className={`text-[15px] font-semibold ${waiting ? "text-text-3" : ""}`}>{title}</div>
+        <div className={`mt-0.5 text-[14px] ${waiting ? "text-text-3" : "text-text-2"}`}>{stageDetail(props)}</div>
       </div>
       {stage.domains.length > 0 && (
         <div className="flex max-w-[260px] flex-wrap justify-end gap-1 max-sm:col-start-2 max-sm:max-w-none max-sm:justify-start">
@@ -75,7 +75,7 @@ function Footer({ children }: { children: ReactNode }) {
   );
 }
 
-const footerText = "min-w-0 text-[13px] text-text-2";
+const footerText = "min-w-0 text-[14px] text-text-2";
 
 function OutcomePanel({ outcome, run, onRun }: { outcome: TraceOutcome; run: TraceRun; onRun: (input: string) => void }) {
   switch (outcome.kind) {
@@ -105,7 +105,7 @@ function OutcomePanel({ outcome, run, onRun }: { outcome: TraceOutcome; run: Tra
       return (
         <Footer>
           <div className={footerText}>
-            <b className="block text-[14px] text-text">{outcome.appName} doesn&apos;t appear to support OAuth</b>
+            <b className="block text-[15px] text-text">{outcome.appName} doesn&apos;t appear to support OAuth</b>
             <p className="mt-1">{outcome.summary}</p>
             {outcome.authMethods.length > 0 && <p className="mt-1">It uses: {outcome.authMethods.join(", ")}.</p>}
             <ul className="mt-2 flex flex-wrap gap-1">
@@ -139,8 +139,8 @@ function OutcomePanel({ outcome, run, onRun }: { outcome: TraceOutcome; run: Tra
                   onClick={() => onRun(`${option.name} (${option.website})`)}
                   className="rounded-md border border-border-strong bg-surface px-3 py-2 text-left hover:bg-hover"
                 >
-                  <b className="block text-[14px] font-semibold">{option.name}</b>
-                  <span className="text-[13px] text-text-2">{option.description}</span>
+                  <b className="block text-[15px] font-semibold">{option.name}</b>
+                  <span className="text-[14px] text-text-2">{option.description}</span>
                 </button>
               ))}
             </div>
@@ -195,7 +195,7 @@ export function GenerateView() {
   return (
     <section aria-labelledby="generate-heading">
       <div className="mx-auto mt-9 max-w-[720px] text-center">
-        <h1 id="generate-heading" className={`${heroTitle} mb-3.5 text-[clamp(32px,4.6vw,48px)] leading-[1.06]`}>
+        <h1 id="generate-heading" className={`${heroTitle} mb-4 text-[clamp(30px,3.6vw,40px)] leading-[1.12]`}>
           Get a setup guide for any app, in about a minute.
         </h1>
         <p className="mx-auto mb-7 max-w-[520px] text-[16px] text-text-2">
@@ -220,7 +220,7 @@ export function GenerateView() {
           </button>
         </form>
 
-        <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2 text-[13px] text-text-3">
+        <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2 text-[14px] text-text-3">
           Try:
           {EXAMPLES.map((example) => (
             <button
@@ -228,7 +228,7 @@ export function GenerateView() {
               type="button"
               disabled={running}
               onClick={() => run(example)}
-              className="rounded-full border border-border px-[11px] py-[3px] text-[13px] text-text-2 hover:bg-hover disabled:opacity-60"
+              className="rounded-full border border-border px-[11px] py-[3px] text-[14px] text-text-2 hover:bg-hover disabled:opacity-60"
             >
               {example}
             </button>

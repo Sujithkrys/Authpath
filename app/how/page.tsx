@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "How it's checked" };
 export default function HowPage() {
   return (
     <section aria-labelledby="how-heading" className="mx-auto mt-2 max-w-[720px]">
-      <h1 id="how-heading" className={`${heroTitle} mb-3.5 text-[36px] leading-[1.06]`}>
+      <h1 id="how-heading" className={`${heroTitle} mb-4 text-[34px] leading-[1.12]`}>
         How guides are checked
       </h1>
       <p className="mb-7 max-w-[520px] text-[16px] text-text-2">

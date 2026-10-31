@@ -40,7 +40,7 @@ export function ShareButton() {
       {/* Stays mounted so screen readers announce the message when it appears. */}
       <div role="status" className="fixed bottom-6 left-1/2 z-10 -translate-x-1/2 max-sm:w-max max-sm:max-w-[calc(100vw-32px)]">
         {result && (
-          <div className="flex items-center gap-2 rounded-md bg-text px-3.5 py-2.5 text-[13px] font-semibold text-bg shadow-card">
+          <div className="flex items-center gap-2 rounded-md bg-text px-3.5 py-2.5 text-[14px] font-semibold text-bg shadow-card">
             {result === "copied" ? (
               <Check size={14} strokeWidth={2.4} aria-hidden="true" />
             ) : (
