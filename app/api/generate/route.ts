@@ -24,6 +24,15 @@ function reply(event: GenerateEvent, status: number) {
 const notSetUp = (missing: string) =>
   reply({ type: "error", message: `The generator isn't set up yet: ${missing}.`, retryable: false }, 503);
 
+/** Names a storage setup mistake, which no amount of retrying will fix. */
+function describeStorageFault(error: unknown): string | null {
+  const text = String(error);
+  if (/NOPERM|READONLY|read.?only/i.test(text)) return "guide storage has a read-only token";
+  if (/WRONGPASS|NOAUTH|unauthorized|\b401\b/i.test(text)) return "guide storage rejected its token";
+  if (/ENOTFOUND|getaddrinfo|fetch failed|invalid url/i.test(text)) return "guide storage's address can't be reached";
+  return null;
+}
+
 function clientIp(request: NextRequest): string {
   return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
 }
@@ -60,10 +69,13 @@ export async function POST(request: NextRequest) {
   if (!getProvider().isConfigured()) return notSetUp(`no API key for ${getProvider().name}`);
 
   // Fails closed: if the limit can't be checked, nothing runs on the API key.
+  let storageFault: string | null = null;
   const limit = await checkRateLimit(clientIp(request)).catch((error: unknown) => {
     console.error("rate limit check failed", error);
+    storageFault = describeStorageFault(error);
     return null;
   });
+  if (storageFault) return notSetUp(storageFault);
   if (!limit) {
     return reply({ type: "error", message: "Something went wrong. Please try again.", retryable: true }, 503);
   }
