@@ -35,20 +35,22 @@ export function DifficultyTag({ diff, className = "" }: { diff: Difficulty; clas
 interface AppLogoProps {
   guide: Pick<GuideWithLogo, "color" | "init" | "logoSrc">;
   size?: "md" | "lg";
+  /** Border and shadow around the logo. Off for flat cards, where the logo sits bare. */
+  framed?: boolean;
 }
 
 /**
  * Full-colour logo on a white tile, in both themes so that dark marks like
  * GitHub's stay visible. Apps without a logo get a brand-coloured letter tile.
  */
-export function AppLogo({ guide, size = "md" }: AppLogoProps) {
+export function AppLogo({ guide, size = "md", framed = true }: AppLogoProps) {
   const large = size === "lg";
 
   if (guide.logoSrc) {
     return (
       <span
         aria-hidden="true"
-        className={`grid flex-none place-items-center rounded-lg border border-border bg-logo-tile shadow-card ${large ? "size-14" : "size-11"}`}
+        className={`grid flex-none place-items-center rounded-lg bg-logo-tile ${framed ? "border border-border shadow-card" : ""} ${large ? "size-14" : "size-11"}`}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- next/image refuses SVG by default */}
         <img

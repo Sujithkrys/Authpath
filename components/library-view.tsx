@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, ExternalLink, ChevronUp, Plus, ShieldCheck } from "lucide-react";
+import { ChevronUp, Clock, ExternalLink, Plus, RotateCw, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 import { useAppState, type DifficultyFilter, type WaitFilter } from "@/components/app-state";
@@ -21,38 +21,35 @@ const WAIT_ROWS: { key: WaitFilter; label: string }[] = [
   { key: "weeks", label: "Weeks" },
 ];
 
+/** Flat, compact cards like the Composio app directory: name, one detail line, a tag in the corner. */
 function GuideCard({ guide }: { guide: GuideWithLogo }) {
   return (
     <Link
       href={`/guides/${guide.id}`}
       aria-label={`Open ${guide.name} guide`}
-      className="relative flex w-full items-start gap-3.5 rounded-md border border-border bg-surface p-[18px] text-left transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-border-strong hover:shadow-card"
+      className="relative flex w-full items-center gap-3 rounded-sm border border-border bg-surface px-4 py-[15px] text-left transition-[border-color,box-shadow] duration-150 hover:border-border-strong hover:shadow-card"
     >
-      <AppLogo guide={guide} />
+      <AppLogo guide={guide} framed={false} />
       <span className="min-w-0 flex-1">
-        <span className="mb-[5px] flex items-center gap-1.5 text-[16px] font-semibold">
+        <span className="flex items-center gap-1.5 pr-[76px] text-[16px] leading-6 font-medium">
           {guide.name}
           {guide.tested && <ShieldCheck size={15} strokeWidth={1.8} className="text-accent" aria-hidden="true" />}
         </span>
-        <span className="flex flex-col gap-[3px] text-[14px] text-text-2">
-          <span className="flex items-center gap-1.5">
-            <Clock size={13} strokeWidth={1.8} aria-hidden="true" />
-            Setup {guide.setup}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck size={13} strokeWidth={1.8} aria-hidden="true" />
-            Approval: {guide.wait}
+        <span className="mt-0.5 flex items-start gap-1.5 text-[13px] leading-5 text-text-2">
+          <Clock size={13} strokeWidth={1.8} className="mt-[3.5px]" aria-hidden="true" />
+          <span>
+            {guide.setup} · {guide.wait === "None" ? "No approval" : `${guide.wait} wait`}
           </span>
         </span>
       </span>
-      <DifficultyTag diff={guide.diff} className="absolute top-3.5 right-3.5" />
+      <DifficultyTag diff={guide.diff} className="absolute top-3 right-3" />
     </Link>
   );
 }
 
 function GuideGrid({ guides }: { guides: GuideWithLogo[] }) {
   return (
-    <div className="mb-10 grid grid-cols-3 gap-3.5 max-xl:grid-cols-2 max-sm:grid-cols-1">
+    <div className="mb-10 grid grid-cols-3 gap-3 max-xl:grid-cols-2 max-sm:grid-cols-1">
       {guides.map((guide) => (
         <GuideCard key={guide.id} guide={guide} />
       ))}
@@ -75,6 +72,13 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
   const tested = matches.filter((guide) => guide.tested);
   const fromDocs = matches.filter((guide) => !guide.tested);
 
+  const filtered = difficulty !== "all" || wait !== "all" || needle !== "";
+  const resetFilters = () => {
+    setDifficulty("all");
+    setWait("all");
+    setQuery("");
+  };
+
   const difficultyCount = (key: DifficultyFilter) =>
     key === "all" ? guides.length : guides.filter((guide) => guide.diff === key).length;
   const waitCount = (key: WaitFilter) =>
@@ -82,11 +86,7 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
 
   return (
     <section aria-labelledby="library-heading">
-      <h1 id="library-heading" className="sr-only">
-        Guide library
-      </h1>
-
-      <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
+      <div className="mb-7 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
         <div
           role="group"
           aria-label="Filter by difficulty"
@@ -126,9 +126,18 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
 
       <div className="grid grid-cols-[minmax(0,1fr)_300px] items-start gap-8 max-lg:grid-cols-1">
         <div>
+          <div className="mb-7 flex items-baseline gap-2.5">
+            <h1 id="library-heading" className="text-[22px] font-semibold tracking-[-.02em]">
+              Library
+            </h1>
+            <span className="text-[16px] text-text-2" aria-live="polite">
+              {matches.length} {matches.length === 1 ? "guide" : "guides"}
+            </span>
+          </div>
+
           {tested.length > 0 && (
             <>
-              <div className="mb-3.5 flex items-center gap-2.5">
+              <div className="mb-4 flex items-center gap-2.5">
                 <h2 className={sectionHeading}>Tested hands-on</h2>
                 <span className={pill}>Verified</span>
               </div>
@@ -138,7 +147,7 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
 
           {fromDocs.length > 0 && (
             <>
-              <div className="mb-3.5 flex items-center gap-2.5">
+              <div className="mb-4 flex items-center gap-2.5">
                 <h2 className={sectionHeading}>From provider docs</h2>
               </div>
               <GuideGrid guides={fromDocs} />
@@ -157,7 +166,19 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
           <div className={panel}>
             <div className={panelHeader}>
               Approval wait
-              <ChevronUp size={16} className="text-text-3" aria-hidden="true" />
+              <span className="flex items-center gap-1 text-text-3">
+                <ChevronUp size={16} aria-hidden="true" />
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  disabled={!filtered}
+                  aria-label="Reset filters"
+                  title="Reset filters"
+                  className="grid size-7 place-items-center rounded-md hover:bg-hover hover:text-text disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent"
+                >
+                  <RotateCw size={15} strokeWidth={1.8} aria-hidden="true" />
+                </button>
+              </span>
             </div>
             <div className="p-2.5">
               {WAIT_ROWS.map(({ key, label }) => (
