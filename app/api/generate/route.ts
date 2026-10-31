@@ -21,7 +21,8 @@ function reply(event: GenerateEvent, status: number) {
   return new Response(line(event), { status, headers: { "Content-Type": "application/x-ndjson" } });
 }
 
-const notSetUp = () => reply({ type: "error", message: "The generator isn't set up yet.", retryable: false }, 503);
+const notSetUp = (missing: string) =>
+  reply({ type: "error", message: `The generator isn't set up yet: ${missing}.`, retryable: false }, 503);
 
 function clientIp(request: NextRequest): string {
   return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
   const inLibrary = findLibraryGuide(input);
   if (inLibrary) return reply({ type: "redirect", slug: inLibrary.id }, 200);
 
-  if (!isStoreConfigured()) return notSetUp();
+  if (!isStoreConfigured()) return notSetUp("guide storage isn't connected");
 
   const recent = await findRecentGuide(input).catch((error: unknown) => {
     console.error("recent guide lookup failed", error);
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
   });
   if (recent) return reply({ type: "cached", slug: recent.id, generatedAt: recent.generatedAt! }, 200);
 
-  if (!getProvider().isConfigured()) return notSetUp();
+  if (!getProvider().isConfigured()) return notSetUp(`no API key for ${getProvider().name}`);
 
   // Fails closed: if the limit can't be checked, nothing runs on the API key.
   const limit = await checkRateLimit(clientIp(request)).catch((error: unknown) => {
