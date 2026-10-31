@@ -131,6 +131,44 @@ export function resolveApproval(approval: ApprovalResult, pages: Map<string, Fet
   return { wait: NOT_PUBLISHED, missingTimeline: true, sourceUrl: page?.url ?? null };
 }
 
+/** Absolute page links in a page's HTML, or in a sitemap's <loc> entries. */
+export function linksIn(markup: string, baseUrl: string): string[] {
+  const found = [...markup.matchAll(/href=["']([^"'#]+)|<loc>\s*([^<\s]+)/gi)].map((match) => match[1] ?? match[2]);
+  return found.flatMap((link) => {
+    try {
+      return [new URL(link, baseUrl).toString().split("#")[0]];
+    } catch {
+      return [];
+    }
+  });
+}
+
+const NOT_DOCS = /\.(png|jpe?g|svg|gif|webp|css|js|ico|woff2?|xml|zip)$|\/(blog|changelog|customers|pricing|careers|press|legal|privacy|terms|login|signup)(\/|$)/i;
+
+/**
+ * Picks the links most likely to cover a topic. Earlier topic words count for
+ * more, and only https pages on the official domains are considered.
+ */
+export function rankLinks(links: string[], topics: string[], domains: string[], limit: number): string[] {
+  const scored = new Map<string, { url: string; score: number }>();
+
+  for (const url of links) {
+    const host = hostOf(url);
+    if (!url.startsWith("https://") || !host || !domains.some((domain) => isUnder(host, domain))) continue;
+
+    const path = new URL(url).pathname.toLowerCase();
+    if (NOT_DOCS.test(path)) continue;
+
+    const score = topics.reduce((total, topic, index) => total + (path.includes(topic) ? topics.length - index : 0), 0);
+    if (score > 0) scored.set(urlKey(url), { url, score });
+  }
+
+  return [...scored.values()]
+    .sort((a, b) => b.score - a.score || a.url.length - b.url.length)
+    .slice(0, limit)
+    .map((entry) => entry.url);
+}
+
 interface BuildGuideInput {
   appName: string;
   draft: GuideDraft;
@@ -198,7 +236,7 @@ export function buildGuide({
     // model says about hands-on time could be sourced.
     setup: `~${steps.length * MINUTES_PER_STEP} min`,
     wait: verdict.wait,
-    review: approval.reviewLabel.trim() || "Unclear",
+    review: approval.reviewRequired === "unknown" ? "Unclear" : approval.reviewLabel.trim() || "Unclear",
     site: stripProtocol(consoleUrl),
     steps,
     blockers,

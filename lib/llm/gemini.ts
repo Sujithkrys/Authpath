@@ -1,7 +1,7 @@
 import { ApiError, GoogleGenAI, UrlRetrievalStatus, type GenerateContentConfig, type GenerateContentResponse } from "@google/genai";
 import { z } from "zod";
 
-import { hostOf, htmlToText, isUnder, urlKey } from "@/lib/agent/evidence";
+import { hostOf, htmlToText, isUnder, linksIn, rankLinks, urlKey } from "@/lib/agent/evidence";
 import type { RunLedger } from "@/lib/llm/ledger";
 import { AgentError, type LlmProvider, type ResearchRequest, type WriteRequest } from "@/lib/llm/types";
 
@@ -233,8 +233,7 @@ async function researchWithoutSearch<T extends z.ZodType>(request: ResearchReque
       const host = hostOf(url);
       return host !== null && read.allowedDomains.some((domain) => isUnder(host, domain));
     });
-    const pages = [...new Set([...official, ...read.urls])].slice(0, read.maxUses);
-    return readPages({ ...request, read: { ...read, urls: pages } }, "");
+    return readPages({ ...request, read: { ...read, urls: [...new Set([...official, ...read.urls])] } }, "");
   }
 
   const result = await structured({ system: `${system}\n\n${NO_SEARCH_NOTE}`, user, schema, ledger, signal });
@@ -253,10 +252,41 @@ async function researchWithoutSearch<T extends z.ZodType>(request: ResearchReque
   return result;
 }
 
+/** Reads a public page ourselves, for its links or its text. Returns "" if it can't be read. */
+async function download(url: string, signal: AbortSignal): Promise<{ text: string; finalUrl: string }> {
+  try {
+    const response = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; Authpath docs checker)" },
+      signal: AbortSignal.any([signal, AbortSignal.timeout(PAGE_FETCH_TIMEOUT_MS)]),
+    });
+    if (!response.ok) return { text: "", finalUrl: url };
+    const bytes = new Uint8Array(await response.arrayBuffer()).slice(0, MAX_PAGE_BYTES);
+    return { text: new TextDecoder().decode(bytes), finalUrl: response.url || url };
+  } catch {
+    return { text: "", finalUrl: url };
+  }
+}
+
+/**
+ * Without search, the model only knows a provider's top-level pages. This finds
+ * the deep ones from the site itself: links on those pages, plus its sitemap.
+ * They're only leads. A page still has to come back from URL context to count.
+ */
+async function discoverPages(urls: string[], domains: string[], topics: string[], limit: number, signal: AbortSignal) {
+  const hosts = urls.flatMap((url) => hostOf(url) ?? []);
+  const sitemaps = [...new Set([...hosts, ...domains])].map((host) => `https://${host}/sitemap.xml`);
+  const pages = await Promise.all([...urls, ...sitemaps].map((url) => download(url, signal)));
+  return rankLinks(pages.flatMap(({ text, finalUrl }) => linksIn(text, finalUrl)), topics, domains, limit);
+}
+
 async function readPages<T extends z.ZodType>(request: ResearchRequest<T>, found: string): Promise<z.infer<T>> {
   const { system, user, schema, read, ledger, onDomains, signal } = request;
+  const { urls, allowedDomains, topics, maxUses } = read!;
+  const deep = await discoverPages(urls, allowedDomains, topics, maxUses - 1, signal);
+  const pages = [...new Set([...deep, ...urls])].slice(0, maxUses);
+
   const note = found ? `\n\nA search found this:\n${found}` : "";
-  const prompt = `${user}${note}\n\nRead these pages:\n${read!.urls.join("\n")}${askForJson(schema)}`;
+  const prompt = `${user}${note}\n\nRead these pages:\n${pages.join("\n")}${askForJson(schema)}`;
   const response = await generate(prompt, { systemInstruction: system, tools: [{ urlContext: {} }] }, ledger, signal);
 
   // Gemini doesn't return the page text, so pageText fetches it when needed.
@@ -294,8 +324,7 @@ async function research<T extends z.ZodType>(request: ResearchRequest<T>): Promi
     const host = hostOf(url);
     return host !== null && read.allowedDomains.some((domain) => isUnder(host, domain));
   };
-  const pages = [...new Set([...urls.filter(onOfficialSite), ...read.urls])].slice(0, read.maxUses);
-  return readPages({ ...request, read: { ...read, urls: pages } }, text);
+  return readPages({ ...request, read: { ...read, urls: [...new Set([...urls.filter(onOfficialSite), ...read.urls])] } }, text);
 }
 
 /** Validates a research reply. A garbled one gets one tool-free call to fix its shape, using only what it said. */
@@ -309,9 +338,10 @@ async function finish<T extends z.ZodType>(
     return schema.parse(parseJson(text));
   } catch {
     if (!text.trim()) throw new AgentError("The model returned an empty reply. Please try again.");
+    const pages = [...ledger.fetched.values()].map((page) => page.url).join("\n");
     return structured({
       system: "Convert the research notes you're given into the requested JSON. Add nothing that isn't in the notes.",
-      user: `<research_notes>\n${text}\n</research_notes>`,
+      user: `<research_notes>\n${text}\n</research_notes>\n\n<pages_read>\n${pages}\n</pages_read>`,
       schema,
       ledger,
       signal,
@@ -344,15 +374,11 @@ export const geminiProvider: LlmProvider = {
     const host = hostOf(page.url);
     if (!host || !page.url.startsWith("https://")) return "";
 
-    const response = await fetch(page.url, {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; Authpath docs checker)" },
-      signal: AbortSignal.any([signal, AbortSignal.timeout(PAGE_FETCH_TIMEOUT_MS)]),
-    });
-    const finalHost = hostOf(response.url);
-    if (!response.ok || !finalHost || (!isUnder(finalHost, host) && !isUnder(host, finalHost))) return "";
+    const { text, finalUrl } = await download(page.url, signal);
+    const finalHost = hostOf(finalUrl);
+    if (!text || !finalHost || (!isUnder(finalHost, host) && !isUnder(host, finalHost))) return "";
 
-    const bytes = new Uint8Array(await response.arrayBuffer()).slice(0, MAX_PAGE_BYTES);
-    page.text = htmlToText(new TextDecoder().decode(bytes));
+    page.text = htmlToText(text);
     return page.text;
   },
 };

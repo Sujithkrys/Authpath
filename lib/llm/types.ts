@@ -26,7 +26,13 @@ export interface ResearchRequest<T extends z.ZodType> extends StageRequest<T> {
   /** Let the model search the web. */
   search?: { maxUses: number; allowedDomains?: string[]; blockedDomains?: string[] };
   /** Let the model read specific pages. */
-  read?: { maxUses: number; allowedDomains: string[]; urls: string[] };
+  read?: {
+    maxUses: number;
+    allowedDomains: string[];
+    urls: string[];
+    /** Words in a URL that suggest a page covers this stage, most telling first. */
+    topics: string[];
+  };
   /** Pages to confirm exist when a provider can't search, taken from the stage's result. */
   candidates?: (result: z.infer<T>) => string[];
   onDomains?: (domains: string[]) => void;

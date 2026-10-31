@@ -58,7 +58,9 @@ function candidateSlugs(input: string): string[] {
 export async function findRecentGuide(input: string): Promise<Guide | null> {
   for (const slug of candidateSlugs(input)) {
     const guide = await getGeneratedGuide(slug);
-    if (guide?.generatedAt && Date.now() - Date.parse(guide.generatedAt) < RECENT_MS) return guide;
+    if (!guide?.generatedAt || Date.now() - Date.parse(guide.generatedAt) >= RECENT_MS) continue;
+    // A guide with nothing confirmed is worth another try, not 7 days of reuse.
+    if (guide.steps.some((step) => step.e === "docs")) return guide;
   }
   return null;
 }
