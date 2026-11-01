@@ -81,8 +81,8 @@ export interface ClaimCheck {
   dropped: number;
 }
 
-/** Bumped when generated results change shape. Older ones aren't served from the cache. */
-export const GENERATED_VERSION = 2;
+/** Bumped when generated results change shape or how they're researched. Older ones aren't served from the cache. */
+export const GENERATED_VERSION = 3;
 
 export interface Guide {
   /** Also the URL slug: /guides/[id]. */

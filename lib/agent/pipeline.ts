@@ -64,7 +64,11 @@ Read the pages listed. Choose one category:
 - unknown: the pages read don't settle it.
 
 Copy one sentence word for word from a page you read into evidenceQuote that shows the category, and put that page in evidenceUrl.
-For anything but oauth_provider, fill instead with what a developer should do. For a platform, that's usually to sign up and use its SDK or API key, and let it handle the other apps' OAuth. For no_oauth, it's to use the API keys or tokens it offers.
+authMethods is how a developer's own code authenticates to this app's API (e.g. "Project API key"), never the auth types it manages for other apps.
+For anything but oauth_provider, fill instead with what a developer should do, plainly, with no sales language:
+- platform: there's no OAuth app to register with the platform itself. If they need OAuth credentials for a specific app it connects to (e.g. Slack), they register an app with that provider; otherwise they can use the platform's own API key and its managed auth.
+- no_oauth: use the API keys or tokens it offers, and keep them server-side.
+- unknown: check the provider's developer docs or contact them.
 
 ${SHARED_RULES}`;
 

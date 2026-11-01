@@ -41,8 +41,12 @@ export const ClassifyResult = z.object({
     .string()
     .nullable()
     .describe("A sentence copied word for word from evidenceUrl that shows the category. Null if none."),
-  summary: z.string().describe("What the app is, in one or two plain sentences."),
-  authMethods: z.array(z.string()).describe("The auth the app offers developers, as the docs name it, e.g. 'OAuth 2.0', 'API keys'."),
+  summary: z.string().describe("What the app is, in one or two plain, factual sentences. No marketing language or numbers of integrations."),
+  authMethods: z
+    .array(z.string())
+    .describe(
+      "How a developer's own code authenticates to THIS app's API, as the docs name it, e.g. 'Project API key', 'Server token'. Not the auth types it handles for other apps.",
+    ),
   instead: z
     .string()
     .describe("Only when not oauth_provider: what a developer should do instead, in one or two sentences. Empty otherwise."),
