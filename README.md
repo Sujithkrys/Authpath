@@ -1,6 +1,6 @@
 # Authpath
 
-**Live:** https://authpath-two.vercel.app
+**Live:** https://authpath-sujith.vercel.app
 **Repo:** https://github.com/Sujithkrys/Authpath
 
 When a developer builds an AI agent that connects to apps like Slack or Google, they often need to create their own OAuth app with that provider first, and sometimes get it approved. Today that means digging through scattered docs and emailing providers, without knowing if it will take an hour or several weeks.
