@@ -5,8 +5,20 @@ import { slugify } from "@/lib/agent/evidence";
 import { hostOf } from "@/lib/agent/urls";
 import { GENERATED_VERSION, type GeneratedResult, isAppCard } from "@/types/guide";
 
-/** Generations allowed per IP. The demo is public, and each one uses real quota. */
-export const RATE_LIMIT = { requests: 5, window: "1 h" } as const;
+const DEFAULT_PER_HOUR = 20;
+
+/**
+ * Generations allowed per IP per hour. The demo is public and each one uses real
+ * quota, but several reviewers may share one office network, so the default is
+ * 20. RATE_LIMIT_PER_HOUR overrides it; anything that isn't a positive whole
+ * number falls back to the default.
+ */
+function perHour(): number {
+  const value = Number(process.env.RATE_LIMIT_PER_HOUR);
+  return Number.isInteger(value) && value > 0 ? value : DEFAULT_PER_HOUR;
+}
+
+export const RATE_LIMIT = { requests: perHour(), window: "1 h" } as const;
 
 /** A result this new is served instead of generating again, so repeat demos don't use up quota. */
 const RECENT_MS = 7 * 24 * 60 * 60 * 1000;
