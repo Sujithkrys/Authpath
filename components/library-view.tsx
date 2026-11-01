@@ -2,6 +2,7 @@
 
 import { ChevronUp, Clock, ExternalLink, Plus, RotateCw, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { useAppState, type DifficultyFilter, type WaitFilter } from "@/components/app-state";
 import { AppLogo, DifficultyTag, SearchField, buttonPrimary, panel, panelHeader, pill, rail } from "@/components/ui";
@@ -63,7 +64,8 @@ function GuideGrid({ guides }: { guides: GuideWithLogo[] }) {
 const sectionHeading = "text-[17.5px] leading-[26px] font-semibold tracking-[-.01em]";
 
 export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
-  const { difficulty, setDifficulty, wait, setWait, query, setQuery } = useAppState();
+  const router = useRouter();
+  const { difficulty, setDifficulty, wait, setWait, query, setQuery, setGenerateInput, startTrace } = useAppState();
 
   const needle = query.trim().toLowerCase();
   const matches = guides.filter(
@@ -82,7 +84,17 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
     setQuery("");
   };
 
-  const difficultyCount = (key: DifficultyFilter) =>
+  /** A name typed into the search carries over: open the Generate page and start the guide. */
+  const generateFromSearch = () => {
+    const text = query.trim();
+    if (text) {
+      setGenerateInput(text);
+      void startTrace(text);
+    }
+    router.push("/generate");
+  };
+
+  const difficultyCount =(key: DifficultyFilter) =>
     key === "all" ? guides.length : guides.filter((guide) => guide.diff === key).length;
   const waitCount = (key: WaitFilter) =>
     key === "all" ? guides.length : guides.filter((guide) => guide.waitKey === key).length;
@@ -120,10 +132,10 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
             onChange={(event) => setQuery(event.target.value)}
             fieldClassName="h-9 w-64 max-w-full max-sm:w-full"
           />
-          <Link href="/generate" className={buttonPrimary}>
+          <button type="button" onClick={generateFromSearch} className={buttonPrimary}>
             <Plus size={16} strokeWidth={2} aria-hidden="true" />
             Generate guide
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -159,8 +171,11 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
 
           {matches.length === 0 && (
             <div className="mb-10 rounded-md border border-dashed border-border-strong p-7 text-center text-text-2">
-              No match in the library. <b className="text-text">Generate a guide</b>
-              {needle ? ` for "${needle}" instead.` : " instead."}
+              No match in the library.{" "}
+              <button type="button" onClick={generateFromSearch} className="font-semibold text-text underline underline-offset-2 hover:text-accent">
+                Generate a guide
+              </button>
+              {query.trim() ? ` for "${query.trim()}" instead.` : " instead."}
             </div>
           )}
         </div>
