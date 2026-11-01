@@ -25,7 +25,7 @@ import {
 } from "@/lib/agent/schemas";
 import { THIRD_PARTY_DOMAINS, isOfficialSource, mentionsOAuthTerms } from "@/lib/agent/sources";
 import { hostOf, isUnder, stripProtocol, urlKey } from "@/lib/agent/urls";
-import { GATE_CLAIM_ID, VERIFY_PROMPT, applyVerdicts, buildClaims, readVerdicts, verifyInput } from "@/lib/agent/verify";
+import { GATE_CLAIM_ID, VERIFY_PROMPT, applyVerdicts, buildClaims, excerpt, readVerdicts, verifyInput } from "@/lib/agent/verify";
 import { findLibraryGuide } from "@/lib/guides";
 import { getProvider } from "@/lib/llm";
 import { RunLedger } from "@/lib/llm/ledger";
@@ -35,6 +35,10 @@ import { type AppCard, type ChecklistItem, GENERATED_VERSION, type Guide, type G
 
 const WRITE_ATTEMPTS = 3;
 const MAX_CARD_SOURCES = 3;
+
+/** Words that pick out the parts of a page that say what kind of app it is. */
+const CLASSIFY_EXCERPT_WORDS =
+  "oauth client id secret register app developer api key token integration platform connect apps toolkits unified authentication";
 
 const CLASSIFY_TOPICS = ["oauth", "authentication", "auth", "developers", "developer", "api", "docs", "quickstart", "introduction", "overview", "getting"];
 const REGISTRATION_TOPICS = ["oauth", "oauth2", "authorization", "authorizing", "authentication", "auth", "scopes", "scope", "redirect", "credentials", "client", "register", "registering", "creating", "apps", "app", "consent", "pkce", "permissions", "quickstart"];
@@ -261,7 +265,7 @@ export async function runPipeline(
   ledger.restrictTo((url) => isOfficialSource(url, domains));
   showDomains("classify")(official.docsUrls.flatMap((url) => hostOf(url) ?? []).filter((host, index, all) => all.indexOf(host) === index));
 
-  const classified = await provider.research({
+  const firstPass = await provider.research({
     system: CLASSIFY_PROMPT,
     user: `App: ${appName}`,
     schema: ClassifyResult,
@@ -277,9 +281,38 @@ export async function runPipeline(
 
   // The category stands only on a quote found word for word on a page read this
   // run. A provider without one still needs a page showing app registration.
-  const evidencePage = classified.evidenceUrl ? ledger.fetched.get(urlKey(classified.evidenceUrl)) : undefined;
-  const evidenceText = evidencePage ? (await readTexts([evidencePage.url], provider, ledger, signal)).get(urlKey(evidencePage.url)) ?? "" : "";
-  const quoteHolds = Boolean(evidencePage && classified.evidenceQuote && quoteAppearsIn(classified.evidenceQuote, evidenceText));
+  const holds = async (result: ClassifyResult) => {
+    const page = result.evidenceUrl ? ledger.fetched.get(urlKey(result.evidenceUrl)) : undefined;
+    const text = page ? (await readTexts([page.url], provider, ledger, signal)).get(urlKey(page.url)) ?? "" : "";
+    return { page, ok: Boolean(page && result.evidenceQuote && quoteAppearsIn(result.evidenceQuote, text)) };
+  };
+  let classified = firstPass;
+  let { page: evidencePage, ok: quoteHolds } = await holds(classified);
+
+  // A model reading pages through a tool often paraphrases its quote. One retry
+  // hands it the page text we hold, so a real quote can be copied from it. The
+  // word-for-word check still decides.
+  if (!quoteHolds) {
+    const texts = await readTexts(fetchedUrls(ledger), provider, ledger, signal);
+    const pages = fetchedUrls(ledger)
+      .map((url) => ({ url, text: excerpt(texts.get(urlKey(url)) ?? "", [CLASSIFY_EXCERPT_WORDS]) }))
+      .filter((page) => page.text.trim().length > 200);
+    if (pages.length > 0) {
+      const retry = await provider.write({
+        system: `${CLASSIFY_PROMPT}\n\nThe text of the pages read is given below. Copy evidenceQuote exactly from that text, and set evidenceUrl to its page.`,
+        user: `App: ${appName}\n\n${pages.map((page) => `<page url="${page.url}">\n${page.text}\n</page>`).join("\n")}`,
+        schema: ClassifyResult,
+        ledger,
+        signal,
+      });
+      const checked = await holds(retry);
+      if (checked.ok) {
+        classified = retry;
+        evidencePage = checked.page;
+        quoteHolds = true;
+      }
+    }
+  }
   let category = classified.category;
   let registrationPage: string | null = null;
   if (category === "oauth_provider" && !quoteHolds) {

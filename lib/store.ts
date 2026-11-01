@@ -66,7 +66,9 @@ export async function findRecentResult(input: string): Promise<GeneratedResult |
     const result = await getGeneratedResult(slug);
     if (!result?.generatedAt || result.version !== GENERATED_VERSION) continue;
     if (Date.now() - Date.parse(result.generatedAt) >= RECENT_MS) continue;
-    if (isAppCard(result) || result.steps.some((step) => step.e === "docs")) return result;
+    // A result that settled nothing (an "unknown" card, or a guide with nothing
+    // confirmed) is worth another try, not 7 days of reuse.
+    if (isAppCard(result) ? result.category !== "unknown" : result.steps.some((step) => step.e === "docs")) return result;
   }
   return null;
 }
