@@ -26,8 +26,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Sidebar />
             <main className="min-w-0 px-8 pt-4 pb-16 max-md:px-4 max-md:pt-[22px] max-md:pb-12">
               {children}
-              <p className="mt-7 font-mono text-[12px] text-text-3">
-                Sample content for layout review — verify every fact against provider docs during the build.
+              <p className="mt-7 text-center font-mono text-[12px] text-text-3">
+                Guides are built from official provider docs and checked claim by claim. They aren&apos;t tested hands-on.
               </p>
             </main>
           </div>

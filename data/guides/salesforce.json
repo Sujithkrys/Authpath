@@ -33,7 +33,7 @@
   "blockers": [
     {
       "b": "Naming changed",
-      "s": "Docs mix \"Connected App\" and \"External Client App\" — check your org version."
+      "s": "Docs mix \"Connected App\" and \"External Client App\", so check which your org uses."
     }
   ],
   "agent": [

@@ -21,10 +21,9 @@ import { CHECKLIST, type ChecklistItem, type Evidence, type GuideWithLogo, type 
 
 const capitalize = (text: string) => text[0].toUpperCase() + text.slice(1);
 
-/** "Hard: Gmail scopes need a security assessment" reads "Gmail scopes need…" under a stat that already says Hard. */
 /** The stat already says the rating, so the note drops a leading "Hard:" and starts with a capital. */
 const reasonNote = (reason: string, diff: string) => {
-  const rest = reason.replace(new RegExp(`^${diff}\\s*[:—–-]\\s*`, "i"), "");
+  const rest = reason.replace(new RegExp(`^${diff}\\s*[:\\u2014\\u2013-]\\s*`, "i"), "");
   return rest.charAt(0).toUpperCase() + rest.slice(1);
 };
 

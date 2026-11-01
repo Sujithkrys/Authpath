@@ -66,7 +66,7 @@ Each problem came from a real run or a test. They're grouped by what went wrong.
 | Guide | What was wrong | Now |
 |---|---|---|
 | GitHub | Said the client secret is shown only once (the docs don't say this); both sources pointed at the same index page | Generate the secret on the app's settings page; three specific source pages |
-| Slack | No redirect rules or PKCE; no mention of the limits on unlisted apps; wait "Days–weeks"; sources on the old domain | HTTPS and no `#` in redirect URLs, PKCE optional, the rate limits on unlisted apps as a blocker, wait "Up to 10 weeks"; five docs.slack.dev sources |
+| Slack | No redirect rules or PKCE; no mention of the limits on unlisted apps; a vague wait; sources on the old domain | HTTPS and no `#` in redirect URLs, PKCE optional, the rate limits on unlisted apps as a blocker, wait "Up to 10 weeks"; five docs.slack.dev sources |
 | Google | Old console navigation; no reason for the Hard rating; wait "Weeks" | Google Auth Platform clients, the secret shown only once, the 100-test-user cap, a scope-verification reason, wait "Up to 6 weeks"; five official sources |
 | Salesforce | Its only source went to the help home page | An External Client Apps article and the security review guide |
 | HubSpot, Notion, Zoom | Sources went through redirects | Their final addresses |

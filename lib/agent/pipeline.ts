@@ -122,6 +122,7 @@ Steps:
 - Each step is a single action. The title starts with an imperative verb, like "Open", "Add" or "Copy". Title and description together are 25 words or fewer.
 - Build every step from checklist items. List them in from, and set sourceUrl to the source of one of them. A step built only from items that weren't found has sourceUrl null.
 - Never put a URL in the title or description. To send the reader somewhere, set link to a short label like "Open the developer console" and a URL from the checklist.
+- Write plainly. Never use em dashes or en dashes; use commas, full stops or "to" instead.
 - Use <code> only around values someone pastes or types: redirect URIs, scope names, form field names. No other markup.
 - Never present a tutorial's example values as the reader's own, such as a sample app's or tool's callback URL. Describe what to enter instead, e.g. your app's HTTPS callback URL.
 - Set owner to agent only for drafting text, building the redirect URI, choosing scopes or preparing form values. Anything that needs the developer's account is you: signing in, creating the app in a console, submitting, verifying, uploading documents, paying or waiting.

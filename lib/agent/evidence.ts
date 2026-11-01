@@ -48,7 +48,7 @@ const flatten = (text: string) =>
     .toLowerCase()
     .replace(/[‘’]/g, "'")
     .replace(/[“”]/g, '"')
-    .replace(/[–—]/g, "-")
+    .replace(/[\u2013\u2014]/g, "-")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -63,8 +63,8 @@ const HTML_ENTITIES: Record<string, string> = {
   lsquo: "‘",
   rdquo: "”",
   ldquo: "“",
-  ndash: "–",
-  mdash: "—",
+  ndash: "\u2013",
+  mdash: "\u2014",
 };
 
 /** Below this, a page's <main> is probably a shell, so more of the page is used. */

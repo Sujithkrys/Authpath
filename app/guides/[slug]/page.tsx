@@ -5,6 +5,7 @@ import { AppCardView } from "@/components/app-card-view";
 import { GuideView } from "@/components/guide-view";
 import { getLibraryGuide, withLogo } from "@/lib/guides";
 import { getGeneratedResult } from "@/lib/store";
+import { withoutLongDashesDeep } from "@/lib/text";
 import { isAppCard } from "@/types/guide";
 
 interface GuidePageProps {
@@ -33,8 +34,10 @@ export async function generateMetadata({ params }: GuidePageProps): Promise<Meta
 
 export default async function GuidePage({ params }: GuidePageProps) {
   const { slug } = await params;
-  const result = await loadResult(slug);
-  if (!result) notFound();
+  const loaded = await loadResult(slug);
+  if (!loaded) notFound();
+  // Saved results keep whatever the model wrote; long dashes are removed only for display.
+  const result = withoutLongDashesDeep(loaded);
 
   if (isAppCard(result)) return <AppCardView card={result} />;
   return <GuideView guide={result} />;

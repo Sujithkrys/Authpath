@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { createContext, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { STAGES, type AppOption, type GenerateEvent, type StageId, type GeneratedLink } from "@/lib/agent/events";
+import { withoutLongDashesDeep } from "@/lib/text";
 import type { AppCard, ClaimCheck, Difficulty, WaitKey } from "@/types/guide";
 
 export type DifficultyFilter = "all" | Difficulty;
@@ -76,7 +77,7 @@ function applyEvent(run: TraceRun, event: GenerateEvent): TraceRun {
     case "cached":
       return { ...run, outcome: { kind: "cached", slug: event.slug, generatedAt: event.generatedAt } };
     case "card":
-      return { ...run, outcome: { kind: "card", slug: event.slug, card: event.card } };
+      return { ...run, outcome: { kind: "card", slug: event.slug, card: withoutLongDashesDeep(event.card) } };
     case "ambiguous":
       return { ...run, outcome: { kind: "ambiguous", options: event.options } };
     case "not_found":

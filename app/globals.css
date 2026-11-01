@@ -25,6 +25,7 @@
   --bad: #c62f2f;
   --bad-soft: #fdeded;
   --logo-tile: #ffffff; /* Stays white in dark mode: logos need a light background. */
+  --logo-dark-filter: none; /* Dark single-colour marks (GitHub) turn light in dark mode. */
   /* Square corners, like the Composio dashboard. Pills stay round (rounded-full). */
   --r-sm: 0px;
   --r: 0px;
@@ -56,10 +57,12 @@
     --bad: #f07a7a;
     --bad-soft: #2b1313;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --logo-dark-filter: invert(1);
   }
 }
 
 :root[data-theme="dark"] {
+  --logo-dark-filter: invert(1);
   --bg: #0c0c0d;
   --side: #111113;
   --surface: #141416;

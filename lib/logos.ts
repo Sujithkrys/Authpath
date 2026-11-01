@@ -8,6 +8,11 @@
  */
 const LOGOS = new Set(["github", "google", "hubspot", "linear", "notion", "salesforce", "slack", "stripe", "zoom"]);
 
+/** Single-colour dark marks that vanish on a dark card, so they're shown light there. */
+const DARK_MARKS = new Set(["github", "linear"]);
+
+export const isDarkMark = (src: string | null): boolean => Boolean(src && [...DARK_MARKS].some((id) => src === `/logos/${id}.svg`));
+
 export function getLogoSrc(id: string): string | null {
   return LOGOS.has(id) ? `/logos/${id}.svg` : null;
 }

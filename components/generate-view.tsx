@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, RotateCcw, Sparkles } from "lucide-react";
+import { Check, FileCheck2, RotateCcw, ShieldCheck, Sparkles, Timer } from "lucide-react";
 import Link from "next/link";
 import type { FormEvent, ReactNode } from "react";
 
@@ -10,7 +10,14 @@ import { SearchField, buttonPrimary, describeClaimCheck, heroTitle } from "@/com
 import { STAGES } from "@/lib/agent/events";
 import { formatGeneratedAt } from "@/lib/format";
 
-const EXAMPLES = ["linear.app", "Calendly", "Xero"];
+/** Already generated on the live site, so a demo click opens instantly. */
+const EXAMPLES = ["Linear", "Calendly", "Composio"];
+
+const HIGHLIGHTS = [
+  { icon: FileCheck2, text: "Official docs only" },
+  { icon: ShieldCheck, text: "Every claim checked" },
+  { icon: Timer, text: "Review and wait times" },
+];
 
 const STEP_ICON_STYLE: Record<TraceStage["status"], string> = {
   done: "border-accent bg-accent text-on-accent",
@@ -240,12 +247,9 @@ export function GenerateView() {
     <section aria-labelledby="generate-heading">
       <div className="mx-auto mt-9 max-w-[720px] text-center">
         <h1 id="generate-heading" className={`${heroTitle} mb-4 text-[clamp(30px,3.6vw,40px)] leading-[1.12]`}>
-          Get a setup guide for any app, in about a minute.
+          Get an OAuth setup guide for any app
         </h1>
-        <p className="mx-auto mb-7 max-w-[520px] text-[16px] text-text-2">
-          An agent reads the provider&apos;s developer docs, works out what approval involves, and tells you what it
-          couldn&apos;t confirm.
-        </p>
+        <p className="mx-auto mb-7 max-w-[520px] text-[16px] text-text-2">Built from the official docs in about a minute.</p>
 
         <form onSubmit={submit} className="mx-auto flex max-w-[600px] gap-2.5 max-sm:flex-col">
           <SearchField
@@ -278,6 +282,17 @@ export function GenerateView() {
             </button>
           ))}
         </div>
+
+        {!trace && (
+          <ul className="mx-auto mt-12 grid max-w-[600px] grid-cols-3 gap-3 max-sm:grid-cols-1">
+            {HIGHLIGHTS.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-center justify-center gap-2 rounded-sm border border-border bg-surface px-3 py-3 text-[13.5px] text-text-2">
+                <Icon size={16} strokeWidth={1.8} className="flex-none text-accent" aria-hidden="true" />
+                {text}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {trace && (

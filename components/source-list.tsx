@@ -1,5 +1,6 @@
 import { ChevronRight, FileText } from "lucide-react";
 
+import { pageTitle } from "@/lib/text";
 import type { GuideSource } from "@/types/guide";
 
 /**
@@ -19,7 +20,7 @@ function SourceItem({ source: [title, url] }: { source: GuideSource }) {
       >
         <FileText size={15} strokeWidth={1.8} className="mt-0.5" aria-hidden="true" />
         <span className="min-w-0 flex-1">
-          <span className="block [overflow-wrap:anywhere]">{title}</span>
+          <span className="block [overflow-wrap:anywhere]">{pageTitle(title)}</span>
           <span className="block truncate font-mono text-[11.5px] text-text-3">{url}</span>
         </span>
       </a>

@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
 import type { ComponentProps } from "react";
 
+import { isDarkMark } from "@/lib/logos";
 import type { ClaimCheck, Difficulty, GuideWithLogo } from "@/types/guide";
 
 export const buttonBase =
@@ -61,7 +62,14 @@ export function AppLogo({ guide, size = "md", framed = true }: AppLogoProps) {
   if (!framed) {
     return guide.logoSrc ? (
       // eslint-disable-next-line @next/next/no-img-element -- next/image refuses SVG by default
-      <img src={guide.logoSrc} alt="" aria-hidden="true" width={36} height={36} className="size-9 flex-none object-contain" />
+      <img
+        src={guide.logoSrc}
+        alt=""
+        aria-hidden="true"
+        width={36}
+        height={36}
+        className={`size-9 flex-none object-contain ${isDarkMark(guide.logoSrc) ? "[filter:var(--logo-dark-filter)]" : ""}`}
+      />
     ) : (
       <span
         aria-hidden="true"
