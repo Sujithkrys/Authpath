@@ -66,6 +66,25 @@ const HTML_ENTITIES: Record<string, string> = {
   mdash: "—",
 };
 
+/** Below this, a page's <main> is probably a shell, so more of the page is used. */
+const MIN_MAIN_CHARS = 400;
+
+/**
+ * A docs page's readable content: its <main> or <article>, without menus,
+ * headers and footers. Docs sites open with long sidebar menus whose link text
+ * would otherwise crowd out the page itself. Falls back to the whole page.
+ */
+export function pageContentText(html: string): string {
+  const stripped = html.replace(/<(nav|header|footer|aside)\b[\s\S]*?<\/\1>/gi, " ");
+  for (const tag of ["main", "article"]) {
+    const inner = stripped.match(new RegExp(`<${tag}\\b[^>]*>([\\s\\S]*)</${tag}>`, "i"))?.[1];
+    const text = inner ? htmlToText(inner).trim() : "";
+    if (text.length >= MIN_MAIN_CHARS) return text;
+  }
+  const whole = htmlToText(stripped).trim();
+  return whole.length >= MIN_MAIN_CHARS ? whole : htmlToText(html).trim();
+}
+
 /** Reduces a page to its readable text, for checking quotes and claims against it. */
 export function htmlToText(html: string): string {
   return html
@@ -134,11 +153,15 @@ export function rankLinks(links: string[], topics: string[], isAllowed: (url: st
 
   for (const url of links) {
     if (!isAllowed(url)) continue;
-    const words = new URL(url).pathname.toLowerCase().split(/[/\-_.]+/).filter(Boolean);
-    const score = topics.reduce(
-      (total, topic, index) => total + (words.some((word) => word.startsWith(topic)) ? topics.length - index : 0),
-      0,
-    );
+    // A page's own slug says what it covers; parent folders only say where it sits.
+    const segments = new URL(url).pathname.toLowerCase().split("/").filter(Boolean);
+    const own = (segments.at(-1) ?? "").split(/[-_.]+/).filter(Boolean);
+    const parents = segments.slice(0, -1).join("-").split(/[-_.]+/).filter(Boolean);
+    const score = topics.reduce((total, topic, index) => {
+      const weight = topics.length - index;
+      if (own.some((word) => word.startsWith(topic))) return total + weight;
+      return parents.some((word) => word.startsWith(topic)) ? total + weight / 3 : total;
+    }, 0);
     if (score > 0) scored.set(urlKey(url), { url, score });
   }
 

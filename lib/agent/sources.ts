@@ -62,7 +62,7 @@ const DOCS_LABELS = new Set([
 
 /** Paths that are marketing, news or reference material, never setup docs. */
 const BLOCKED_PATH =
-  /(^|\/)(blog|blogs|content|use-?cases?|pricing|plans|customers?|customer-stories|case-stud(y|ies)|news|newsroom|press|webinars?|events?|podcasts?|videos?|glossary|changelog|release-notes|careers|jobs|legal|privacy|terms|tos|cookies?|about|company|compare|vs|alternatives?|templates|community|forum|forums|status|now|stories|ebooks?|whitepapers?|resources|academy|login|signin|sign-in|signup|sign-up|register-account|demo|contact-sales|affiliates?|brand|tag|tags|author|authors|category|categories)(\/|$|\.)/i;
+  /(^|\/)(blog|blogs|content|use-?cases?|pricing|plans|customers?|customer-stories|case-stud(y|ies)|news|newsroom|press|webinars?|events?|podcasts?|videos?|glossary|changelog|release-notes|careers|jobs|legal|privacy|terms|tos|cookies?|about|company|compare|vs|alternatives?|templates|community|forum|forums|status|now|stories|ebooks?|whitepapers?|resources|academy|login|signin|sign-in|signup|sign-up|register-account|demo|contact-sales|affiliates?|brand|tag|tags|author|authors|category|categories|pulls?|issues|commits?|blob|tree|discussions|gists?|sponsors|legacy|deprecated|archived?)(\/|$|\.)/i;
 
 /** Paths that are marketing on a company's main site, but can be real docs on a docs subdomain. */
 const MARKETING_ON_MAIN_SITE = /(^|\/)(integrations?|solutions?|features?|products?|apps|partners?|marketplace|industries|tools?)(\/|$)/i;
@@ -90,6 +90,45 @@ export function isOfficialHost(host: string, domains: string[]): boolean {
 }
 
 const isDocsHost = (host: string) => host.split(".").some((label) => DOCS_LABELS.has(label));
+
+/** Locale path segments for translated copies of docs. English copies are kept. */
+const OTHER_LOCALES = new Set(
+  "es fr de ja ko pt pt-br pt-pt zh zh-cn zh-tw zh-hans zh-hant ru it nl pl tr id vi th sv da fi nb no cs he ar uk hu ro el es-419 es-es fr-fr de-de ja-jp ko-kr".split(" "),
+);
+
+/** True for a translated copy of a page, e.g. docs.github.com/es/..., which would only repeat the English one. */
+export function isLocaleVariant(url: string): boolean {
+  try {
+    // Anywhere in the path (docs.slack.dev/tools/bolt-js/ja-jp/..., docs.github.com/es/...),
+    // or a language parameter that isn't English (cloud.google.com/...?hl=fr).
+    const parsed = new URL(url);
+    const lang = ["hl", "lang", "locale", "language"].map((name) => parsed.searchParams.get(name)).find(Boolean);
+    if (lang && !/^en([-_]|$)/i.test(lang)) return true;
+    return parsed.pathname
+      .split("/")
+      .filter(Boolean)
+      .some((segment) => OTHER_LOCALES.has(segment.toLowerCase()));
+  } catch {
+    return false;
+  }
+}
+
+/** First path segments that mark docs on a company's main site, e.g. linear.app/developers. */
+const DOCS_SEGMENT =
+  /^(docs?|documentation|developers?|dev|api|apis|help|support|reference|learn|platform|kb|hc|authentication|oauth2?|auth)$/i;
+
+/**
+ * Whether a link found on a page is worth reading. On a docs subdomain any page
+ * is; on the main site only docs-like sections are, because main sites also
+ * host user content (github.com/someone/repo) and marketing.
+ */
+export function isDiscoverable(url: string): boolean {
+  const host = hostOf(url);
+  if (!host) return false;
+  if (isDocsHost(host)) return true;
+  const first = new URL(url).pathname.split("/").filter(Boolean)[0] ?? "";
+  return first === "" || DOCS_SEGMENT.test(first);
+}
 
 /**
  * The single test for whether a page may be read or cited: https, on an
@@ -130,4 +169,21 @@ const OAUTH_TERMS: RegExp[] = [
 /** True when a page's text mentions OAuth or app-registration terms. Empty text never passes. */
 export function mentionsOAuthTerms(text: string): boolean {
   return OAUTH_TERMS.some((term) => term.test(text));
+}
+
+/** Words that show a page is about reviewing, certifying or listing apps. */
+const APPROVAL_TERMS: RegExp[] = [
+  /\b(app|apps|application|applications|integration|integrations)\b.{0,40}\b(review|reviews|reviewed|verification|verified|certif(y|ied|ication)|listing|listed|submission|submit|assessment|approval|approved)\b/i,
+  /\b(review|verification|certification|listing|submission|assessment|approval)\b.{0,40}\b(app|apps|application|applications|integration|integrations)\b/i,
+  /\b(marketplace|app store|app directory|app partners?|developer partners?)\b/i,
+  /\bsecurity (review|assessment|requirements?)\b/i,
+];
+
+/**
+ * The test for pages behind review, timeline, test-limit and rejection answers,
+ * gate claims and blockers: OAuth terms, or app-review terms, since a provider's
+ * security-assessment page needn't mention client IDs. Empty text never passes.
+ */
+export function mentionsApprovalTerms(text: string): boolean {
+  return mentionsOAuthTerms(text) || APPROVAL_TERMS.some((term) => term.test(text));
 }

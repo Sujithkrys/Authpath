@@ -1,8 +1,10 @@
 import { ApiError, GoogleGenAI, UrlRetrievalStatus, type GenerateContentConfig, type GenerateContentResponse } from "@google/genai";
 import { z } from "zod";
 
-import { htmlToText, linksIn, rankLinks } from "@/lib/agent/evidence";
+import { htmlToText, linksIn, pageContentText, rankLinks } from "@/lib/agent/evidence";
+import { isDiscoverable, isLocaleVariant } from "@/lib/agent/sources";
 import { hostOf, isUnder, urlKey } from "@/lib/agent/urls";
+import { excerpt } from "@/lib/agent/verify";
 import type { RunLedger } from "@/lib/llm/ledger";
 import { AgentError, type LlmProvider, type ResearchRequest, type WriteRequest } from "@/lib/llm/types";
 
@@ -14,13 +16,13 @@ import { AgentError, type LlmProvider, type ResearchRequest, type WriteRequest }
  * https://ai.google.dev/gemini-api/docs/pricing
  */
 const DEFAULT_MODEL = "gemini-3.5-flash-lite";
-const BACKUP_MODEL = "gemini-3.8-flash";
+const BACKUP_MODEL = "gemini-3.5-flash";
 const searchEnabled = () => process.env.GEMINI_SEARCH === "true";
 
 const NO_SEARCH_NOTE = `Web search isn't available in this run. Work from what you know about this provider, and name the official pages you're confident exist. Those URLs get checked by loading them, so a guess that doesn't load is simply discarded. If you don't recognise the app, say not_found.`;
 
 const CandidatePages = z.object({
-  urls: z.array(z.string()).describe("Up to 3 official URLs most likely to cover this."),
+  urls: z.array(z.string()).describe("Up to 5 official URLs most likely to cover this, deep pages rather than home pages."),
 });
 
 const MAX_OUTPUT_TOKENS = 16_000;
@@ -65,6 +67,24 @@ function plainError(error: unknown): unknown {
   return new AgentError("Something went wrong while researching this app.", true, detail);
 }
 
+const MAX_RETRY_WAIT_MS = 60_000;
+
+/** The wait a per-minute 429 asks for, if it's short. Per-day limits never qualify. */
+function shortRetryDelay(error: unknown): number | null {
+  if (!(error instanceof ApiError) || error.status !== 429 || /per.?day|daily/i.test(error.message)) return null;
+  // "limit: 0" means this model has no free quota at all, so waiting won't help.
+  if (/limit:\s*0\b/.test(error.message)) return null;
+  const seconds = Number(error.message.match(/"retryDelay":\s*"(\d+(?:\.\d+)?)s"/)?.[1] ?? 10);
+  const ms = Math.ceil(seconds * 1000) + 500;
+  return ms <= MAX_RETRY_WAIT_MS ? ms : null;
+}
+
+const pause = (ms: number, signal: AbortSignal) =>
+  new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(resolve, ms);
+    signal.addEventListener("abort", () => (clearTimeout(timer), reject(signal.reason)), { once: true });
+  });
+
 async function generate(
   contents: string,
   config: GenerateContentConfig,
@@ -73,8 +93,10 @@ async function generate(
 ): Promise<GenerateContentResponse> {
   const tried = models();
   const failures: string[] = [];
+  let waited = false;
 
-  for (const [index, model] of tried.entries()) {
+  for (let index = 0; index < tried.length; index++) {
+    const model = tried[index];
     try {
       const response = await client().models.generateContent({
         model,
@@ -101,6 +123,16 @@ async function generate(
       const stalled = !(error instanceof ApiError) && error instanceof Error && /abort|timeout/i.test(`${error.name} ${error.message}`);
       failures.push(`${model}: ${stalled ? `no reply in ${CALL_TIMEOUT_MS / 1000}s` : String(error).slice(0, 220)}`);
       console.warn("gemini call failed", failures.at(-1));
+
+      // A per-minute limit says how long to wait. Waiting once, briefly, beats
+      // failing the whole run or moving to a slower model.
+      const delay = shortRetryDelay(error);
+      if (delay !== null && !waited) {
+        waited = true;
+        await pause(delay, signal);
+        index--;
+        continue;
+      }
 
       if (index < tried.length - 1 && (stalled || worthTryingAnother(error))) continue;
 
@@ -259,7 +291,7 @@ async function researchWithoutSearch<T extends z.ZodType>(request: ResearchReque
 async function download(url: string, signal: AbortSignal): Promise<{ text: string; finalUrl: string }> {
   try {
     const response = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; Authpath docs checker)" },
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; Authpath docs checker)", "Accept-Language": "en-US,en;q=0.9" },
       signal: AbortSignal.any([signal, AbortSignal.timeout(PAGE_FETCH_TIMEOUT_MS)]),
     });
     if (!response.ok) return { text: "", finalUrl: url };
@@ -288,20 +320,69 @@ async function discoverPages(
   const pages = await Promise.all([...urls, ...sitemaps].map((url) => download(url, signal)));
   const onDomain = (url: string) => {
     const host = hostOf(url);
-    return host !== null && domains.some((domain) => isUnder(host, domain)) && isAllowed(url);
+    return host !== null && domains.some((domain) => isUnder(host, domain)) && isAllowed(url) && isDiscoverable(url);
   };
   return rankLinks(pages.flatMap(({ text, finalUrl }) => linksIn(text, finalUrl)), topics, onDomain, limit);
 }
 
+/** Below this many readable pages, URL context reads instead. */
+const MIN_PAGES_WITH_TEXT = 2;
+/** Text shorter than this is a shell page that needs JavaScript, not docs. */
+const MIN_PAGE_CHARS = 400;
+
+/**
+ * Downloads pages and keeps those with real text that land on an accepted
+ * official source, following redirects (api.slack.com -> docs.slack.dev).
+ */
+async function readOurselves(urls: string[], ledger: RunLedger, signal: AbortSignal) {
+  const pages = await Promise.all(
+    urls.map(async (url) => {
+      const { text: html, finalUrl } = await download(url, signal);
+      if (!html || !ledger.accepts(finalUrl)) return null;
+      const text = pageContentText(html);
+      if (text.length < MIN_PAGE_CHARS) return null;
+      const title = htmlToText(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "").trim().slice(0, 140);
+      return { url: finalUrl, title, text };
+    }),
+  );
+  const unique = new Map<string, { url: string; title: string; text: string }>();
+  for (const page of pages) if (page && !unique.has(urlKey(page.url))) unique.set(urlKey(page.url), page);
+  return [...unique.values()];
+}
+
 async function readPages<T extends z.ZodType>(request: ResearchRequest<T>, found: string): Promise<z.infer<T>> {
   const { system, user, schema, read, ledger, onDomains, signal } = request;
-  const { urls, allowedDomains, topics, maxUses } = read!;
+  const { urls, allowedDomains, topics, maxUses, pinned = [] } = read!;
   // Pages named up front come first; discovery fills the remaining reads.
-  const given = [...new Set(urls.filter((url) => ledger.accepts(url)))];
-  const deep = await discoverPages(urls, allowedDomains, topics, maxUses, (url) => ledger.accepts(url), signal);
-  const pages = [...new Set([...given.slice(0, Math.ceil(maxUses / 2)), ...deep, ...given])].slice(0, maxUses);
+  const allowed = (url: string) => ledger.accepts(url) && !isLocaleVariant(url);
+  const given = [...new Set(urls.filter(allowed))];
+  const deep = await discoverPages(urls, allowedDomains, topics, maxUses * 2, allowed, signal);
+  // Every candidate competes on the stage's topics, so a home page read earlier
+  // can't take a slot from the page that covers this stage. Unranked pages that
+  // were named up front only fill whatever is left.
+  const pages = [...new Set([...pinned.filter(allowed), ...rankLinks([...given, ...deep], topics, allowed, maxUses), ...given])].slice(0, maxUses);
 
   const note = found ? `\n\nA search found this:\n${found}` : "";
+
+  // Read the pages ourselves first. The model then answers from exactly the text
+  // that the quote and claim checks use, instead of a tool's unseen copy of it.
+  const texts = await readOurselves(pages, ledger, signal);
+  if (texts.length >= MIN_PAGES_WITH_TEXT) {
+    const domains = present(texts.map((page) => ledger.addFetched(page)));
+    ledger.addUsage({ fetches: texts.length });
+    if (domains.length > 0) onDomains?.(domains);
+    const body = texts.map((page) => `<page url="${page.url}">\n${excerpt(page.text, [topics.join(" ")])}\n</page>`).join("\n\n");
+    return structured({
+      system,
+      user: `${user}${note}\n\nThe provider's official pages are below, already read for you. Use only them. Cite each answer with its page's url exactly as given, and copy quotes word for word from the page text.\n\n${body}`,
+      schema,
+      ledger,
+      signal,
+    });
+  }
+
+  // Too few pages came back with readable text (often JavaScript-only docs), so
+  // fall back to URL context, which can render some of them.
   const prompt = `${user}${note}\n\nRead these pages:\n${pages.join("\n")}${askForJson(schema)}`;
   const response = await generate(prompt, { systemInstruction: system, tools: [{ urlContext: {} }] }, ledger, signal);
 
@@ -398,7 +479,7 @@ export const geminiProvider: LlmProvider = {
 
     const title = text.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
     if (title && !page.title) page.title = htmlToText(title).trim().slice(0, 140);
-    page.text = htmlToText(text);
+    page.text = pageContentText(text);
     return page.text;
   },
 };

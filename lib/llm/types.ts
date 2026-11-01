@@ -32,6 +32,8 @@ export interface ResearchRequest<T extends z.ZodType> extends StageRequest<T> {
     urls: string[];
     /** Words in a URL that suggest a page covers this stage, most telling first. */
     topics: string[];
+    /** Pages that must be read whatever the topics, e.g. the registration page for the approval stage. */
+    pinned?: string[];
     /** Without search, whether to ask the model for more pages first. Defaults to true. */
     propose?: boolean;
   };

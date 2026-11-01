@@ -193,6 +193,22 @@ export const GATE_MEANING: Record<Gate, string> = {
   unknown: "the approval process couldn't be confirmed in the official docs",
 };
 
+/**
+ * What the checker holds the gate's quoted page against: only what such a quote
+ * can show. "Only for a listing" is the rule's reading once no stricter gate was
+ * found, so the claim checked is that the listing review exists.
+ */
+export const GATE_CLAIM: Record<Gate, string> = {
+  none: "developers can create and register an app themselves from their own account",
+  listing_only: "apps are reviewed before they can be listed in a public directory or marketplace",
+  light_verification: "a business or brand verification is needed before real users can connect",
+  mandatory_review: "a review is required before real users can connect",
+  security_assessment: "a security assessment is required before real users can connect",
+  partner_program: "joining a partner program is required before real users can connect",
+  paid_plan: "a paid plan is required before real users can connect",
+  unknown: "the approval process is not documented",
+};
+
 /** Short "Review needed" label for each gate. */
 export const GATE_REVIEW_LABEL: Record<Gate, string> = {
   none: "No",
@@ -207,6 +223,50 @@ export const GATE_REVIEW_LABEL: Record<Gate, string> = {
 
 const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
+/** Gates that make an app harder than "listing only". Only ever taken from a confirmed claim. */
+const STRICT_GATES = new Set<Gate>(["light_verification", "mandatory_review", "security_assessment", "partner_program", "paid_plan"]);
+
+/** A review answer about getting listed rather than getting access. */
+const LISTING_TERMS = /\b(marketplace|app store|app directory|directory|listing|listed|publish(ed|ing)? (to|in|on) )/i;
+
+export interface GateEvidence {
+  /** The gate the approval stage proposed. */
+  proposed: Gate;
+  /** Whether the checker confirmed the proposed gate against its page. */
+  proposedConfirmed: boolean;
+  proposedDetail: string;
+  /** The review and registration checklist answers, after the checker. */
+  review?: { status: string; answer: string };
+  registration?: { status: string };
+  /** Whether the research proposed any review answer at all, before the checker. */
+  reviewProposed: boolean;
+}
+
+/**
+ * Decides the gate from checked evidence rather than the model's pick, which
+ * varies run to run:
+ * - a strict gate stands only if the checker confirmed it;
+ * - if the research found any review at all, a confirmed answer about a
+ *   marketplace or directory listing means listing only, and anything else is
+ *   unknown. A review the checker couldn't confirm never turns into "none";
+ * - an unconfirmed strict gate is unknown;
+ * - only with no review found at all does confirmed self-serve registration mean none.
+ */
+export function decideGate(evidence: GateEvidence): { gate: Gate; detail: string } {
+  const { proposed, proposedConfirmed, proposedDetail, review, registration, reviewProposed } = evidence;
+  if (STRICT_GATES.has(proposed) && proposedConfirmed) return { gate: proposed, detail: proposedDetail };
+  if (reviewProposed) {
+    return review?.status === "found" && LISTING_TERMS.test(review.answer)
+      ? { gate: "listing_only", detail: "review is only needed to be listed in its marketplace or app directory" }
+      : { gate: "unknown", detail: "" };
+  }
+  if (STRICT_GATES.has(proposed)) return { gate: "unknown", detail: "" };
+  if (registration?.status === "found") {
+    return { gate: "none", detail: "you register the app yourself, and the review pages read describe no review before real users connect" };
+  }
+  return { gate: "unknown", detail: "" };
+}
+
 /**
  * The rating comes from the gate alone, and only from a confirmed one: the gate's
  * quote must be on a page read this run and the checker must agree. Otherwise
@@ -218,5 +278,5 @@ export function difficultyFor(gate: Gate, confirmed: boolean, detail: string): {
   const specific = detail.trim().replace(/\.$/, "");
   const reason =
     effective !== "unknown" && specific && specific.length <= 110 ? specific : GATE_MEANING[effective];
-  return { diff, reason: `${capitalize(diff)}: ${reason.charAt(0).toLowerCase()}${reason.slice(1)}` };
+  return { diff, reason: `${capitalize(diff)}: ${reason}` };
 }
