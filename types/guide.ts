@@ -82,7 +82,7 @@ export interface ClaimCheck {
 }
 
 /** Bumped when generated results change shape or how they're researched. Older ones aren't served from the cache. */
-export const GENERATED_VERSION = 4;
+export const GENERATED_VERSION = 5;
 
 export interface Guide {
   /** Also the URL slug: /guides/[id]. */
@@ -95,6 +95,8 @@ export interface Guide {
   diff: Difficulty;
   /** One line saying why, e.g. "Hard: Gmail scopes require a security assessment". Generated guides only. */
   diffReason?: string;
+  /** False when the rating is a best estimate: its quote is real, but the checker only partly agreed. */
+  diffConfirmed?: boolean;
   tested: boolean;
   /** True for the agent's output. These stay out of the library. */
   generated?: boolean;

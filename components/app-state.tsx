@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 
-import { STAGES, type AppOption, type GenerateEvent, type StageId } from "@/lib/agent/events";
+import { STAGES, type AppOption, type GenerateEvent, type StageId, type GeneratedLink } from "@/lib/agent/events";
 import type { AppCard, ClaimCheck, Difficulty, WaitKey } from "@/types/guide";
 
 export type DifficultyFilter = "all" | Difficulty;
@@ -21,6 +21,7 @@ export type TraceOutcome =
   | { kind: "card"; slug: string; card: AppCard }
   | { kind: "ambiguous"; options: AppOption[] }
   | { kind: "not_found"; message: string }
+  | { kind: "paused"; resumesAt: string; generated: GeneratedLink[] }
   | { kind: "error"; message: string; retryable: boolean };
 
 export interface TraceRun {
@@ -80,6 +81,8 @@ function applyEvent(run: TraceRun, event: GenerateEvent): TraceRun {
       return { ...run, outcome: { kind: "ambiguous", options: event.options } };
     case "not_found":
       return { ...run, outcome: { kind: "not_found", message: event.message } };
+    case "paused":
+      return { ...run, outcome: { kind: "paused", resumesAt: event.resumesAt, generated: event.generated } };
     case "error":
       return { ...run, outcome: { kind: "error", message: event.message, retryable: event.retryable } };
     case "redirect":

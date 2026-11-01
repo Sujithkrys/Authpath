@@ -4,7 +4,7 @@
   "init": "SL",
   "color": "#4A154B",
   "diff": "moderate",
-  "tested": true,
+  "tested": false,
   "setup": "~20 min",
   "wait": "Days–weeks",
   "review": "Marketplace only",
@@ -15,13 +15,13 @@
       "t": "Create the app",
       "d": "api.slack.com/apps → Create New App → From scratch, pick a dev workspace.",
       "o": "you",
-      "e": "verified"
+      "e": "docs"
     },
     {
       "t": "Add redirect URL and scopes",
       "d": "OAuth & Permissions → add redirect URL and only the bot scopes you use.",
       "o": "agent",
-      "e": "verified"
+      "e": "docs"
     },
     {
       "t": "Turn on public distribution",

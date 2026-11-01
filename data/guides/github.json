@@ -4,7 +4,7 @@
   "init": "GH",
   "color": "#181717",
   "diff": "easy",
-  "tested": true,
+  "tested": false,
   "setup": "~10 min",
   "wait": "None",
   "review": "No",
@@ -21,19 +21,19 @@
       "t": "Register the app",
       "d": "Settings → Developer settings → OAuth Apps → New OAuth App.",
       "o": "you",
-      "e": "verified"
+      "e": "docs"
     },
     {
       "t": "Set the callback URL",
       "d": "Paste your redirect URI, e.g. <code>https://yourapp.com/api/auth/callback/github</code>",
       "o": "agent",
-      "e": "verified"
+      "e": "docs"
     },
     {
       "t": "Generate a client secret",
       "d": "Copy it once — GitHub won't show it again. Store it as an env var.",
       "o": "you",
-      "e": "verified"
+      "e": "docs"
     }
   ],
   "blockers": [

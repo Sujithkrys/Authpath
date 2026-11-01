@@ -1,0 +1,360 @@
+{
+  "github": {
+    "items": {
+      "register_url": {
+        "answer": "OAuth App: profile picture > Settings > Developer settings > OAuth apps > New OAuth App (button reads 'Register a new application' if you have no apps yet). Docs link the registration page directly as https://github.com/settings/applications/new. You can register under a personal account or any organization you administer. Limit: a user or organization can own up to 100 OAuth apps. GitHub App alternative: Settings > Developer settings > GitHub Apps > New GitHub App (up to 100 GitHub Apps per user/org).",
+        "sources": [
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps",
+          "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app"
+        ],
+        "quote": "\"The client ID you received from GitHub when you [registered](https://github.com/settings/applications/new).\" / \"A user or organization can own up to 100 OAuth apps.\""
+      },
+      "app_types": {
+        "answer": "Two types: OAuth apps and GitHub Apps. Both use OAuth 2.0. OAuth apps act only on behalf of a user and use broad scopes. GitHub Apps can act as a user or independently, use fine-grained permissions with per-repository control, and use short-lived tokens. GitHub says GitHub Apps are generally preferred. OAuth apps are still needed for enterprise-level resources. GitHub Apps can be private ('Only on this account') or public ('Any account').",
+        "sources": [
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/differences-between-github-apps-and-oauth-apps",
+          "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app",
+          "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/making-a-github-app-public-or-private"
+        ],
+        "quote": "\"OAuth apps can only act on behalf of a user while GitHub Apps can either act on behalf of a user or independently of a user.\" / \"In general, GitHub Apps are preferred over OAuth apps.\""
+      },
+      "required_fields": {
+        "answer": "OAuth App form: Application name, Homepage URL ('full URL to your app's website'), Authorization callback URL. Application description is optional. Other options: 'Enable Device Flow' (optional checkbox) and 'Expire user access tokens' (on by default). The docs never label fields 'required', and they mark only the description optional. No logo, privacy policy, support email or domain verification is needed. Warning: only use information you consider public. GitHub App form: name (max 34 characters, unique across GitHub) and Homepage URL. Callback URL is optional for a GitHub App. A webhook URL is needed only if webhooks are 'Active'.",
+        "sources": [
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+          "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app"
+        ],
+        "quote": "\"Optionally, in \\\"Application description\\\", type a description of your app that users will see.\" / \"Only use information in your OAuth app that you consider public. Avoid using sensitive data, such as internal URLs\""
+      },
+      "redirect_uris": {
+        "answer": "Up to 10 callback URLs per app. redirect_uri is optional; if omitted, GitHub uses the first configured callback URL. Wildcard matching is a setting on each callback URL. When it is disabled, the redirect URL must exactly match. When enabled, host (excluding subdomains) and port must match, and the path must be the callback path or a subdirectory of it, so any subdomain or subdirectory matches. Apps that had a single callback URL before August 3, 2026 have wildcard matching enabled, and GitHub recommends disabling it if not needed. Loopback: a loopback redirect_uri's port does not need to match the registered callback's port (e.g. http://127.0.0.1:1234/path for callback http://127.0.0.1/path). GitHub cites the RFC recommendation to use 127.0.0.1 or ::1 instead of 'localhost'. An explicit HTTPS requirement is not stated in official docs; the loopback example uses http.",
+        "sources": [
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps",
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/best-practices-for-creating-an-oauth-app"
+        ],
+        "quote": "\"When wildcard matching is disabled, the redirect URL must exactly match the callback URL.\" / \"The `redirect_uri` does not need to match the port specified in the callback URL for the app.\""
+      },
+      "credentials": {
+        "answer": "Registration issues a Client ID. A client secret is generated with 'Generate a new client secret' on the app settings page, and the token exchange requires it, except for device flow. PKCE is supported and strongly recommended: code_challenge is a 43-character SHA-256 hash and code_challenge_method must be S256 ('plain' is not supported). Public clients (native, CLI, SPA) cannot keep the secret confidential and should use PKCE. Expiring tokens (on by default for new apps): the access token lasts 8 hours and the refresh token 6 months. Whether the secret is shown only once is not stated in official docs.",
+        "sources": [
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps",
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/best-practices-for-creating-an-oauth-app",
+          "https://docs.github.com/en/apps/creating-github-apps/writing-code-for-a-github-app/building-a-login-with-github-button-with-a-github-app",
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
+        ],
+        "quote": "\"Must be `S256` - the `plain` code challenge method is not supported.\" / \"Client secrets are required to generate access tokens for your app, unless your app uses the device flow.\""
+      },
+      "scopes": {
+        "answer": "OAuth apps request scopes in the space-delimited 'scope' parameter. With no scope, a token gets read-only access to public information. Scopes only limit access; they never grant more than the user already has. Users can edit (reduce) the scopes they grant. Tokens store a normalized scope list, and the X-OAuth-Scopes header shows what a token has. GitHub has no 'sensitive' or 'restricted' scope classes and no scope review. Broad or high-impact scopes include repo (full private repo access), admin:org, delete_repo, workflow and admin:* scopes. GitHub Apps use fine-grained permissions instead of scopes.",
+        "sources": [
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps",
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/differences-between-github-apps-and-oauth-apps"
+        ],
+        "quote": "\"Scopes limit access for OAuth tokens. They do not grant any additional permission beyond that which the user already has.\""
+      },
+      "review": {
+        "answer": "Registering an OAuth app or GitHub App needs no review or approval; any GitHub user can authorize it right away. Review exists only for (a) a GitHub Marketplace listing, where you 'request a review by an onboarding expert', and (b) publisher verification, needed for paid plans or a marketplace badge, where 'GitHub will review your details'. Separately, an organization can enable OAuth app access restrictions (on by default for new organizations). Then members must request owner approval before an OAuth app can reach that organization's private resources. This is an org-side approval, not a GitHub review.",
+        "sources": [
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+          "https://docs.github.com/en/apps/github-marketplace/listing-an-app-on-github-marketplace/submitting-your-listing-for-publication",
+          "https://docs.github.com/en/apps/github-marketplace/github-marketplace-overview/applying-for-publisher-verification-for-your-organization",
+          "https://docs.github.com/en/organizations/managing-oauth-access-to-your-organizations-data/about-oauth-app-access-restrictions"
+        ],
+        "quote": "\"To finish your app listing submission, you can request a review by an onboarding expert.\" / \"When you create a new organization, OAuth app access restrictions are enabled by default.\""
+      },
+      "review_timeline": {
+        "answer": "Not published. The Marketplace submission doc says only that an onboarding expert will reach out. The publisher verification doc says GitHub will let you know once verification is complete. Neither gives a timeline.",
+        "sources": [
+          "https://docs.github.com/en/apps/github-marketplace/listing-an-app-on-github-marketplace/submitting-your-listing-for-publication",
+          "https://docs.github.com/en/apps/github-marketplace/github-marketplace-overview/applying-for-publisher-verification-for-your-organization",
+          "https://docs.github.com/en/apps/github-marketplace/github-marketplace-overview/about-github-marketplace-for-apps"
+        ],
+        "quote": "\"An onboarding expert will reach out to you with additional information.\""
+      },
+      "test_limits": {
+        "answer": "There is no dev or test mode and no cap on users before review. Documented limits: 100 OAuth apps per owner; 10 callback URLs; 10 tokens per user/application/scope combination, created at most 10 per hour; device flow codes valid 15 minutes, with 50 submissions per hour per application. For a Marketplace paid listing, OAuth apps 'should have a minimum of 200 users' and GitHub Apps 'a minimum of 100 installations'.",
+        "sources": [
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps",
+          "https://docs.github.com/en/apps/github-marketplace/creating-apps-for-github-marketplace/requirements-for-listing-an-app"
+        ],
+        "quote": "\"There is a limit of ten tokens that are issued per user/application/scope combination, and a rate limit of ten tokens created per hour.\""
+      },
+      "rejection_reasons": {
+        "answer": "Not stated in official docs. GitHub lists no rejection reasons. The closest material is the Marketplace listing requirements: an org owner must submit; valid contact info, description, pricing plan, privacy policy link and support link; must not persuade users away from GitHub; must integrate 'beyond authentication'; must not be public preview or invite-only; webhook for plan changes; logo, feature card and screenshots; well-written descriptions. Paid apps also need a verified publisher org, purchase-event handling, and monthly and annual billing.",
+        "sources": [
+          "https://docs.github.com/en/apps/github-marketplace/creating-apps-for-github-marketplace/requirements-for-listing-an-app"
+        ],
+        "quote": "\"Apps must provide value to customers and integrate with the platform in some way beyond authentication.\""
+      }
+    },
+    "wrong_claims_to_watch": [
+      "That a GitHub OAuth App (or GitHub App) must be reviewed or approved by GitHub before real users can authorize it. False: review applies only to Marketplace listing and publisher verification.",
+      "That a Marketplace listing is required to distribute or use the app. Not true; Marketplace is optional.",
+      "That only one callback URL is allowed, or that the number is unlimited. The documented limit is 10.",
+      "That the redirect URI always matches by prefix or subdirectory, or that it always must match exactly. It depends on the per-callback wildcard-matching setting. Apps that had a single callback URL before August 3, 2026 have wildcard matching on.",
+      "That 'localhost' is the recommended loopback host. GitHub cites the RFC advice to use 127.0.0.1 or ::1, and a loopback port need not match the registered port.",
+      "That GitHub doesn't support PKCE, or that it accepts code_challenge_method=plain. It supports S256 only.",
+      "That OAuth app tokens never expire. 'Expire user access tokens' is on by default for new apps: 8-hour access token, 6-month refresh token.",
+      "That the client secret is needed for device flow, or that public clients can keep it secret. Device flow needs no client_secret, and public clients should use PKCE.",
+      "That GitHub OAuth scopes can be limited to individual repositories, or that GitHub labels scopes sensitive/restricted. OAuth scopes are broad (e.g. repo = all repos). Fine-grained, per-repo access needs a GitHub App.",
+      "That a logo, privacy policy, support email or domain verification is required to register an OAuth app. None appear in the registration steps. Privacy policy and support links matter only for a Marketplace listing.",
+      "That organization private data is always available once a member authorizes. Organizations created now have OAuth app access restrictions on by default, which require owner approval.",
+      "Any stated GitHub review timeline. None is published.",
+      "That the client secret is shown only once. Official docs don't state this either way, so it shouldn't be asserted as fact."
+    ],
+    "difficulty": {
+      "rating": "easy",
+      "reason": "Self-serve registration in Developer settings with no review, verification or user cap before going live; review exists only for an optional Marketplace listing or paid plans."
+    }
+  },
+  "slack": {
+    "items": {
+      "register_url": {
+        "answer": "Create and manage apps at https://api.slack.com/apps (direct create link: https://api.slack.com/apps?new_app=1). OAuth settings, including Redirect URLs, scopes and PKCE, are under 'OAuth & Permissions'. Public distribution is under 'Manage Distribution'.",
+        "sources": [
+          "https://docs.slack.dev/app-management/quickstart-app-settings",
+          "https://docs.slack.dev/authentication/installing-with-oauth",
+          "https://docs.slack.dev/app-management/distribution"
+        ],
+        "quote": "\"Create a Slack app via the apps page by selecting the following button: [Create an app](https://api.slack.com/apps?new_app=1)\""
+      },
+      "app_types": {
+        "answer": "Slack has one current app model, the 'Slack app' with granular bot and user scopes. Classic apps are legacy, and Slack says 'In November 2026, we will discontinue support for classic apps'. The meaningful split is by distribution. Undistributed: lives in one workspace. Unlisted distributed: 'Activate Public Distribution', installable on any workspace via OAuth, no review. Listed: Slack Marketplace, reviewed. Tokens come in bot (scope=) and user (user_scope=) forms. A separate oauth/v2_user flow issues user-only tokens. Apps can be created as a 'Blank app' in app settings or from a manifest. Deno Slack SDK (workflow) apps also exist, and coded workflows are not eligible for Marketplace listing.",
+        "sources": [
+          "https://docs.slack.dev/app-management/distribution",
+          "https://docs.slack.dev/authentication/installing-with-oauth",
+          "https://docs.slack.dev/legacy/legacy-app-migration/differences-between-classic-apps-and-granular-slack-apps",
+          "https://docs.slack.dev/app-management/quickstart-app-settings",
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide"
+        ],
+        "quote": "\"When you create a Slack app, it resides in one workspace. You can also distribute Slack apps in either listed or unlisted fashion.\""
+      },
+      "required_fields": {
+        "answer": "Creating an app needs only an App Name and a development Workspace ('Blank app' > App Name > Workspace > Create). Public (unlisted) distribution requires completing the checklist under 'Share Your App with Other Workspaces'. The docs don't list each item, but they require an OAuth flow and SSL on OAuth redirect URLs and all request URLs. A Marketplace listing additionally needs: name, short and long description, icon, images/screenshots, pricing, language support, a public landing page, a support page with responses within 2 business days, a privacy policy linked from the landing page, scope justifications and test account credentials.",
+        "sources": [
+          "https://docs.slack.dev/app-management/quickstart-app-settings",
+          "https://docs.slack.dev/app-management/distribution",
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements",
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide"
+        ],
+        "quote": "\"Enter your App Name... Select the Workspace where you'll be developing your app.\" / \"Ensure all items in the supplied checklist are completed. Click Activate Public Distribution.\""
+      },
+      "redirect_uris": {
+        "answer": "Redirect URLs are configured under OAuth & Permissions and must use HTTPS. They cannot contain an anchor (#). The redirect_uri sent must match a configured Redirect URL or be a subdirectory of one; the same host and port are required. With several Redirect URLs, send the same redirect_uri in both the authorize and oauth.v2.access steps or you get bad_redirect_uri. If none is sent, the first listed URL is used. Localhost: the PKCE guide says http://localhost redirects are treated as 'desktop redirects' only if the app has opted into PKCE, and otherwise as server redirects. Custom URI schemes (myapp://) require PKCE. Wildcards: not stated. Count limit: not stated in official docs.",
+        "sources": [
+          "https://docs.slack.dev/authentication/installing-with-oauth",
+          "https://docs.slack.dev/authentication/using-pkce",
+          "https://docs.slack.dev/app-management/distribution"
+        ],
+        "quote": "\"The `redirect_uri` must use HTTPS.\" / \"Your `redirect_uri` must match or be a subdirectory of a Redirect URL configured under App Management. A Redirect URL can not contain an anchor (#).\""
+      },
+      "credentials": {
+        "answer": "Client ID and Client Secret are under 'App Credentials' in 'Basic Information'. The docs describe finding them there, not a one-time display. Whether the secret is shown only once is not stated in official docs. The signing secret (for verifying requests) can be regenerated. Slack recommends sending client_id and client_secret with HTTP Basic auth. PKCE is supported as an opt-in setting under OAuth & Permissions. Enabling it is one-way: it marks the app a public client and can't be undone without contacting Slack support. Only S256 is supported. In PKCE flows, oauth.v2.access omits client_secret. Desktop redirects can't request bot scopes, and refresh tokens expire in 30 days when PKCE is enabled. Token rotation (refresh tokens) is available for granular-permission apps.",
+        "sources": [
+          "https://docs.slack.dev/authentication/using-token-rotation",
+          "https://docs.slack.dev/authentication/using-pkce",
+          "https://docs.slack.dev/reference/methods/oauth.v2.access",
+          "https://docs.slack.dev/concepts/security",
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements"
+        ],
+        "quote": "\"You'll need your app's client_id and client_secret as well, which can be found under App Credentials within Basic Information\" / \"Enabling PKCE marks your app as a public client, which is is a one-way operation.\""
+      },
+      "scopes": {
+        "answer": "Bot scopes go in 'scope' and user scopes in 'user_scope', both comma-separated, at https://slack.com/oauth/v2/authorize. Scopes are additive. Adding scopes requires reinstalling, and removed scopes stay on existing tokens until revoked. Optional scopes are supported (bot_optional, user_optional). Sign in with Slack scopes can't be combined with other scopes in one flow. Slack has no formal 'sensitive' tier. The Marketplace treats as unacceptable 'legacy/restricted scopes, scopes that provide extensive access to workspace data, or coded workflow scopes', for example identity.*, workflow.steps:execute, read, post, client, admin.*, search:read and triggers:*. Broad user-token *:history scopes are 'unlikely' to be approved without a clear use case. admin.* is unlikely unless you are in the partner program.",
+        "sources": [
+          "https://docs.slack.dev/authentication/installing-with-oauth",
+          "https://docs.slack.dev/app-management/distribution",
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide",
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements"
+        ],
+        "quote": "\"Bot scopes should be added as `scope=<bot_scope>`, and user scopes should be added as `user_scope=<user_scope>`.\" / \"ensure that your app does not request legacy/restricted scopes, scopes that provide extensive access to workspace data, or coded workflow scopes (e.g. identity.*, workflow.steps:execute, read, post, client, admin.*, search:read, triggers:*)\""
+      },
+      "review": {
+        "answer": "Unlisted public distribution is self-serve: complete the checklist and click 'Activate Public Distribution', with no Slack review. A review happens only when you submit to the Slack Marketplace. That review starts with automated tests, then a preliminary review (listing, docs, scope reasons, install check) and a functional review (install and test). Slack also does a security review and may do an advanced security review at any point. After publishing, the live app is locked, and any change to scopes or configuration needs resubmission. Separately, workspace admins may restrict installs to admins, require admin approval, or allow only Marketplace apps.",
+        "sources": [
+          "https://docs.slack.dev/app-management/distribution",
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide",
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements",
+          "https://docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps"
+        ],
+        "quote": "\"Unlike unlisted distributed apps, apps listed in the Slack Marketplace are reviewed against our requirements & guidelines\" / \"Other workspaces may only allow the installation of apps officially listed in the Slack Marketplace.\""
+      },
+      "review_timeline": {
+        "answer": "Published, quoted word for word: \"Currently, the preliminary part of the review takes up to 10 business days to receive feedback, while the functional review takes up to 10 weeks for new submissions and 6 weeks for published apps resubmitting changes.\" Slack also says the estimate is shown on the submission page in app settings, 'We are unable to skip or accelerate the review process', and during preliminary review 'your place in the queue is reset each time you resubmit.'",
+        "sources": [
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide"
+        ],
+        "quote": "\"Currently, the preliminary part of the review takes up to 10 business days to receive feedback, while the functional review takes up to 10 weeks for new submissions and 6 weeks for published apps resubmitting changes.\""
+      },
+      "test_limits": {
+        "answer": "Undistributed apps install only to their own workspace (or across an Enterprise org if org-wide install is supported). Unlisted distributed apps have no documented workspace cap, but three limits apply. (1) Since May 29, 2025, new unlisted, commercially distributed apps and new installs of existing ones are limited to 1 request per minute and 15 objects per request for conversations.history and conversations.replies, unless approved for the Marketplace. (2) Slack's updated API Terms say the Marketplace is the only appropriate channel for commercial distribution, and that 'Unlisted apps... are for development and testing'. (3) Marketplace submission requires the app to be 'installed on 10 or more active workspaces' (active means used in the past 28 days).",
+        "sources": [
+          "https://docs.slack.dev/app-management/distribution",
+          "https://docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps",
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide",
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements"
+        ],
+        "quote": "\"The new rate limits will be updated to allow 1 request per minute and will return a maximum of 15 objects per request.\" / \"Your app has been installed on 10 or more active workspaces\""
+      },
+      "rejection_reasons": {
+        "answer": "Listed in the official docs. Submissions are returned if: not ready (private beta, still being built, not fully tested), bugs or poor UX, or scopes requested for future features. Unsuitable apps include those that: export or back up message data; have no in-Slack functionality; use legacy/restricted, overly broad or coded-workflow scopes; enable destructive behavior; embed Slack elsewhere; only use Sign in with Slack; replicate the Slack client; request too many scopes; share sensitive financial or health info; circumvent admin controls; add no value; enable remote execution; share third-party accounts; have fewer than 10 active workspaces and fewer than 10 WAU; enable financial or crypto/NFT transactions; train LLMs on Slack data; do unclear sentiment analysis; or are only an MCP server. Also: unnecessary user-token scopes, and a missing or incomplete privacy policy, landing page or support page.",
+        "sources": [
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements",
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide"
+        ],
+        "quote": "\"Please do not submit your app with scopes for a feature that you plan to build at some point in future.\" / \"If your app is submitted with bugs, poor user experience, or we repeatedly run into issues of low quality when reviewing, we will return it\""
+      }
+    },
+    "wrong_claims_to_watch": [
+      "That Slack must review the app before it can be installed in other workspaces. False: 'Activate Public Distribution' is self-serve, and review is only for a Marketplace listing.",
+      "That unlisted distributed apps have no limits. Since May 29, 2025, new non-Marketplace commercially distributed apps get 1 req/min and 15 objects for conversations.history/replies, and Slack's API Terms say the Marketplace is the only appropriate channel for commercial distribution.",
+      "That you can submit to the Marketplace right away. The app must be installed on 10 or more active workspaces first.",
+      "That Marketplace review takes days. Preliminary review takes up to 10 business days, and functional review up to 10 weeks (new) or 6 weeks (updates). Slack can't expedite.",
+      "That redirect URLs can be plain http, or can include a # fragment. They must use HTTPS and contain no anchor.",
+      "That the redirect_uri must exactly equal the registered URL. A subdirectory of a configured Redirect URL is accepted; same host and port required.",
+      "That Slack doesn't support PKCE, or that PKCE can be toggled freely. It is supported, opt-in, one-way, and S256 only.",
+      "That scopes are space-separated, or that bot and user scopes share one parameter. Both are comma-separated, in 'scope' (bot) and 'user_scope' (user).",
+      "That Slack has a Google-style sensitive/restricted scope verification. Slack's scope review happens only in Marketplace review, and certain scopes (admin.*, identity.*, search:read, etc.) make an app unsuitable for listing.",
+      "That a published Marketplace app's scopes or redirect URIs can be changed live. The live version is locked, and changes need resubmission.",
+      "That classic apps or the umbrella 'bot' scope are a valid way to start. Classic app support is discontinued in November 2026.",
+      "That the client secret is shown only once. The docs say it is found under App Credentials in Basic Information.",
+      "That a privacy policy, logo or support page is needed to create or distribute an app. They are needed only for a Marketplace listing."
+    ],
+    "difficulty": {
+      "rating": "moderate",
+      "reason": "Self-serve app creation and public (unlisted) distribution need no review, but commercial distribution is meant to go through Marketplace review (10+ active workspaces, up to ~10 weeks), and unlisted apps face reduced conversations.history/replies rate limits."
+    }
+  },
+  "google": {
+    "items": {
+      "register_url": {
+        "answer": "Google Auth Platform in Google Cloud Console. Create the OAuth client on the Clients page, linked in the docs as https://console.developers.google.com/auth/clients: 'CREATE CLIENT', then choose an application type. You must first have a project and register the app with Google Auth (Branding/Audience). Consent screen pages: Branding at https://console.developers.google.com/auth/branding, Audience at https://console.developers.google.com/auth/audience, and verification at https://console.developers.google.com/auth/verification. The older path https://console.cloud.google.com/apis/credentials still appears in some docs.",
+        "sources": [
+          "https://support.google.com/cloud/answer/15549257?hl=en",
+          "https://developers.google.com/identity/protocols/oauth2/web-server",
+          "https://support.google.com/cloud/answer/15549049?hl=en",
+          "https://support.google.com/cloud/answer/15549945?hl=en"
+        ],
+        "quote": "\"Navigate to the Google Auth Platform Clients page... You will be prompted to register your application to use Google Auth if you are yet to do so. This is required before creating a client. Click CREATE CLIENT\""
+      },
+      "app_types": {
+        "answer": "Client (application) types: Web application, Android, iOS, Chrome Extension, TVs and Limited-input devices, and Desktop app (the Universal Windows Platform is mentioned as an installed-app platform). Private (confidential) clients such as web servers use a client secret. Public clients (native or JavaScript apps) don't. Audience user types: External (any Google Account) and Internal (organization members only; available only for projects in a Google Workspace or Cloud organization).",
+        "sources": [
+          "https://support.google.com/cloud/answer/15549257?hl=en",
+          "https://support.google.com/cloud/answer/13461325?hl=en",
+          "https://support.google.com/cloud/answer/15549945?hl=en",
+          "https://developers.google.com/identity/protocols/oauth2"
+        ],
+        "quote": "\"Private Clients: These apps, like web server applications, can securely store the client secret... Public Clients: Native apps or JavaScript-based apps fall under this category.\""
+      },
+      "required_fields": {
+        "answer": "Branding/consent screen: App name, User support email (your own address or a Google Group you manage), App logo (optional; at most 1MB, JPG/PNG/BMP, 120x120 square recommended), App home page, App privacy policy and App Terms of Service links, Authorized domains, and Developer contact information. Homepage, privacy policy and ToS links are 'required for all external production apps' to submit for verification. All domains used must be registered as Authorized domains, and for verification their ownership must be verified in Google Search Console. Web client: name plus Authorized JavaScript origins and/or Authorized redirect URIs. The audience (user type, test users) is set on the Audience page.",
+        "sources": [
+          "https://support.google.com/cloud/answer/13461325?hl=en",
+          "https://support.google.com/cloud/answer/15549049?hl=en",
+          "https://support.google.com/cloud/answer/13464321?hl=en",
+          "https://support.google.com/cloud/answer/15549257?hl=en"
+        ],
+        "quote": "\"These links are required for all external production apps. You will not be able to submit your app for verification if it is missing these links.\""
+      },
+      "redirect_uris": {
+        "answer": "Redirect URIs must use HTTPS; localhost URIs (including localhost IPs) are exempt. Other rules: no raw IP hosts (except localhost); TLD on the public suffix list; no URL shorteners unless owned; no userinfo; no path traversal; no open redirects; no fragment; no wildcard '*'; no invalid percent-encoding or null characters. Matching is exact, including scheme, case and trailing slash; otherwise redirect_uri_mismatch. Docs allow http://localhost:8080 for testing. Changes can take '5 minutes to a few hours' to apply. A limit on the count of redirect URIs is not stated in official docs.",
+        "sources": [
+          "https://support.google.com/cloud/answer/15549257?hl=en",
+          "https://developers.google.com/identity/protocols/oauth2/web-server"
+        ],
+        "quote": "\"Redirect URIs must use the HTTPS scheme, not plain HTTP. Localhost URIs (including localhost IP address URIs) are exempt from this rule.\" / \"The value must exactly match one of the authorized redirect URIs... the http or https scheme, case, and trailing slash ('/') must all match.\""
+      },
+      "credentials": {
+        "answer": "You get a client ID and, for confidential clients, a client secret. The secret is shown only at creation: store it securely, because 'it will not be visible or accessible again'. The web-server guide says to download client_secret.json after creating credentials. Secret rotation is supported with 'Add Secret', and at most two secrets per client. Deleted clients can be restored within 30 days, and inactive clients can be auto-deleted. PKCE is documented for installed/desktop apps ('Always use PKCE'), with S256 recommended and plain also defined. The web-server guide does not mention PKCE, so PKCE for confidential web clients is not stated there.",
+        "sources": [
+          "https://support.google.com/cloud/answer/15549257?hl=en",
+          "https://developers.google.com/identity/protocols/oauth2/web-server",
+          "https://developers.google.com/identity/protocols/oauth2/native-app"
+        ],
+        "quote": "\"Note: Your application's client secret will only be shown after you create the client. Store this information in a secure place such as Google Cloud Secret Manager because it will not be visible or accessible again.\""
+      },
+      "scopes": {
+        "answer": "Scopes are passed in the 'scope' parameter. Google recommends incremental authorization (include_granted_scopes) and requesting the narrowest scopes. Scopes added in the console are automatically classified as non-sensitive, sensitive or restricted. Sensitive examples: reading Google Calendar events, storing a contact, deleting a YouTube video. Restricted scopes, for example full Gmail or Drive access, are fewer and give wide access. They need restricted-scope verification, plus an annual CASA security assessment if the data is stored or transmitted on servers. Basic sign-in scopes (openid, userinfo.email, userinfo.profile) are non-sensitive and exempt from test-user restrictions.",
+        "sources": [
+          "https://developers.google.com/identity/protocols/oauth2",
+          "https://developers.google.com/identity/protocols/oauth2/web-server",
+          "https://support.google.com/cloud/answer/13463073?hl=en",
+          "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification",
+          "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification",
+          "https://support.google.com/cloud/answer/15549945?hl=en"
+        ],
+        "quote": "\"When you add scopes to your project, scope categories (non-sensitive, sensitive, or restricted) are indicated automatically in the Google Cloud Console.\""
+      },
+      "review": {
+        "answer": "There are three verification types. (1) Brand verification: required for External + In production apps that want their app name or logo shown on the consent screen; it is automated, with manual review if needed. (2) Sensitive scope verification: required before any account can grant unverified sensitive scopes beyond the cap; needs scope justification and a demo video. (3) Restricted scope verification: on top of the sensitive requirements, an annual security assessment by a Google-empanelled assessor (CASA) when data is accessed from or through a server, with annual re-verification. Apps using only non-sensitive scopes don't need verification. Also exempt: Internal apps, development/testing apps, personal use (fewer than 100 users), service-account-only apps, and Workspace admin-trusted apps. You must publish to production before you can submit ('Apps in development, testing or staging are not applicable for verification'). Changing branding, redirect URIs/origins or scopes can trigger re-verification.",
+        "sources": [
+          "https://support.google.com/cloud/answer/13463073?hl=en",
+          "https://support.google.com/cloud/answer/13464321?hl=en",
+          "https://support.google.com/cloud/answer/13461325?hl=en",
+          "https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification",
+          "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification",
+          "https://support.google.com/cloud/answer/13464323?hl=en",
+          "https://support.google.com/cloud/answer/7454865?hl=en"
+        ],
+        "quote": "\"Apps that request access to scopes categorized as sensitive or restricted must complete Google's OAuth app verification before being granted access.\" / \"If your app utilizes only non-sensitive scopes, it is not mandatory for your app to complete the app verification process.\""
+      },
+      "review_timeline": {
+        "answer": "Published, word for word. FAQ table (support.google.com/cloud/answer/13463817): Brand Verification '2-3 Business days'; Sensitive Scope Verification '10 Business days'; Restricted Scope Verification '6 weeks'; '* Please note that these estimates are not guaranteed and will vary based on developer responsiveness'. Developer docs: brand: 'The automated brand verification process typically takes a few minutes after you click the Verify Branding button... manual review process that usually takes 2-3 business days.' Sensitive: 'The sensitive scope verification process can take up to 10 days to complete.' Restricted: 'the restricted scopes verification process can potentially take several weeks to complete.' Unverified apps page: 'Depending on the sensitivity of the data being requested, verification might require several months for the app to complete.'",
+        "sources": [
+          "https://support.google.com/cloud/answer/13463817?hl=en",
+          "https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification",
+          "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification",
+          "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification",
+          "https://support.google.com/cloud/answer/7454865?hl=en"
+        ],
+        "quote": "\"Brand Verification ... 2-3 Business days / Sensitive Scope Verification ... 10 Business days / Restricted Scope Verification ... 6 weeks\""
+      },
+      "test_limits": {
+        "answer": "Testing publishing status: 'limited to up to 100 test users listed in the OAuth consent screen'. Test users see a warning, and their authorizations, including refresh tokens, 'expire seven days from the time of consent'. Exception: apps requesting only name, email and profile (openid, userinfo.email, userinfo.profile) or using Sign in with Google need no test-user listing and don't expire. In production but unverified (sensitive or restricted scopes): an 'unverified app' screen and a cap of '100 new users in total'. The cap 'applies over the entire lifetime of the project, and it cannot be reset or changed'. Internal apps aren't subject to the screen or the cap.",
+        "sources": [
+          "https://support.google.com/cloud/answer/15549945?hl=en",
+          "https://support.google.com/cloud/answer/7454865?hl=en",
+          "https://support.google.com/cloud/answer/13463817?hl=en",
+          "https://support.google.com/cloud/answer/13464323?hl=en"
+        ],
+        "quote": "\"Projects configured with a publishing status of Testing are limited to up to 100 test users listed in the OAuth consent screen.\" / \"Authorizations by a test user will expire seven days from the time of consent.\""
+      },
+      "rejection_reasons": {
+        "answer": "Listed in the official docs (Verification requirements and the OAuth Quick Reference Guides). Homepage: unresponsive; not on a domain verified to you; redirects to a different domain; a shortened link; behind a login; only a login page; hosted on a third-party platform (Google Sites, Facebook, etc.). Privacy policy: wrong format (must be HTML on a dedicated page, not a PDF or iframe); unresponsive URL; not tied to the app or brand; a template or sample policy; doesn't match the policy linked on the homepage; doesn't disclose Google user-data handling. Domain ownership not verified in Search Console by a project Owner or Editor. Demo video: inaccessible link; shows a different app; doesn't show the full consent screen with the exact scopes (in English); doesn't show how each scope is used. Scopes: not the narrowest, requested for 'future enhancements', or justification 'deemed insufficient'. App name confusable with Google brands. A rejection means unapproved sensitive or restricted scopes stop working.",
+        "sources": [
+          "https://support.google.com/cloud/answer/13464321?hl=en",
+          "https://support.google.com/cloud/answer/13807376?hl=en",
+          "https://support.google.com/cloud/answer/13806988?hl=en",
+          "https://support.google.com/cloud/answer/13804565?hl=en",
+          "https://support.google.com/cloud/answer/15549049?hl=en",
+          "https://support.google.com/cloud/answer/13463817?hl=en"
+        ],
+        "quote": "\"If your justification is deemed insufficient, your app verification request may be rejected.\" / \"your app homepage URL must be static and cannot redirect to a different URL or domain.\""
+      }
+    },
+    "wrong_claims_to_watch": [
+      "That restricted scopes (e.g. full Gmail or Drive) need only brand verification, or the same review as sensitive scopes. They need restricted-scope verification plus an annual third-party security assessment (CASA) when data touches a server, and annual re-verification.",
+      "That every Google OAuth app must be verified. Apps using only non-sensitive scopes don't need verification. Brand verification is needed only to show the app name or logo, and Internal, testing and personal-use apps are exempt.",
+      "That publishing to 'In production' removes the 100-user limit. For unverified sensitive or restricted scopes, the 100-new-user cap applies for the project's lifetime and cannot be reset.",
+      "That Testing mode allows unlimited users, or that test tokens last indefinitely. The limit is 100 test users, and authorizations or refresh tokens expire after 7 days (except basic profile scopes or Sign in with Google).",
+      "That you can submit for verification while in Testing. You must publish to production first.",
+      "That redirect URIs allow wildcards, prefix or subpath matching, or ignore a trailing slash. Matching is exact (scheme, case, trailing slash), and '*' is forbidden.",
+      "That http redirect URIs are fine in production, or that raw IP hosts are allowed. HTTPS is required except for localhost, and raw IPs are banned except localhost IPs.",
+      "That the client secret can be viewed again later in the console. Per Manage OAuth Clients, it is shown only at creation, though you can add or rotate secrets (max 2).",
+      "That 'Internal' user type is available to any project. It needs a project under a Google Workspace or Cloud Identity organization.",
+      "That redirect URI or branding changes take effect immediately with no re-review. Changes can take 5 minutes to a few hours, and changing branding, redirect URIs/origins or scopes after verification can require re-verification.",
+      "That restricted-scope verification takes a few days. Official estimates are 6 weeks, or 'several weeks' (up to 'several months' per the Unverified apps page), and brand verification comes first.",
+      "That homepage/privacy policy can live on Google Sites, a PDF, or another domain, or that authorized domains don't need Search Console verification. All of these are listed rejection causes.",
+      "That a demo video is needed for brand-only verification. The video is required for sensitive and restricted scope verification."
+    ],
+    "difficulty": {
+      "rating": "hard",
+      "reason": "Self-serve only for non-sensitive scopes (sign-in); any sensitive or restricted scope (Gmail, Drive, Calendar, etc.) requires mandatory Google verification before more than 100 users can connect, and restricted scopes add an annual third-party CASA security assessment (est. 6 weeks)."
+    }
+  }
+}

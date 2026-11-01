@@ -1,0 +1,7 @@
+# Apps to generate before a demo, one per line. Edit this list freely.
+# Library apps (GitHub, Slack, Google, ...) don't need warming.
+Calendly
+Xero
+Linear
+Composio
+Postmark

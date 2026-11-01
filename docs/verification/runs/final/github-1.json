@@ -1,0 +1,486 @@
+{
+  "app": "GitHub",
+  "base": "http://localhost:3000",
+  "compare": true,
+  "httpStatus": 200,
+  "seconds": 17.543,
+  "events": [
+    {
+      "type": "stage_start",
+      "stage": "classify",
+      "t": 145
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "github.com",
+        "docs.github.com"
+      ],
+      "t": 3044
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "docs.github.com"
+      ],
+      "t": 3407
+    },
+    {
+      "type": "stage_done",
+      "stage": "classify",
+      "detail": "OAuth provider",
+      "findings": {
+        "find": {
+          "outcome": "found",
+          "appName": "GitHub",
+          "officialDomains": [
+            "github.com"
+          ],
+          "docsUrls": [
+            "https://github.com",
+            "https://docs.github.com",
+            "https://docs.github.com/en/apps/oauth-apps"
+          ],
+          "options": []
+        },
+        "classified": {
+          "category": "oauth_provider",
+          "evidenceUrl": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authenticating-to-the-rest-api-with-an-oauth-app",
+          "evidenceQuote": "Every registered OAuth app is assigned a unique Client ID and Client Secret.",
+          "summary": "GitHub is a developer platform and code hosting service that allows third-party developers to build OAuth apps and integrate with its APIs.",
+          "authMethods": [
+            "Client ID and Client Secret",
+            "Access token"
+          ],
+          "instead": ""
+        },
+        "quoteHolds": true,
+        "category": "oauth_provider"
+      },
+      "t": 4832
+    },
+    {
+      "type": "stage_start",
+      "stage": "read",
+      "t": 4833
+    },
+    {
+      "type": "sources",
+      "stage": "read",
+      "domains": [
+        "docs.github.com"
+      ],
+      "t": 5990
+    },
+    {
+      "type": "stage_done",
+      "stage": "read",
+      "detail": "6 of 6 setup items found in 10 pages",
+      "findings": {
+        "developerConsoleUrl": "https://github.com/settings/developers",
+        "items": [
+          {
+            "key": "register_url",
+            "status": "found",
+            "answer": "To register an OAuth app, navigate to Developer settings in your account settings and click <code>New OAuth App</code>.",
+            "sourceUrl": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
+          },
+          {
+            "key": "app_types",
+            "status": "found",
+            "answer": "GitHub supports standard OAuth Apps and GitHub Apps.",
+            "sourceUrl": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps"
+          },
+          {
+            "key": "required_fields",
+            "status": "found",
+            "answer": "The registration form requires <code>Application name</code>, <code>Homepage URL</code>, and <code>Authorization callback URL</code>.",
+            "sourceUrl": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
+          },
+          {
+            "key": "redirect_uris",
+            "status": "found",
+            "answer": "You can enter up to 10 callback URLs. HTTPS is required when wildcard matching is disabled, and localhost is allowed (though loopback literals are recommended).",
+            "sourceUrl": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
+          },
+          {
+            "key": "credentials",
+            "status": "found",
+            "answer": "GitHub issues a client ID and client secret, and PKCE is supported via <code>code_challenge</code> and <code>code_challenge_method</code>.",
+            "sourceUrl": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps"
+          },
+          {
+            "key": "scopes",
+            "status": "found",
+            "answer": "Scopes are requested via the <code>scope</code> query parameter as a space-delimited list.",
+            "sourceUrl": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps"
+          }
+        ],
+        "pagesRead": [
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authenticating-to-the-rest-api-with-an-oauth-app",
+          "https://docs.github.com/en/apps/oauth-apps/using-oauth-apps/authorizing-oauth-apps",
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps",
+          "https://docs.github.com/en/apps/oauth-apps/using-oauth-apps/reviewing-your-authorized-oauth-apps",
+          "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app",
+          "https://docs.github.com/en/apps/sharing-github-apps/registering-a-github-app-from-a-manifest",
+          "https://docs.github.com/en/apps/sharing-github-apps/registering-a-github-app-using-url-parameters",
+          "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/about-the-user-authorization-callback-url",
+          "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/creating-a-custom-badge-for-your-github-app",
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
+        ]
+      },
+      "t": 9063
+    },
+    {
+      "type": "stage_start",
+      "stage": "approval",
+      "t": 9064
+    },
+    {
+      "type": "sources",
+      "stage": "approval",
+      "domains": [
+        "docs.github.com"
+      ],
+      "t": 11656
+    },
+    {
+      "type": "stage_done",
+      "stage": "approval",
+      "detail": "OAuth apps can be registered and used without any mandatory review or verification.",
+      "findings": {
+        "gate": "none",
+        "gateDetail": "OAuth apps can be registered and used without any mandatory review or verification.",
+        "gateQuote": "You can create and register an OAuth app under your personal account or under any organization you have administrative access to.",
+        "gateUrl": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+        "timelineLabel": null,
+        "evidenceQuote": null,
+        "evidenceUrl": null,
+        "items": [
+          {
+            "key": "review",
+            "status": "found",
+            "answer": "To finish your app listing submission in GitHub Marketplace, you can request a review by an onboarding expert.",
+            "sourceUrl": "https://docs.github.com/en/apps/github-marketplace/listing-an-app-on-github-marketplace/submitting-your-listing-for-publication"
+          },
+          {
+            "key": "test_limits",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          }
+        ],
+        "pagesRead": [
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authenticating-to-the-rest-api-with-an-oauth-app",
+          "https://docs.github.com/en/apps/oauth-apps/using-oauth-apps/authorizing-oauth-apps",
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps",
+          "https://docs.github.com/en/apps/oauth-apps/using-oauth-apps/reviewing-your-authorized-oauth-apps",
+          "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app",
+          "https://docs.github.com/en/apps/sharing-github-apps/registering-a-github-app-from-a-manifest",
+          "https://docs.github.com/en/apps/sharing-github-apps/registering-a-github-app-using-url-parameters",
+          "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/about-the-user-authorization-callback-url",
+          "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/creating-a-custom-badge-for-your-github-app",
+          "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+          "https://docs.github.com/en/apps/github-marketplace/github-marketplace-overview/applying-for-publisher-verification-for-your-organization",
+          "https://docs.github.com/en/apps/github-marketplace/creating-apps-for-github-marketplace/security-best-practices-for-apps-on-github-marketplace",
+          "https://docs.github.com/en/apps/github-marketplace/listing-an-app-on-github-marketplace",
+          "https://docs.github.com/en/apps/github-marketplace/listing-an-app-on-github-marketplace/deleting-your-app-listing-from-github-marketplace",
+          "https://docs.github.com/en/apps/github-marketplace/listing-an-app-on-github-marketplace/submitting-your-listing-for-publication",
+          "https://docs.github.com/en/apps/using-github-apps/reviewing-and-modifying-installed-github-apps"
+        ]
+      },
+      "t": 13174
+    },
+    {
+      "type": "stage_start",
+      "stage": "write",
+      "t": 13174
+    },
+    {
+      "type": "stage_done",
+      "stage": "write",
+      "detail": "4 steps written from the checklist",
+      "t": 16006
+    },
+    {
+      "type": "stage_start",
+      "stage": "verify",
+      "t": 16006
+    },
+    {
+      "type": "stage_done",
+      "stage": "verify",
+      "detail": "7 confirmed, 4 marked uncertain, 0 dropped",
+      "findings": {
+        "claimCheck": {
+          "checked": 11,
+          "kept": 7,
+          "downgraded": 4,
+          "dropped": 0
+        },
+        "verdicts": {
+          "S1": "yes",
+          "S2": "yes",
+          "S3": "partly",
+          "S4": "yes",
+          "C:register_url": "yes",
+          "C:app_types": "partly",
+          "C:required_fields": "yes",
+          "C:redirect_uris": "partly",
+          "C:credentials": "partly",
+          "C:scopes": "yes",
+          "C:review": "yes",
+          "G": "yes"
+        },
+        "gateConfirmed": true,
+        "gate": "listing_only"
+      },
+      "t": 17538
+    },
+    {
+      "type": "guide",
+      "slug": "github",
+      "uncertainCount": 1,
+      "claimCheck": {
+        "checked": 11,
+        "kept": 7,
+        "downgraded": 4,
+        "dropped": 0
+      },
+      "guide": {
+        "id": "github",
+        "name": "GitHub",
+        "init": "GI",
+        "color": "#525252",
+        "diff": "moderate",
+        "diffReason": "Moderate: review is only needed to be listed in its marketplace or app directory",
+        "tested": false,
+        "generated": true,
+        "generatedAt": "2026-11-01T09:54:30.277Z",
+        "version": 4,
+        "setup": "~20 min",
+        "wait": "Not published",
+        "review": "Listing only",
+        "site": "github.com/settings/developers",
+        "steps": [
+          {
+            "t": "Open developer settings",
+            "d": "Go to your account settings to begin registering a new application.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+            "link": {
+              "label": "Developer settings",
+              "url": "https://github.com/settings/developers"
+            }
+          },
+          {
+            "t": "Fill registration details",
+            "d": "Provide your <code>Application name</code>, <code>Homepage URL</code>, and your app's callback URL in the form.",
+            "o": "agent",
+            "e": "docs",
+            "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+            "link": {
+              "label": "Creating an OAuth app",
+              "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
+            }
+          },
+          {
+            "t": "Generate credentials",
+            "d": "Submit the form to receive your client ID and client secret.",
+            "o": "you",
+            "e": "uncertain",
+            "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps",
+            "link": {
+              "label": "Authorizing OAuth apps",
+              "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps"
+            }
+          },
+          {
+            "t": "Configure scopes",
+            "d": "Request access permissions using the <code>scope</code> query parameter as a space-delimited list.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps",
+            "link": {
+              "label": "Authorizing OAuth apps",
+              "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps"
+            }
+          }
+        ],
+        "blockers": [
+          {
+            "b": "Marketplace review",
+            "s": "To finish your app listing submission in GitHub Marketplace, you can request a review by an onboarding expert.",
+            "source": "https://docs.github.com/en/apps/github-marketplace/listing-an-app-on-github-marketplace/submitting-your-listing-for-publication"
+          },
+          {
+            "b": "Approval timeline not published",
+            "s": "The docs we read don't give a review timeline. Contact GitHub before you plan a launch date."
+          }
+        ],
+        "agent": [
+          "Fill form fields",
+          "Configure scopes"
+        ],
+        "you": [
+          "Open developer settings",
+          "Generate credentials"
+        ],
+        "sources": [
+          [
+            "Creating an OAuth app - GitHub Docs",
+            "docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
+          ],
+          [
+            "Authorizing OAuth apps - GitHub Docs",
+            "docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps"
+          ],
+          [
+            "Submitting your listing for publication - GitHub Docs",
+            "docs.github.com/en/apps/github-marketplace/listing-an-app-on-github-marketplace/submitting-your-listing-for-publication"
+          ]
+        ],
+        "otherPages": [
+          [
+            "Authenticating to the REST API with an OAuth app - GitHub Docs",
+            "docs.github.com/en/apps/oauth-apps/building-oauth-apps/authenticating-to-the-rest-api-with-an-oauth-app"
+          ],
+          [
+            "Authorizing OAuth apps - GitHub Docs",
+            "docs.github.com/en/apps/oauth-apps/using-oauth-apps/authorizing-oauth-apps"
+          ],
+          [
+            "Reviewing your authorized OAuth apps - GitHub Docs",
+            "docs.github.com/en/apps/oauth-apps/using-oauth-apps/reviewing-your-authorized-oauth-apps"
+          ],
+          [
+            "Registering a GitHub App - GitHub Docs",
+            "docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app"
+          ],
+          [
+            "Registering a GitHub App from a manifest - GitHub Docs",
+            "docs.github.com/en/apps/sharing-github-apps/registering-a-github-app-from-a-manifest"
+          ],
+          [
+            "Registering a GitHub App using URL parameters - GitHub Docs",
+            "docs.github.com/en/apps/sharing-github-apps/registering-a-github-app-using-url-parameters"
+          ],
+          [
+            "About the user authorization callback URL - GitHub Docs",
+            "docs.github.com/en/apps/creating-github-apps/registering-a-github-app/about-the-user-authorization-callback-url"
+          ],
+          [
+            "Creating a custom badge for your GitHub App - GitHub Docs",
+            "docs.github.com/en/apps/creating-github-apps/registering-a-github-app/creating-a-custom-badge-for-your-github-app"
+          ],
+          [
+            "Applying for publisher verification for your organization - GitHub Docs",
+            "docs.github.com/en/apps/github-marketplace/github-marketplace-overview/applying-for-publisher-verification-for-your-organization"
+          ],
+          [
+            "Security best practices for apps on GitHub Marketplace - GitHub Docs",
+            "docs.github.com/en/apps/github-marketplace/creating-apps-for-github-marketplace/security-best-practices-for-apps-on-github-marketplace"
+          ],
+          [
+            "Listing an app on GitHub Marketplace - GitHub Docs",
+            "docs.github.com/en/apps/github-marketplace/listing-an-app-on-github-marketplace"
+          ],
+          [
+            "Deleting your app listing from GitHub Marketplace - GitHub Docs",
+            "docs.github.com/en/apps/github-marketplace/listing-an-app-on-github-marketplace/deleting-your-app-listing-from-github-marketplace"
+          ],
+          [
+            "Reviewing and modifying installed GitHub Apps - GitHub Docs",
+            "docs.github.com/en/apps/using-github-apps/reviewing-and-modifying-installed-github-apps"
+          ]
+        ],
+        "checklist": [
+          {
+            "key": "register_url",
+            "status": "found",
+            "answer": "To register an OAuth app, navigate to Developer settings in your account settings and click <code>New OAuth App</code>.",
+            "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
+          },
+          {
+            "key": "app_types",
+            "status": "uncertain",
+            "answer": "GitHub supports standard OAuth Apps and GitHub Apps.",
+            "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps"
+          },
+          {
+            "key": "required_fields",
+            "status": "found",
+            "answer": "The registration form requires <code>Application name</code>, <code>Homepage URL</code>, and <code>Authorization callback URL</code>.",
+            "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
+          },
+          {
+            "key": "redirect_uris",
+            "status": "uncertain",
+            "answer": "You can enter up to 10 callback URLs. HTTPS is required when wildcard matching is disabled, and localhost is allowed (though loopback literals are recommended).",
+            "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
+          },
+          {
+            "key": "credentials",
+            "status": "uncertain",
+            "answer": "GitHub issues a client ID and client secret, and PKCE is supported via <code>code_challenge</code> and <code>code_challenge_method</code>.",
+            "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps"
+          },
+          {
+            "key": "scopes",
+            "status": "found",
+            "answer": "Scopes are requested via the <code>scope</code> query parameter as a space-delimited list.",
+            "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps"
+          },
+          {
+            "key": "review",
+            "status": "found",
+            "answer": "To finish your app listing submission in GitHub Marketplace, you can request a review by an onboarding expert.",
+            "source": "https://docs.github.com/en/apps/github-marketplace/listing-an-app-on-github-marketplace/submitting-your-listing-for-publication"
+          },
+          {
+            "key": "review_timeline",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "test_limits",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "not_found",
+            "answer": ""
+          }
+        ],
+        "claimCheck": {
+          "checked": 11,
+          "kept": 7,
+          "downgraded": 4,
+          "dropped": 0
+        }
+      },
+      "stats": {
+        "durationMs": 17406,
+        "modelCalls": 8,
+        "inputTokens": 26898,
+        "outputTokens": 2235,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "webSearches": 0,
+        "webFetches": 22,
+        "estimatedCostUsd": 0
+      },
+      "t": 17538
+    }
+  ]
+}

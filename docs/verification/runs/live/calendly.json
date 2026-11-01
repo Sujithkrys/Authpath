@@ -1,0 +1,453 @@
+{
+  "app": "Calendly",
+  "base": "https://authpath-two.vercel.app",
+  "compare": false,
+  "httpStatus": 200,
+  "seconds": 20.045,
+  "events": [
+    {
+      "type": "stage_start",
+      "stage": "classify",
+      "t": 1677
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "calendly.com",
+        "developer.calendly.com"
+      ],
+      "t": 6166
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "developer.calendly.com"
+      ],
+      "t": 7591
+    },
+    {
+      "type": "stage_done",
+      "stage": "classify",
+      "detail": "OAuth provider",
+      "findings": {
+        "find": {
+          "outcome": "found",
+          "appName": "Calendly",
+          "officialDomains": [
+            "calendly.com"
+          ],
+          "docsUrls": [
+            "https://calendly.com",
+            "https://developer.calendly.com",
+            "https://developer.calendly.com/api-docs/docs/authentication"
+          ],
+          "options": []
+        },
+        "classified": {
+          "category": "oauth_provider",
+          "evidenceUrl": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app",
+          "evidenceQuote": "Create an OAuth app to access Calendly data on behalf of other Calendly users.",
+          "summary": "Calendly is an online scheduling platform that lets developers access user data and manage scheduling via its API using OAuth authentication.",
+          "authMethods": [
+            "OAuth client ID and secret",
+            "Access token",
+            "Refresh token"
+          ],
+          "instead": ""
+        },
+        "quoteHolds": true,
+        "category": "oauth_provider"
+      },
+      "t": 8630
+    },
+    {
+      "type": "stage_start",
+      "stage": "read",
+      "t": 8630
+    },
+    {
+      "type": "sources",
+      "stage": "read",
+      "domains": [
+        "developer.calendly.com"
+      ],
+      "t": 10241
+    },
+    {
+      "type": "stage_done",
+      "stage": "read",
+      "detail": "5 of 6 setup items found in 7 pages",
+      "findings": {
+        "developerConsoleUrl": "https://calendly.com/app/developer",
+        "items": [
+          {
+            "key": "register_url",
+            "status": "found",
+            "answer": "Developers can create an OAuth app by logging in to Calendly, opening the Profile menu, selecting Developer, and choosing Create OAuth app on the OAuth apps tab. Alternatively, manage OAuth apps at developer.calendly.com.",
+            "sourceUrl": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app"
+          },
+          {
+            "key": "app_types",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "required_fields",
+            "status": "found",
+            "answer": "The registration form requires <code>App name</code>, <code>Redirect URI</code>, and <code>Environment type</code>.",
+            "sourceUrl": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app"
+          },
+          {
+            "key": "redirect_uris",
+            "status": "found",
+            "answer": "Developers must enter exactly one URI. For Sandbox, allowed redirect URIs are <code>https</code> URIs and <code>http</code> URIs on <code>localhost</code>; for Production, <code>https</code> URIs only are allowed.",
+            "sourceUrl": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app"
+          },
+          {
+            "key": "credentials",
+            "status": "found",
+            "answer": "Calendly issues a <code>Client ID</code>, <code>Client secret</code>, and <code>Webhook signing key</code>. Proof Key for Code Exchange (PKCE) with the <code>S256</code> method is required for every app, and the client secret and webhook signing key are shown only once.",
+            "sourceUrl": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app"
+          },
+          {
+            "key": "scopes",
+            "status": "found",
+            "answer": "Scopes are requested by selecting at least one scope during app creation and listing scopes separated by spaces in the authorization URL. The documentation does not classify any scopes as sensitive or restricted.",
+            "sourceUrl": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app"
+          }
+        ],
+        "pagesRead": [
+          "https://developer.calendly.com/api-docs/calendly-o-auth/o-auth/get-oauth-authorize",
+          "https://developer.calendly.com/docs/authentication/creating-an-oauth-app",
+          "https://developer.calendly.com/api-docs/calendly-o-auth/o-auth/post-oauth-revoke",
+          "https://developer.calendly.com/docs/authentication/creating-an-oauth-app.md",
+          "https://developer.calendly.com/docs/authentication/scopes",
+          "https://developer.calendly.com/api-docs/calendly-o-auth/o-auth/get-oauth-authorize.md",
+          "https://developer.calendly.com/api-docs/calendly-o-auth/o-auth/post-oauth-revoke.md"
+        ]
+      },
+      "t": 12557
+    },
+    {
+      "type": "stage_start",
+      "stage": "approval",
+      "t": 12557
+    },
+    {
+      "type": "sources",
+      "stage": "approval",
+      "domains": [
+        "developer.calendly.com"
+      ],
+      "t": 15199
+    },
+    {
+      "type": "stage_done",
+      "stage": "approval",
+      "detail": "Developers can self-serve and create production or sandbox OAuth apps directly.",
+      "findings": {
+        "gate": "none",
+        "gateDetail": "Developers can self-serve and create production or sandbox OAuth apps directly.",
+        "gateQuote": "Environment type : select Sandbox for development and testing, or Production when your app is ready for real users.",
+        "gateUrl": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app",
+        "timelineLabel": null,
+        "evidenceQuote": null,
+        "evidenceUrl": null,
+        "items": [
+          {
+            "key": "review",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "test_limits",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          }
+        ],
+        "pagesRead": [
+          "https://developer.calendly.com/api-docs/calendly-o-auth/o-auth/get-oauth-authorize",
+          "https://developer.calendly.com/docs/authentication/creating-an-oauth-app",
+          "https://developer.calendly.com/api-docs/calendly-o-auth/o-auth/post-oauth-revoke",
+          "https://developer.calendly.com/docs/authentication/creating-an-oauth-app.md",
+          "https://developer.calendly.com/docs/authentication/scopes",
+          "https://developer.calendly.com/api-docs/calendly-o-auth/o-auth/get-oauth-authorize.md",
+          "https://developer.calendly.com/api-docs/calendly-o-auth/o-auth/post-oauth-revoke.md",
+          "https://developer.calendly.com/api-docs/calendly-api/routing-forms/get-routing-form-submission",
+          "https://developer.calendly.com/api-docs/calendly-api/routing-forms/list-routing-form-submissions",
+          "https://developer.calendly.com/api-docs/overview/rate-limits"
+        ]
+      },
+      "t": 16521
+    },
+    {
+      "type": "stage_start",
+      "stage": "write",
+      "t": 16521
+    },
+    {
+      "type": "stage_done",
+      "stage": "write",
+      "detail": "5 steps written from the checklist",
+      "t": 18522
+    },
+    {
+      "type": "stage_start",
+      "stage": "verify",
+      "t": 18522
+    },
+    {
+      "type": "stage_done",
+      "stage": "verify",
+      "detail": "8 confirmed, 2 marked uncertain, 0 dropped",
+      "findings": {
+        "claimCheck": {
+          "checked": 10,
+          "kept": 8,
+          "downgraded": 2,
+          "dropped": 0
+        },
+        "verdicts": {
+          "S1": "yes",
+          "S2": "yes",
+          "S3": "yes",
+          "S4": "partly",
+          "S5": "yes",
+          "C:register_url": "yes",
+          "C:required_fields": "yes",
+          "C:redirect_uris": "yes",
+          "C:credentials": "yes",
+          "C:scopes": "partly",
+          "G": "yes"
+        },
+        "gateConfirmed": true,
+        "gate": "none"
+      },
+      "t": 19840
+    },
+    {
+      "type": "guide",
+      "slug": "calendly",
+      "uncertainCount": 1,
+      "claimCheck": {
+        "checked": 10,
+        "kept": 8,
+        "downgraded": 2,
+        "dropped": 0
+      },
+      "guide": {
+        "id": "calendly",
+        "name": "Calendly",
+        "init": "CA",
+        "color": "#525252",
+        "diff": "easy",
+        "diffReason": "Easy: you register the app yourself, and the review pages read describe no review before real users connect",
+        "tested": false,
+        "generated": true,
+        "generatedAt": "2026-11-01T09:49:17.224Z",
+        "version": 4,
+        "setup": "~25 min",
+        "wait": "None",
+        "review": "No",
+        "site": "calendly.com/app/developer",
+        "steps": [
+          {
+            "t": "Create an OAuth app",
+            "d": "Log in and create your app via the developer console.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app",
+            "link": {
+              "label": "Open developer console",
+              "url": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app"
+            }
+          },
+          {
+            "t": "Fill in required fields",
+            "d": "Provide <code>App name</code>, <code>Redirect URI</code>, and <code>Environment type</code> in the form.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app",
+            "link": {
+              "label": "Open developer console",
+              "url": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app"
+            }
+          },
+          {
+            "t": "Configure redirect URIs",
+            "d": "Enter a single URI. Use <code>https</code> or <code>http://localhost</code> for sandbox, and <code>https</code> only for production.",
+            "o": "agent",
+            "e": "docs",
+            "source": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app",
+            "link": {
+              "label": "Open developer console",
+              "url": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app"
+            }
+          },
+          {
+            "t": "Select scopes",
+            "d": "Choose at least one scope during app creation and list scopes separated by spaces in the authorization URL.",
+            "o": "agent",
+            "e": "uncertain",
+            "source": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app",
+            "link": {
+              "label": "Open developer console",
+              "url": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app"
+            }
+          },
+          {
+            "t": "Save credentials",
+            "d": "Copy your <code>Client ID</code>, <code>Client secret</code>, and <code>Webhook signing key</code> securely.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app",
+            "link": {
+              "label": "Open developer console",
+              "url": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app"
+            }
+          }
+        ],
+        "blockers": [],
+        "agent": [
+          "Configure redirect URIs",
+          "Select scopes"
+        ],
+        "you": [
+          "Create an OAuth app",
+          "Fill in required fields",
+          "Save credentials"
+        ],
+        "sources": [
+          [
+            "Creating an OAuth app | Calendly | Developer Documentation",
+            "developer.calendly.com/docs/authentication/creating-an-oauth-app"
+          ]
+        ],
+        "otherPages": [
+          [
+            "Get Authorization Code | Calendly | Developer Documentation",
+            "developer.calendly.com/api-docs/calendly-o-auth/o-auth/get-oauth-authorize"
+          ],
+          [
+            "Revoke Access/Refresh Token | Calendly | Developer Documentation",
+            "developer.calendly.com/api-docs/calendly-o-auth/o-auth/post-oauth-revoke"
+          ],
+          [
+            "developer.calendly.com/docs/authentication/creating-an-oauth-app.md",
+            "developer.calendly.com/docs/authentication/creating-an-oauth-app.md"
+          ],
+          [
+            "Authorization Scopes | Calendly | Developer Documentation",
+            "developer.calendly.com/docs/authentication/scopes"
+          ],
+          [
+            "developer.calendly.com/api-docs/calendly-o-auth/o-auth/get-oauth-authorize.md",
+            "developer.calendly.com/api-docs/calendly-o-auth/o-auth/get-oauth-authorize.md"
+          ],
+          [
+            "developer.calendly.com/api-docs/calendly-o-auth/o-auth/post-oauth-revoke.md",
+            "developer.calendly.com/api-docs/calendly-o-auth/o-auth/post-oauth-revoke.md"
+          ],
+          [
+            "Get Routing Form Submission | Calendly | Developer Documentation",
+            "developer.calendly.com/api-docs/calendly-api/routing-forms/get-routing-form-submission"
+          ],
+          [
+            "List Routing Form Submissions | Calendly | Developer Documentation",
+            "developer.calendly.com/api-docs/calendly-api/routing-forms/list-routing-form-submissions"
+          ],
+          [
+            "Rate Limits | Calendly | Developer Documentation",
+            "developer.calendly.com/api-docs/overview/rate-limits"
+          ]
+        ],
+        "checklist": [
+          {
+            "key": "register_url",
+            "status": "found",
+            "answer": "Developers can create an OAuth app by logging in to Calendly, opening the Profile menu, selecting Developer, and choosing Create OAuth app on the OAuth apps tab. Alternatively, manage OAuth apps at developer.calendly.com.",
+            "source": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app"
+          },
+          {
+            "key": "app_types",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "required_fields",
+            "status": "found",
+            "answer": "The registration form requires <code>App name</code>, <code>Redirect URI</code>, and <code>Environment type</code>.",
+            "source": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app"
+          },
+          {
+            "key": "redirect_uris",
+            "status": "found",
+            "answer": "Developers must enter exactly one URI. For Sandbox, allowed redirect URIs are <code>https</code> URIs and <code>http</code> URIs on <code>localhost</code>; for Production, <code>https</code> URIs only are allowed.",
+            "source": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app"
+          },
+          {
+            "key": "credentials",
+            "status": "found",
+            "answer": "Calendly issues a <code>Client ID</code>, <code>Client secret</code>, and <code>Webhook signing key</code>. Proof Key for Code Exchange (PKCE) with the <code>S256</code> method is required for every app, and the client secret and webhook signing key are shown only once.",
+            "source": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app"
+          },
+          {
+            "key": "scopes",
+            "status": "uncertain",
+            "answer": "Scopes are requested by selecting at least one scope during app creation and listing scopes separated by spaces in the authorization URL. The documentation does not classify any scopes as sensitive or restricted.",
+            "source": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app"
+          },
+          {
+            "key": "review",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "review_timeline",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "test_limits",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "not_found",
+            "answer": ""
+          }
+        ],
+        "claimCheck": {
+          "checked": 10,
+          "kept": 8,
+          "downgraded": 2,
+          "dropped": 0
+        }
+      },
+      "stats": {
+        "durationMs": 18391,
+        "modelCalls": 8,
+        "inputTokens": 20204,
+        "outputTokens": 2063,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "webSearches": 0,
+        "webFetches": 18,
+        "estimatedCostUsd": 0
+      },
+      "t": 20041
+    }
+  ]
+}

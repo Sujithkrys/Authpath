@@ -6,7 +6,7 @@ import { isDiscoverable, isLocaleVariant } from "@/lib/agent/sources";
 import { hostOf, isUnder, urlKey } from "@/lib/agent/urls";
 import { excerpt } from "@/lib/agent/verify";
 import type { RunLedger } from "@/lib/llm/ledger";
-import { AgentError, type LlmProvider, type ResearchRequest, type WriteRequest } from "@/lib/llm/types";
+import { AgentError, QuotaExhausted, type LlmProvider, type ResearchRequest, type WriteRequest } from "@/lib/llm/types";
 
 /**
  * Google Search isn't available on the free tier for Gemini 3 and newer, and
@@ -15,8 +15,7 @@ import { AgentError, type LlmProvider, type ResearchRequest, type WriteRequest }
  * for a key that can use it.
  * https://ai.google.dev/gemini-api/docs/pricing
  */
-const DEFAULT_MODEL = "gemini-3.5-flash-lite";
-const BACKUP_MODEL = "gemini-3.5-flash";
+const MODELS = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.6-flash"];
 const searchEnabled = () => process.env.GEMINI_SEARCH === "true";
 
 const NO_SEARCH_NOTE = `Web search isn't available in this run. Work from what you know about this provider, and name the official pages you're confident exist. Those URLs get checked by loading them, so a guess that doesn't load is simply discarded. If you don't recognise the app, say not_found.`;
@@ -36,11 +35,27 @@ const REDIRECT_TIMEOUT_MS = 5_000;
 const QUOTA_BUSY = "The free AI quota is busy, try again in a minute.";
 const QUOTA_USED_UP = "The free AI quota for today has run out. It resets at midnight Pacific time.";
 
-/** Free-tier quotas are per model, so a second model covers the first being busy. An explicit GEMINI_MODEL is used alone. */
-const models = () => (process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : [DEFAULT_MODEL, BACKUP_MODEL]);
+/**
+ * Google applies limits per project and varies them by model
+ * (https://ai.google.dev/gemini-api/docs/rate-limits), and its daily quota is
+ * "PerDayPerProjectPerModel", so the next model still has quota when one is out.
+ * An explicit GEMINI_MODEL is used alone.
+ */
+const models = () => (process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : MODELS);
+
+/**
+ * GEMINI_API_KEY serves the live site. GEMINI_API_KEY_DEV, if set, serves local
+ * work and compare mode, so testing can't use up the demo's quota. It only helps
+ * if it belongs to a different Google Cloud project, because limits are per
+ * project, not per key. Production never reads it.
+ */
+export function geminiApiKey(): string | undefined {
+  const live = process.env.GEMINI_API_KEY;
+  return process.env.NODE_ENV === "production" ? live : process.env.GEMINI_API_KEY_DEV || live;
+}
 
 function client() {
-  return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  return new GoogleGenAI({ apiKey: geminiApiKey() });
 }
 
 /** Busy, out of quota, or not open to this key: all reasons another model might still work. */
@@ -71,9 +86,15 @@ function plainError(error: unknown): unknown {
 
 const MAX_RETRY_WAIT_MS = 60_000;
 
+const isDailyLimit = (error: unknown) => error instanceof ApiError && error.status === 429 && /per.?day|daily/i.test(error.message);
+
+/** A model this key can't use today: its daily quota is gone, it has none, or it isn't open to the key. */
+const isOutForToday = (error: unknown) =>
+  error instanceof ApiError && (isDailyLimit(error) || error.status === 404 || (error.status === 429 && /limit:\s*0\b/.test(error.message)));
+
 /** The wait a per-minute 429 asks for, if it's short. Per-day limits never qualify. */
 function shortRetryDelay(error: unknown): number | null {
-  if (!(error instanceof ApiError) || error.status !== 429 || /per.?day|daily/i.test(error.message)) return null;
+  if (!(error instanceof ApiError) || error.status !== 429 || isDailyLimit(error)) return null;
   // "limit: 0" means this model has no free quota at all, so waiting won't help.
   if (/limit:\s*0\b/.test(error.message)) return null;
   const seconds = Number(error.message.match(/"retryDelay":\s*"(\d+(?:\.\d+)?)s"/)?.[1] ?? 10);
@@ -93,61 +114,67 @@ async function generate(
   ledger: RunLedger,
   signal: AbortSignal,
 ): Promise<GenerateContentResponse> {
-  const tried = models();
   const failures: string[] = [];
-  let waited = false;
+  let lastError: unknown;
 
-  for (let index = 0; index < tried.length; index++) {
-    const model = tried[index];
-    try {
-      const response = await client().models.generateContent({
-        model,
-        contents,
-        config: {
-          maxOutputTokens: MAX_OUTPUT_TOKENS,
-          // A stalled model shouldn't use up the whole run.
-          abortSignal: AbortSignal.any([signal, AbortSignal.timeout(CALL_TIMEOUT_MS)]),
-          ...config,
-        },
-      });
+  // Each pass tries every model in turn, since each has its own quota. If they
+  // were all briefly busy, one more pass follows after the wait they asked for.
+  for (let pass = 0; pass < 2; pass++) {
+    let wait: number | null = null;
+    let anyDaily = false;
+    let allOut = true;
 
-      const usage = response.usageMetadata;
-      ledger.addUsage({
-        modelCalls: 1,
-        input: (usage?.promptTokenCount ?? 0) + (usage?.toolUsePromptTokenCount ?? 0),
-        output: (usage?.candidatesTokenCount ?? 0) + (usage?.thoughtsTokenCount ?? 0),
-        cacheRead: usage?.cachedContentTokenCount ?? 0,
-      });
-      return response;
-    } catch (error) {
-      if (signal.aborted) throw error;
+    for (const model of models()) {
+      try {
+        const response = await client().models.generateContent({
+          model,
+          contents,
+          config: {
+            maxOutputTokens: MAX_OUTPUT_TOKENS,
+            // A stalled model shouldn't use up the whole run.
+            abortSignal: AbortSignal.any([signal, AbortSignal.timeout(CALL_TIMEOUT_MS)]),
+            ...config,
+          },
+        });
 
-      const stalled = !(error instanceof ApiError) && error instanceof Error && /abort|timeout/i.test(`${error.name} ${error.message}`);
-      failures.push(`${model}: ${stalled ? `no reply in ${CALL_TIMEOUT_MS / 1000}s` : String(error).slice(0, 220)}`);
-      console.warn("gemini call failed", failures.at(-1));
+        const usage = response.usageMetadata;
+        ledger.addUsage({
+          modelCalls: 1,
+          input: (usage?.promptTokenCount ?? 0) + (usage?.toolUsePromptTokenCount ?? 0),
+          output: (usage?.candidatesTokenCount ?? 0) + (usage?.thoughtsTokenCount ?? 0),
+          cacheRead: usage?.cachedContentTokenCount ?? 0,
+        });
+        return response;
+      } catch (error) {
+        if (signal.aborted) throw error;
 
-      // Free-tier trouble is usually brief: a per-minute limit says how long to
-      // wait, "high demand" clears in seconds, and a stalled call often answers on
-      // a second try. One retry on the same model beats failing the run or moving
-      // to a model that is just as busy.
-      const delay = shortRetryDelay(error) ?? (error instanceof ApiError && error.status === 503 ? HIGH_DEMAND_WAIT_MS : stalled ? 0 : null);
-      if (delay !== null && !waited) {
-        waited = true;
-        await pause(delay, signal);
-        index--;
-        continue;
+        const stalled = !(error instanceof ApiError) && error instanceof Error && /abort|timeout/i.test(`${error.name} ${error.message}`);
+        failures.push(`${model}: ${stalled ? `no reply in ${CALL_TIMEOUT_MS / 1000}s` : String(error).slice(0, 220)}`);
+        console.warn("gemini call failed", failures.at(-1));
+        lastError = error;
+
+        if (!stalled && !worthTryingAnother(error)) throw toPlainError(error, failures);
+
+        anyDaily ||= isDailyLimit(error);
+        allOut &&= isOutForToday(error);
+        const delay = shortRetryDelay(error) ?? (error instanceof ApiError && error.status === 503 ? HIGH_DEMAND_WAIT_MS : null);
+        if (delay !== null) wait = Math.min(wait ?? delay, delay);
       }
-
-      if (index < tried.length - 1 && (stalled || worthTryingAnother(error))) continue;
-
-      const detail = failures.join(" | ");
-      if (stalled) throw new AgentError(QUOTA_BUSY, true, detail);
-      const plain = plainError(error);
-      throw plain instanceof AgentError ? new AgentError(plain.message, plain.retryable, detail) : plain;
     }
+
+    if (allOut && anyDaily) throw new QuotaExhausted(QUOTA_USED_UP, failures.join(" | "));
+    if (wait === null || pass === 1) break;
+    await pause(wait, signal);
   }
 
-  throw new AgentError("Something went wrong while researching this app.");
+  throw toPlainError(lastError, failures);
+}
+
+function toPlainError(error: unknown, failures: string[]): unknown {
+  const detail = failures.join(" | ");
+  if (!(error instanceof ApiError)) return new AgentError(QUOTA_BUSY, true, detail);
+  const plain = plainError(error);
+  return plain instanceof AgentError ? new AgentError(plain.message, plain.retryable, detail) : plain;
 }
 
 /**
@@ -333,6 +360,9 @@ async function discoverPages(
 const MIN_PAGES_WITH_TEXT = 2;
 /** Text shorter than this is a shell page that needs JavaScript, not docs. */
 const MIN_PAGE_CHARS = 400;
+/** How many of the best-ranked pages get the larger text allowance. */
+const MAIN_PAGES = 3;
+const MAIN_PAGE_CHARS = 12_000;
 
 /**
  * Downloads pages and keeps those with real text that land on an accepted
@@ -375,7 +405,10 @@ async function readPages<T extends z.ZodType>(request: ResearchRequest<T>, found
     const domains = present(texts.map((page) => ledger.addFetched(page)));
     ledger.addUsage({ fetches: texts.length });
     if (domains.length > 0) onDomains?.(domains);
-    const body = texts.map((page) => `<page url="${page.url}">\n${excerpt(page.text, [topics.join(" ")])}\n</page>`).join("\n\n");
+    // The best-ranked pages come first and get more room: they're the main docs.
+    const body = texts
+      .map((page, index) => `<page url="${page.url}">\n${excerpt(page.text, [topics.join(" ")], index < MAIN_PAGES ? MAIN_PAGE_CHARS : undefined)}\n</page>`)
+      .join("\n\n");
     return structured({
       system,
       user: `${user}${note}\n\nThe provider's official pages are below, already read for you. Use only them. Cite each answer with its page's url exactly as given, and copy quotes word for word from the page text.\n\n${body}`,
@@ -453,7 +486,7 @@ async function finish<T extends z.ZodType>(
 export const geminiProvider: LlmProvider = {
   name: "gemini",
 
-  isConfigured: () => Boolean(process.env.GEMINI_API_KEY),
+  isConfigured: () => Boolean(geminiApiKey()),
 
   // Free tier. Tokens are still counted in the stats.
   estimateCost: () => 0,

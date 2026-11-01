@@ -5,8 +5,9 @@ import type { GenerateEvent } from "@/lib/agent/events";
 import { runPipeline } from "@/lib/agent/pipeline";
 import { findLibraryGuide } from "@/lib/guides";
 import { getProvider } from "@/lib/llm";
-import { AgentError } from "@/lib/llm/types";
-import { RATE_LIMIT, checkRateLimit, findRecentResult, isStoreConfigured } from "@/lib/store";
+import { nextPacificMidnight } from "@/lib/format";
+import { AgentError, QuotaExhausted } from "@/lib/llm/types";
+import { RATE_LIMIT, checkRateLimit, findRecentResult, isStoreConfigured, listGeneratedResults } from "@/lib/store";
 
 // 300s is the most Vercel's Hobby plan allows, and also the default on Pro, so
 // this is safe on either. The agent stops first so it can still report back.
@@ -118,7 +119,11 @@ export async function POST(request: NextRequest) {
         await runPipeline(input, emit, signal, { compare });
       } catch (error) {
         console.error("generation failed", error);
-        emit(toErrorEvent(error, timeout.aborted));
+        if (error instanceof QuotaExhausted) {
+          emit({ type: "paused", resumesAt: nextPacificMidnight(new Date()), generated: await listGeneratedResults(), detail: error.detail });
+        } else {
+          emit(toErrorEvent(error, timeout.aborted));
+        }
       } finally {
         if (!request.signal.aborted) controller.close();
       }

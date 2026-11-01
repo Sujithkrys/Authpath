@@ -74,6 +74,10 @@ function Footer({ children }: { children: ReactNode }) {
   );
 }
 
+/** The reader's own time zone. This only renders after a generation, so it can't cause a hydration mismatch. */
+const formatResumeTime = (iso: string) =>
+  new Date(iso).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit", timeZoneName: "short" });
+
 const footerText = "min-w-0 text-[14px] text-text-2";
 
 function OutcomePanel({ outcome, run, onRun }: { outcome: TraceOutcome; run: TraceRun; onRun: (input: string) => void }) {
@@ -133,6 +137,36 @@ function OutcomePanel({ outcome, run, onRun }: { outcome: TraceOutcome; run: Tra
               Open shareable page
             </Link>
           </div>
+        </div>
+      );
+
+    case "paused":
+      return (
+        <div className="border-t border-border bg-surface-2 px-[18px] py-4">
+          <b className="mb-1 block text-[15px] font-semibold">Live generation is paused until {formatResumeTime(outcome.resumesAt)}.</b>
+          <p className="text-[14px] text-text-2">
+            <Link href="/" className="text-accent-ink hover:underline">
+              Library guides
+            </Link>{" "}
+            and previously generated guides still work.
+          </p>
+          {outcome.generated.length > 0 && (
+            <>
+              <div className="mt-4 mb-1.5 font-mono text-[11px] tracking-[.08em] text-text-3 uppercase">Generated guides</div>
+              <ul className="flex flex-wrap gap-1.5">
+                {outcome.generated.map(({ slug, name }) => (
+                  <li key={slug} className="min-w-0 max-w-full">
+                    <Link
+                      href={`/guides/${slug}`}
+                      className="block max-w-full truncate rounded-sm border border-border bg-surface px-2.5 py-1 text-[13.5px] hover:border-border-strong"
+                    >
+                      {name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       );
 

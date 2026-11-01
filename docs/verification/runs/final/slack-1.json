@@ -1,0 +1,499 @@
+{
+  "app": "Slack",
+  "base": "http://localhost:3000",
+  "compare": true,
+  "httpStatus": 200,
+  "seconds": 26.299,
+  "events": [
+    {
+      "type": "stage_start",
+      "stage": "classify",
+      "t": 152
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "slack.com",
+        "api.slack.com",
+        "docs.slack.dev"
+      ],
+      "t": 4946
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "docs.slack.dev"
+      ],
+      "t": 7688
+    },
+    {
+      "type": "stage_done",
+      "stage": "classify",
+      "detail": "OAuth provider",
+      "findings": {
+        "find": {
+          "outcome": "found",
+          "appName": "Slack",
+          "officialDomains": [
+            "slack.com"
+          ],
+          "docsUrls": [
+            "https://slack.com/",
+            "https://api.slack.com/",
+            "https://api.slack.com/authentication"
+          ],
+          "options": []
+        },
+        "classified": {
+          "category": "oauth_provider",
+          "evidenceUrl": "https://docs.slack.dev/tools/bolt-js/concepts/authenticating-oauth/",
+          "evidenceQuote": "OAuth allows installation of your app to any workspace and is an important step in distributing your app.",
+          "summary": "Slack is a messaging and collaboration platform that lets developers build apps, bots, and integrations using OAuth 2.0 to access workspace data and interact with users.",
+          "authMethods": [
+            "OAuth 2.0",
+            "User tokens",
+            "Bot tokens",
+            "App tokens"
+          ],
+          "instead": ""
+        },
+        "quoteHolds": true,
+        "category": "oauth_provider"
+      },
+      "t": 9389
+    },
+    {
+      "type": "stage_start",
+      "stage": "read",
+      "t": 9390
+    },
+    {
+      "type": "sources",
+      "stage": "read",
+      "domains": [
+        "docs.slack.dev"
+      ],
+      "t": 12560
+    },
+    {
+      "type": "stage_done",
+      "stage": "read",
+      "detail": "5 of 6 setup items found in 11 pages",
+      "findings": {
+        "developerConsoleUrl": "https://api.slack.com/apps",
+        "items": [
+          {
+            "key": "register_url",
+            "status": "found",
+            "answer": "Navigate to your list of apps within App Settings and create a new Slack app from scratch.",
+            "sourceUrl": "https://docs.slack.dev/tools/bolt-js/creating-an-app/"
+          },
+          {
+            "key": "app_types",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "required_fields",
+            "status": "found",
+            "answer": "After you fill out an app name and pick a workspace to install it to, press the Create App button.",
+            "sourceUrl": "https://docs.slack.dev/tools/bolt-js/creating-an-app/"
+          },
+          {
+            "key": "redirect_uris",
+            "status": "found",
+            "answer": "We request that you add a Redirect URL in your app's configuration on api.slack.com/apps under the OAuth and Permissions section.",
+            "sourceUrl": "https://docs.slack.dev/tools/python-slack-sdk/tutorial/understanding-oauth-scopes/"
+          },
+          {
+            "key": "credentials",
+            "status": "found",
+            "answer": "You can get the client ID from the Basic Information section of your app.",
+            "sourceUrl": "https://docs.slack.dev/tools/python-slack-sdk/tutorial/understanding-oauth-scopes/"
+          },
+          {
+            "key": "scopes",
+            "status": "found",
+            "answer": "Navigate to OAuth & Permissions in the left sidebar and scroll down to the Bot Token Scopes section. Click Add an OAuth Scope.",
+            "sourceUrl": "https://docs.slack.dev/tools/bolt-js/creating-an-app/"
+          }
+        ],
+        "pagesRead": [
+          "https://docs.slack.dev/tools/bolt-js/concepts/authenticating-oauth/",
+          "https://docs.slack.dev/tools/bolt-python/concepts/authenticating-oauth/",
+          "https://docs.slack.dev/authentication/",
+          "https://docs.slack.dev/tools/python-slack-sdk/tutorial/understanding-oauth-scopes/",
+          "https://docs.slack.dev/reference/methods/apps.event.authorizations.list/",
+          "https://docs.slack.dev/reference/scopes/authorizations.read/",
+          "https://docs.slack.dev/tools/node-slack-sdk/reference/oauth/classes/AuthorizationError/",
+          "https://docs.slack.dev/reference/types/oauth2-type/",
+          "https://docs.slack.dev/authentication/enterprise-managed-authorization/",
+          "https://docs.slack.dev/tools/bolt-js/creating-an-app/",
+          "https://docs.slack.dev/tools/bolt-python/creating-an-app/"
+        ]
+      },
+      "t": 14607
+    },
+    {
+      "type": "stage_start",
+      "stage": "approval",
+      "t": 14607
+    },
+    {
+      "type": "sources",
+      "stage": "approval",
+      "domains": [
+        "docs.slack.dev"
+      ],
+      "t": 19399
+    },
+    {
+      "type": "stage_done",
+      "stage": "approval",
+      "detail": "Review is only required for listing in the Slack Marketplace.",
+      "findings": {
+        "gate": "listing_only",
+        "gateDetail": "Review is only required for listing in the Slack Marketplace.",
+        "gateQuote": "You’ve finished building your app, tested it, and implemented user feedback, which means your app is ready to be reviewed by the Slack Marketplace team, hurrah!",
+        "gateUrl": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/",
+        "timelineLabel": "up to 10 business days, then up to 10 weeks",
+        "evidenceQuote": "Currently, the preliminary part of the review takes up to 10 business days to receive feedback, while the functional review takes up to 10 weeks for new submissions and 6 weeks for published apps resubmitting changes.",
+        "evidenceUrl": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/",
+        "items": [
+          {
+            "key": "review",
+            "status": "found",
+            "answer": "The review process consists of two main parts: a preliminary review of listing information and scopes, followed by a functional review involving installation and testing.",
+            "sourceUrl": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/"
+          },
+          {
+            "key": "test_limits",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "found",
+            "answer": "Submissions may be returned if they are submitted with bugs, poor user experience, repeated low quality, or if they are not fully functional and ready for review.",
+            "sourceUrl": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/"
+          }
+        ],
+        "pagesRead": [
+          "https://docs.slack.dev/tools/bolt-js/concepts/authenticating-oauth/",
+          "https://docs.slack.dev/tools/bolt-python/concepts/authenticating-oauth/",
+          "https://docs.slack.dev/authentication/",
+          "https://docs.slack.dev/tools/python-slack-sdk/tutorial/understanding-oauth-scopes/",
+          "https://docs.slack.dev/reference/methods/apps.event.authorizations.list/",
+          "https://docs.slack.dev/reference/scopes/authorizations.read/",
+          "https://docs.slack.dev/tools/node-slack-sdk/reference/oauth/classes/AuthorizationError/",
+          "https://docs.slack.dev/reference/types/oauth2-type/",
+          "https://docs.slack.dev/authentication/enterprise-managed-authorization/",
+          "https://docs.slack.dev/tools/bolt-js/creating-an-app/",
+          "https://docs.slack.dev/tools/bolt-python/creating-an-app/",
+          "https://docs.slack.dev/slack-marketplace/marketplace-terms-conditions/slack-security-review/",
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/",
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements/",
+          "https://docs.slack.dev/tools/bolt-js/concepts/publishing-views/",
+          "https://docs.slack.dev/reference/methods/admin.apps.restricted.list/",
+          "https://docs.slack.dev/concepts/security/"
+        ]
+      },
+      "t": 21347
+    },
+    {
+      "type": "stage_start",
+      "stage": "write",
+      "t": 21348
+    },
+    {
+      "type": "stage_done",
+      "stage": "write",
+      "detail": "4 steps written from the checklist",
+      "t": 24243
+    },
+    {
+      "type": "stage_start",
+      "stage": "verify",
+      "t": 24243
+    },
+    {
+      "type": "stage_done",
+      "stage": "verify",
+      "detail": "12 confirmed, 0 marked uncertain, 0 dropped",
+      "findings": {
+        "claimCheck": {
+          "checked": 12,
+          "kept": 12,
+          "downgraded": 0,
+          "dropped": 0
+        },
+        "verdicts": {
+          "S1": "yes",
+          "S2": "yes",
+          "S3": "yes",
+          "S4": "yes",
+          "C:register_url": "yes",
+          "C:required_fields": "yes",
+          "C:redirect_uris": "yes",
+          "C:credentials": "yes",
+          "C:scopes": "yes",
+          "C:review": "yes",
+          "C:review_timeline": "yes",
+          "C:rejection_reasons": "yes",
+          "G": "yes"
+        },
+        "gateConfirmed": true,
+        "gate": "listing_only"
+      },
+      "t": 26295
+    },
+    {
+      "type": "guide",
+      "slug": "slack",
+      "uncertainCount": 0,
+      "claimCheck": {
+        "checked": 12,
+        "kept": 12,
+        "downgraded": 0,
+        "dropped": 0
+      },
+      "guide": {
+        "id": "slack",
+        "name": "Slack",
+        "init": "SL",
+        "color": "#525252",
+        "diff": "moderate",
+        "diffReason": "Moderate: review is only needed to be listed in its marketplace or app directory",
+        "tested": false,
+        "generated": true,
+        "generatedAt": "2026-11-01T09:55:37.090Z",
+        "version": 4,
+        "setup": "~20 min",
+        "wait": "See review timeline",
+        "review": "Listing only",
+        "site": "api.slack.com/apps",
+        "steps": [
+          {
+            "t": "Create your app",
+            "d": "Create a new Slack app from scratch by entering an app name and picking a workspace.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://docs.slack.dev/tools/bolt-js/creating-an-app/",
+            "link": {
+              "label": "Open the developer console",
+              "url": "https://api.slack.com/apps"
+            }
+          },
+          {
+            "t": "Add redirect URL",
+            "d": "Add your app's redirect URL under the OAuth and Permissions section.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://docs.slack.dev/tools/python-slack-sdk/tutorial/understanding-oauth-scopes/",
+            "link": {
+              "label": "Open the developer console",
+              "url": "https://api.slack.com/apps"
+            }
+          },
+          {
+            "t": "Configure scopes",
+            "d": "Navigate to OAuth & Permissions in the left sidebar, scroll to Bot Token Scopes, and click Add an OAuth Scope.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://docs.slack.dev/tools/bolt-js/creating-an-app/",
+            "link": {
+              "label": "Open the developer console",
+              "url": "https://api.slack.com/apps"
+            }
+          },
+          {
+            "t": "Get credentials",
+            "d": "Get your client ID from the Basic Information section of your app.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://docs.slack.dev/tools/python-slack-sdk/tutorial/understanding-oauth-scopes/",
+            "link": {
+              "label": "Open the developer console",
+              "url": "https://api.slack.com/apps"
+            }
+          }
+        ],
+        "blockers": [
+          {
+            "b": "Marketplace review",
+            "s": "The review process consists of a preliminary review and a functional review involving installation and testing.",
+            "source": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/"
+          },
+          {
+            "b": "Rejection reasons",
+            "s": "Submissions may be returned if they have bugs, poor user experience, repeated low quality, or lack full functionality.",
+            "source": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/"
+          }
+        ],
+        "agent": [
+          "Prepare form values"
+        ],
+        "you": [
+          "Create the app in the console",
+          "Add the redirect URL",
+          "Configure scopes",
+          "Get credentials"
+        ],
+        "sources": [
+          [
+            "Creating an app with Bolt for JavaScript | Slack Developer Docs",
+            "docs.slack.dev/tools/bolt-js/creating-an-app"
+          ],
+          [
+            "Understanding OAuth scopes for bots | Slack Developer Docs",
+            "docs.slack.dev/tools/python-slack-sdk/tutorial/understanding-oauth-scopes"
+          ],
+          [
+            "Slack Marketplace review process | Slack Developer Docs",
+            "docs.slack.dev/slack-marketplace/slack-marketplace-review-guide"
+          ]
+        ],
+        "otherPages": [
+          [
+            "Authenticating with OAuth | Slack Developer Docs",
+            "docs.slack.dev/tools/bolt-js/concepts/authenticating-oauth"
+          ],
+          [
+            "Authenticating with OAuth | Slack Developer Docs",
+            "docs.slack.dev/tools/bolt-python/concepts/authenticating-oauth"
+          ],
+          [
+            "Authentication overview | Slack Developer Docs",
+            "docs.slack.dev/authentication"
+          ],
+          [
+            "apps.event.authorizations.list method | Slack Developer Docs",
+            "docs.slack.dev/reference/methods/apps.event.authorizations.list"
+          ],
+          [
+            "authorizations:read scope | Slack Developer Docs",
+            "docs.slack.dev/reference/scopes/authorizations.read"
+          ],
+          [
+            "AuthorizationError | Slack Developer Docs",
+            "docs.slack.dev/tools/node-slack-sdk/reference/oauth/classes/AuthorizationError"
+          ],
+          [
+            "oauth2 type | Slack Developer Docs",
+            "docs.slack.dev/reference/types/oauth2-type"
+          ],
+          [
+            "Enterprise-managed authorization | Slack Developer Docs",
+            "docs.slack.dev/authentication/enterprise-managed-authorization"
+          ],
+          [
+            "Creating an app with Bolt for Python | Slack Developer Docs",
+            "docs.slack.dev/tools/bolt-python/creating-an-app"
+          ],
+          [
+            "Slack Security Review | Slack Developer Docs",
+            "docs.slack.dev/slack-marketplace/marketplace-terms-conditions/slack-security-review"
+          ],
+          [
+            "Submission guidelines and requirements | Slack Developer Docs",
+            "docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements"
+          ],
+          [
+            "Publishing views to App Home | Slack Developer Docs",
+            "docs.slack.dev/tools/bolt-js/concepts/publishing-views"
+          ],
+          [
+            "admin.apps.restricted.list method | Slack Developer Docs",
+            "docs.slack.dev/reference/methods/admin.apps.restricted.list"
+          ],
+          [
+            "Security best practices | Slack Developer Docs",
+            "docs.slack.dev/concepts/security"
+          ]
+        ],
+        "checklist": [
+          {
+            "key": "register_url",
+            "status": "found",
+            "answer": "Navigate to your list of apps within App Settings and create a new Slack app from scratch.",
+            "source": "https://docs.slack.dev/tools/bolt-js/creating-an-app/"
+          },
+          {
+            "key": "app_types",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "required_fields",
+            "status": "found",
+            "answer": "After you fill out an app name and pick a workspace to install it to, press the Create App button.",
+            "source": "https://docs.slack.dev/tools/bolt-js/creating-an-app/"
+          },
+          {
+            "key": "redirect_uris",
+            "status": "found",
+            "answer": "We request that you add a Redirect URL in your app's configuration on api.slack.com/apps under the OAuth and Permissions section.",
+            "source": "https://docs.slack.dev/tools/python-slack-sdk/tutorial/understanding-oauth-scopes/"
+          },
+          {
+            "key": "credentials",
+            "status": "found",
+            "answer": "You can get the client ID from the Basic Information section of your app.",
+            "source": "https://docs.slack.dev/tools/python-slack-sdk/tutorial/understanding-oauth-scopes/"
+          },
+          {
+            "key": "scopes",
+            "status": "found",
+            "answer": "Navigate to OAuth & Permissions in the left sidebar and scroll down to the Bot Token Scopes section. Click Add an OAuth Scope.",
+            "source": "https://docs.slack.dev/tools/bolt-js/creating-an-app/"
+          },
+          {
+            "key": "review",
+            "status": "found",
+            "answer": "The review process consists of two main parts: a preliminary review of listing information and scopes, followed by a functional review involving installation and testing.",
+            "source": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/"
+          },
+          {
+            "key": "review_timeline",
+            "status": "found",
+            "answer": "“Currently, the preliminary part of the review takes up to 10 business days to receive feedback, while the functional review takes up to 10 weeks for new submissions and 6 weeks for published apps resubmitting changes.”",
+            "source": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/"
+          },
+          {
+            "key": "test_limits",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "found",
+            "answer": "Submissions may be returned if they are submitted with bugs, poor user experience, repeated low quality, or if they are not fully functional and ready for review.",
+            "source": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/"
+          }
+        ],
+        "claimCheck": {
+          "checked": 12,
+          "kept": 12,
+          "downgraded": 0,
+          "dropped": 0
+        }
+      },
+      "stats": {
+        "durationMs": 26154,
+        "modelCalls": 8,
+        "inputTokens": 33394,
+        "outputTokens": 2162,
+        "cacheReadTokens": 11296,
+        "cacheWriteTokens": 0,
+        "webSearches": 0,
+        "webFetches": 21,
+        "estimatedCostUsd": 0
+      },
+      "t": 26295
+    }
+  ]
+}

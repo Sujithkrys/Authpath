@@ -38,6 +38,13 @@ export interface AppOption {
   website: string;
 }
 
+/** A saved generated guide or card, for linking to. */
+export interface GeneratedLink {
+  slug: string;
+  name: string;
+  generatedAt: string;
+}
+
 export interface GenerationStats {
   durationMs: number;
   modelCalls: number;
@@ -64,4 +71,6 @@ export type GenerateEvent =
   | { type: "card"; slug: string; card: AppCard; stats: GenerationStats }
   | { type: "ambiguous"; options: AppOption[]; stats: GenerationStats }
   | { type: "not_found"; message: string; stats: GenerationStats }
+  /** The daily AI quota is gone. Says when it returns, and what still works meanwhile. */
+  | { type: "paused"; resumesAt: string; generated: GeneratedLink[]; detail?: string }
   | { type: "error"; message: string; retryable: boolean; detail?: string };

@@ -17,14 +17,13 @@ export interface Claim {
 
 export type Verdict = "yes" | "partly" | "no";
 
-export const GATE_CLAIM_ID = "G";
-const MAX_CHARS_PER_PAGE = 7000;
+export const MAX_CHARS_PER_PAGE = 7000;
 const CHUNK = 500;
 
 const plain = (text: string) => text.replace(/<\/?code>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 const labelOf = (key: string) => CHECKLIST.find((item) => item.key === key)?.label ?? key;
 
-export function buildClaims(guide: Guide, gate: { text: string; pageUrl: string } | null): Claim[] {
+export function buildClaims(guide: Guide, gates: Claim[] = []): Claim[] {
   const claims: Claim[] = [];
   guide.steps.forEach((step, index) => {
     if (step.source && step.e === "docs") claims.push({ id: `S${index + 1}`, text: plain(`${step.t}. ${step.d}`), pageUrl: step.source });
@@ -34,7 +33,7 @@ export function buildClaims(guide: Guide, gate: { text: string; pageUrl: string 
       claims.push({ id: `C:${item.key}`, text: plain(`${labelOf(item.key)}: ${item.answer}`), pageUrl: item.source });
     }
   }
-  if (gate) claims.push({ id: GATE_CLAIM_ID, text: gate.text, pageUrl: gate.pageUrl });
+  claims.push(...gates);
   return claims;
 }
 
@@ -43,8 +42,8 @@ const keywords = (text: string) =>
   [...new Set(text.toLowerCase().match(/[a-z0-9_:/.-]{4,}/g) ?? [])].filter((word) => !STOP.has(word));
 
 /** The parts of a page most relevant to its claims, kept in page order, within a size limit. */
-export function excerpt(text: string, claimTexts: string[]): string {
-  if (text.length <= MAX_CHARS_PER_PAGE) return text;
+export function excerpt(text: string, claimTexts: string[], maxChars = MAX_CHARS_PER_PAGE): string {
+  if (text.length <= maxChars) return text;
   const words = keywords(claimTexts.join(" "));
   const chunks: { index: number; body: string; score: number }[] = [];
   for (let start = 0, index = 0; start < text.length; start += CHUNK, index++) {
@@ -55,9 +54,9 @@ export function excerpt(text: string, claimTexts: string[]): string {
   const keep = chunks
     .filter((chunk) => chunk.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, Math.floor(MAX_CHARS_PER_PAGE / CHUNK))
+    .slice(0, Math.floor(maxChars / CHUNK))
     .sort((a, b) => a.index - b.index);
-  return (keep.length ? keep : chunks.slice(0, Math.floor(MAX_CHARS_PER_PAGE / CHUNK))).map((chunk) => chunk.body).join(" … ");
+  return (keep.length ? keep : chunks.slice(0, Math.floor(maxChars / CHUNK))).map((chunk) => chunk.body).join(" … ");
 }
 
 export const VERIFY_PROMPT = `You check claims against the official web page each one cites.

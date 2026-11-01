@@ -94,6 +94,41 @@ export function isOfficialHost(host: string, domains: string[]): boolean {
 
 const isDocsHost = (host: string) => host.split(".").some((label) => DOCS_LABELS.has(label));
 
+/** SDK tutorials, quickstarts and sample apps: useful, but never ahead of the provider's main docs. */
+const SECONDARY_PAGE =
+  /(^|\/)(tools|sdks?|libraries|client-libraries|bolt(-[a-z]+)?|samples?|examples?|tutorials?|quickstarts?|codelabs?|how-?tos?|cookbooks?|recipes|walkthroughs?|articles?|article)(\/|$)|(^|[/\-_])(tutorial|quickstart|sample|example)s?([/\-_.]|$)/i;
+
+/** The main OAuth reference and app-registration pages, whatever the provider calls them. */
+const MAIN_PAGE =
+  /(^|\/)(oauth2?|authentication|authorization|authorizing|scopes?|pkce|using-pkce)(\/?$)|(creat|regist|install|authoriz|authenticat|using)[a-z]*-[a-z0-9-]*(oauth|apps?\b|pkce)|oauth[a-z0-9-]*-(creat|regist|flow|install|guide|app)|(^|[/\-])(web-server|redirect|consent|production-readiness|verification)([/\-]|$)/i;
+
+/** Weighs a page by what kind it is: main docs first, reference and tutorials later. */
+export function pageWeight(url: string): number {
+  let path: string;
+  try {
+    path = new URL(url).pathname.toLowerCase().replace(/\/$/, "");
+  } catch {
+    return 0;
+  }
+  const secondary = SECONDARY_PAGE.test(path) || /(^|\/)(reference)\//.test(path);
+  if (secondary) return 0.25;
+  if (!MAIN_PAGE.test(path)) return 1;
+  // A page whose own slug says OAuth beats a sibling about another app type.
+  return /oauth/.test(path.split("/").at(-1) ?? "") ? 3 : 2;
+}
+
+/** Account login and email-setup help: about signing in to the product, never about authenticating to its API. */
+const ACCOUNT_HELP_PAGE =
+  /(^|[/\-_])(two-factor|2fa|mfa|password|passwords|saml|sso|login|log-in|signin|sign-in|dkim|spf|dmarc|billing|invoices?)([/\-_.]|$)|manage-your-[a-z0-9-]*account/i;
+
+export function isAccountHelpPage(url: string): boolean {
+  try {
+    return ACCOUNT_HELP_PAGE.test(new URL(url).pathname);
+  } catch {
+    return false;
+  }
+}
+
 /** Locale path segments for translated copies of docs. English copies are kept. */
 const OTHER_LOCALES = new Set(
   "es fr de ja ko pt pt-br pt-pt zh zh-cn zh-tw zh-hans zh-hant ru it nl pl tr id vi th sv da fi nb no cs he ar uk hu ro el es-419 es-es fr-fr de-de ja-jp ko-kr".split(" "),
@@ -128,6 +163,7 @@ const DOCS_SEGMENT =
 export function isDiscoverable(url: string): boolean {
   const host = hostOf(url);
   if (!host) return false;
+  if (isAccountHelpPage(url)) return false;
   if (isDocsHost(host)) return true;
   const first = new URL(url).pathname.split("/").filter(Boolean)[0] ?? "";
   return first === "" || DOCS_SEGMENT.test(first);
@@ -172,6 +208,24 @@ const OAUTH_TERMS: RegExp[] = [
 /** True when a page's text mentions OAuth or app-registration terms. Empty text never passes. */
 export function mentionsOAuthTerms(text: string): boolean {
   return OAUTH_TERMS.some((term) => term.test(text));
+}
+
+/** Words that show a page is about authenticating to an API. */
+const API_AUTH_TERMS: RegExp[] = [
+  /\bapi[ _-]?(key|token)s?\b/i,
+  /\b(server|account|access|bearer|project|personal|secret|auth(entication)?) (api )?(tokens?|keys?)\b/i,
+  /\bauthorization header\b/i,
+  /\bx-[a-z0-9-]*(token|key|auth)[a-z0-9-]*\b/i,
+  /\bbasic auth(entication)?\b/i,
+];
+
+/**
+ * The test for pages a result card cites: about authenticating to the API
+ * (keys, tokens, auth headers), not an account login or two-factor help article.
+ */
+export function isApiAuthPage(url: string, text: string): boolean {
+  if (isAccountHelpPage(url)) return false;
+  return API_AUTH_TERMS.some((term) => term.test(text)) || mentionsOAuthTerms(text);
 }
 
 /** Words that show a page is about reviewing, certifying or listing apps. */

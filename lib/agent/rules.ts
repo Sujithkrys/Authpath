@@ -155,12 +155,14 @@ export function writingProblems(steps: StepDraftLike[], domains: string[], minSt
 /* ---------- Difficulty ---------- */
 
 /**
- * What stands between a working app and real users, as the approval stage
- * found it. The model reports one of these with a quote; code decides the rating.
+ * What stands between a working app and real users connecting at scale, as the
+ * approval stage found it. The model reports what the pages show, each with a
+ * quote; code decides the rating.
  */
 export const GATES = [
   "none",
   "listing_only",
+  "limited",
   "light_verification",
   "mandatory_review",
   "security_assessment",
@@ -170,9 +172,16 @@ export const GATES = [
 ] as const;
 export type Gate = (typeof GATES)[number];
 
+/**
+ * Can real users connect at scale without a review?
+ * Easy: yes, and any review is only for an optional listing.
+ * Moderate: yes, but with limits until reviewed or certified, or light verification.
+ * Hard: a review, assessment, partner program or paid plan comes first, for some or all common scopes.
+ */
 const GATE_DIFFICULTY: Record<Gate, Difficulty> = {
   none: "easy",
-  listing_only: "moderate",
+  listing_only: "easy",
+  limited: "moderate",
   light_verification: "moderate",
   mandatory_review: "hard",
   security_assessment: "hard",
@@ -181,31 +190,36 @@ const GATE_DIFFICULTY: Record<Gate, Difficulty> = {
   unknown: "unknown",
 };
 
-/** What each gate means, in words a checker can hold a page against. */
+/** Strictest last, so the strictest gate with evidence decides the rating. */
+const STRICTNESS: Gate[] = ["unknown", "none", "listing_only", "limited", "light_verification", "paid_plan", "partner_program", "mandatory_review", "security_assessment"];
+
+/** What each gate means, in words a reader can use as the reason. */
 export const GATE_MEANING: Record<Gate, string> = {
-  none: "self-serve, with no review needed to go live",
-  listing_only: "review is only needed for a public listing",
-  light_verification: "light business verification is needed",
-  mandatory_review: "a mandatory review is needed before real users can connect",
-  security_assessment: "a security assessment is needed before real users can connect",
-  partner_program: "a partner program is needed before real users can connect",
-  paid_plan: "a paid plan is needed before real users can connect",
-  unknown: "the approval process couldn't be confirmed in the official docs",
+  none: "you register the app yourself, and the review pages read describe no review before real users connect",
+  listing_only: "real users can connect without review; review is only for an optional marketplace or directory listing",
+  limited: "apps work without review, but with limits until they're reviewed or certified",
+  light_verification: "light business or brand verification is needed",
+  mandatory_review: "a review or verification is required before real users can connect, for some or all scopes",
+  security_assessment: "a security assessment is required before real users can connect, for some or all scopes",
+  partner_program: "a partner program is required before real users can connect",
+  paid_plan: "a paid plan is required before real users can connect",
+  unknown: "no supporting quote was found in the official pages read",
 };
 
 /**
- * What the checker holds the gate's quoted page against: only what such a quote
- * can show. "Only for a listing" is the rule's reading once no stricter gate was
- * found, so the claim checked is that the listing review exists.
+ * What the checker holds a gate's quoted page against: only what such a quote can
+ * show, in the page's own terms. "For some or all scopes" matters: a provider
+ * that gates only sensitive scopes still gates real users.
  */
 export const GATE_CLAIM: Record<Gate, string> = {
   none: "developers can create and register an app themselves from their own account",
   listing_only: "apps are reviewed before they can be listed in a public directory or marketplace",
-  light_verification: "a business or brand verification is needed before real users can connect",
-  mandatory_review: "a review is required before real users can connect",
-  security_assessment: "a security assessment is required before real users can connect",
-  partner_program: "joining a partner program is required before real users can connect",
-  paid_plan: "a paid plan is required before real users can connect",
+  limited: "apps have limits, such as a user, connection or rate cap, until they are reviewed or certified",
+  light_verification: "a business, brand or domain verification applies to apps",
+  mandatory_review: "a review or verification is required for apps, for some or all scopes",
+  security_assessment: "a security assessment is required for apps, for some or all scopes",
+  partner_program: "joining a partner program is required for apps",
+  paid_plan: "a paid plan is required for apps",
   unknown: "the approval process is not documented",
 };
 
@@ -213,6 +227,7 @@ export const GATE_CLAIM: Record<Gate, string> = {
 export const GATE_REVIEW_LABEL: Record<Gate, string> = {
   none: "No",
   listing_only: "Listing only",
+  limited: "To lift limits",
   light_verification: "Light verification",
   mandatory_review: "Required",
   security_assessment: "Security assessment",
@@ -221,77 +236,94 @@ export const GATE_REVIEW_LABEL: Record<Gate, string> = {
   unknown: "Unclear",
 };
 
-const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
-
-/** Gates that make an app harder than "listing only". Only ever taken from a confirmed claim. */
-const STRICT_GATES = new Set<Gate>(["light_verification", "mandatory_review", "security_assessment", "partner_program", "paid_plan"]);
-
 /** A review answer about getting listed rather than getting access. */
 const LISTING_TERMS = /\b(marketplace|app store|app directory|directory|listing|listed|publish(ed|ing)? (to|in|on) )/i;
 /** A review page whose path says it's about a marketplace or app store listing. */
 const LISTING_PATH = /[/\-_](marketplace|app-?store|app-?directory|listing)([/\-_.]|$)/i;
+/** A review answer saying apps must pass something. */
+const REQUIRED_REVIEW = /\b(requires?|required|must|need(s|ed)?)\b.{0,80}\b(verif|review|assess|audit)|\b(verif\w*|review|assessment|audit)\b.{0,40}\b(is|are)?\s*(required|mandatory)\b/i;
+
+export interface GateCandidate {
+  gate: Gate;
+  detail: string;
+  /** The quote was found word for word on an official page read this run. */
+  quoteHolds: boolean;
+  /** The checker's verdict on the gate against that page, if it was asked. */
+  verdict?: "yes" | "partly" | "no";
+}
 
 export interface GateEvidence {
-  /** The gate the approval stage proposed. */
-  proposed: Gate;
-  /** Whether the checker confirmed the proposed gate against its page. */
-  proposedConfirmed: boolean;
-  proposedDetail: string;
-  /** The review and registration checklist answers, after the checker. */
+  /** Every gate the approval stage proposed. */
+  candidates: GateCandidate[];
+  /** The checklist answers, after the checker. */
   review?: { status: string; answer: string; source?: string };
   registration?: { status: string };
+  limits?: { status: string; answer: string };
   /** Whether the research proposed any review answer at all, before the checker. */
   reviewProposed: boolean;
-  /** The gate's quote, only when it was found word for word on a page read. */
-  verifiedGateQuote?: string;
 }
 
-/**
- * Decides the gate from checked evidence rather than the model's pick, which
- * varies run to run:
- * - a strict gate stands only if the checker confirmed it;
- * - if the research found any review at all, a confirmed answer about a
- *   marketplace or directory listing means listing only, and anything else is
- *   unknown. A review the checker couldn't confirm never turns into "none";
- * - an unconfirmed strict gate is unknown;
- * - only with no review found at all does confirmed self-serve registration mean none.
- */
-export function decideGate(evidence: GateEvidence): { gate: Gate; detail: string } {
-  const { proposed, proposedConfirmed, proposedDetail, review, registration, reviewProposed, verifiedGateQuote = "" } = evidence;
-  if (STRICT_GATES.has(proposed) && proposedConfirmed) return { gate: proposed, detail: proposedDetail };
-  // The checker confirmed on its page that apps are reviewed before being listed.
-  if (proposed === "listing_only" && proposedConfirmed) {
-    return { gate: "listing_only", detail: "review is only needed to be listed in its marketplace or app directory" };
-  }
-  if (reviewProposed) {
-    // The answer's wording varies run to run, so the cited page's path counts too,
-    // e.g. docs.slack.dev/slack-marketplace/slack-marketplace-review-guide.
-    // So does a gate quote found word for word on a page, e.g. Xero's "will not be
-    // certified or listed in Xero's app marketplace without passing these assessments".
-    const aboutListing =
-      review?.status === "found" &&
-      (LISTING_TERMS.test(review.answer) || LISTING_PATH.test(review.source ?? "") || LISTING_TERMS.test(verifiedGateQuote));
-    return aboutListing
-      ? { gate: "listing_only", detail: "review is only needed to be listed in its marketplace or app directory" }
-      : { gate: "unknown", detail: "" };
-  }
-  if (STRICT_GATES.has(proposed)) return { gate: "unknown", detail: "" };
-  if (registration?.status === "found") {
-    return { gate: "none", detail: "you register the app yourself, and the review pages read describe no review before real users connect" };
-  }
-  return { gate: "unknown", detail: "" };
+export interface GateDecision {
+  gate: Gate;
+  detail: string;
+  /** False when the evidence is real but the checker only partly agreed. */
+  confirmed: boolean;
 }
 
+/** Status to confirmation: a found answer is confirmed, an uncertain one is an estimate, anything else is no evidence. */
+const fromStatus = (status: string | undefined): "yes" | "partly" | "no" =>
+  status === "found" ? "yes" : status === "uncertain" ? "partly" : "no";
+
 /**
- * The rating comes from the gate alone, and only from a confirmed one: the gate's
- * quote must be on a page read this run and the checker must agree. Otherwise
- * it's "unknown", never a guess.
+ * Decides the gate from evidence, not the model's pick. The strictest gate with
+ * support wins, so finding "marketplace review" can't hide "security assessment".
+ * - A gate needs its quote on a page. The checker's "no" removes it; "partly"
+ *   keeps it as a best estimate, marked not fully confirmed.
+ * - Checklist answers count too: limits mean "limited", a review about a listing
+ *   means "listing_only", and a review apps must pass is a hard best estimate.
+ * - Easy by absence needs confirmed self-serve registration and no review found.
+ * - "unknown" is only for when nothing supports any gate.
  */
-export function difficultyFor(gate: Gate, confirmed: boolean, detail: string): { diff: Difficulty; reason: string } {
-  const effective: Gate = confirmed ? gate : "unknown";
-  const diff = GATE_DIFFICULTY[effective];
+export function decideGate(evidence: GateEvidence): GateDecision {
+  const { candidates, review, registration, limits, reviewProposed } = evidence;
+  const supported: { gate: Gate; detail: string; confirmed: boolean }[] = candidates
+    .filter(({ gate, quoteHolds, verdict }) => gate !== "unknown" && !(gate === "none" && reviewProposed) && quoteHolds && verdict !== "no")
+    .map(({ gate, detail, verdict }) => ({ gate, detail, confirmed: verdict === "yes" }));
+
+  const limitStatus = fromStatus(limits?.status);
+  if (limitStatus !== "no") supported.push({ gate: "limited", detail: "", confirmed: limitStatus === "yes" });
+
+  const reviewStatus = fromStatus(review?.status);
+  if (reviewStatus !== "no" && review) {
+    const aboutListing = LISTING_TERMS.test(review.answer) || LISTING_PATH.test(review.source ?? "");
+    if (aboutListing) supported.push({ gate: "listing_only", detail: "", confirmed: reviewStatus === "yes" });
+    else if (REQUIRED_REVIEW.test(review.answer)) supported.push({ gate: "mandatory_review", detail: "", confirmed: false });
+  }
+
+  if (supported.length > 0) {
+    const strictest = supported.reduce((best, next) => {
+      const [bestRank, nextRank] = [STRICTNESS.indexOf(best.gate), STRICTNESS.indexOf(next.gate)];
+      if (nextRank !== bestRank) return nextRank > bestRank ? next : best;
+      return next.confirmed && !best.confirmed ? next : best;
+    });
+    return strictest;
+  }
+
+  // A gate the research suspected but couldn't prove is Unknown, never Easy.
+  const suspected = candidates.some(({ gate }) => STRICTNESS.indexOf(gate) > STRICTNESS.indexOf("listing_only"));
+  const registered = fromStatus(registration?.status);
+  if (!reviewProposed && !suspected && registered !== "no") return { gate: "none", detail: "", confirmed: registered === "yes" };
+  return { gate: "unknown", detail: "", confirmed: false };
+}
+
+const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+
+/** The one-line reason: the model's specific wording if it's short, else what the gate means. */
+export function difficultyFor(decision: GateDecision): { diff: Difficulty; reason: string; confirmed: boolean } {
+  const { gate, detail, confirmed } = decision;
+  const diff = GATE_DIFFICULTY[gate];
   const specific = detail.trim().replace(/\.$/, "");
-  const reason =
-    effective !== "unknown" && specific && specific.length <= 110 ? specific : GATE_MEANING[effective];
-  return { diff, reason: `${capitalize(diff)}: ${reason}` };
+  const reason = gate !== "unknown" && specific && specific.length <= 110 ? specific : GATE_MEANING[gate];
+  const estimate = gate !== "unknown" && !confirmed ? " (the cited page only partly confirms this)" : "";
+  return { diff, reason: `${capitalize(diff)}: ${reason}${estimate}`, confirmed: gate !== "unknown" && confirmed };
 }

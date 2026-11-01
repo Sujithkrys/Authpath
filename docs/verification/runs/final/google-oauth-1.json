@@ -1,0 +1,498 @@
+{
+  "app": "Google OAuth",
+  "base": "http://localhost:3000",
+  "compare": true,
+  "httpStatus": 200,
+  "seconds": 32.069,
+  "events": [
+    {
+      "type": "stage_start",
+      "stage": "classify",
+      "t": 103
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "developers.google.com"
+      ],
+      "t": 3794
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "developers.google.com"
+      ],
+      "t": 6394
+    },
+    {
+      "type": "stage_done",
+      "stage": "classify",
+      "detail": "OAuth provider",
+      "findings": {
+        "find": {
+          "outcome": "found",
+          "appName": "Google Identity",
+          "officialDomains": [
+            "developers.google.com",
+            "google.com"
+          ],
+          "docsUrls": [
+            "https://developers.google.com/identity",
+            "https://developers.google.com/identity/protocols/oauth2"
+          ],
+          "options": []
+        },
+        "classified": {
+          "category": "oauth_provider",
+          "evidenceUrl": "https://developers.google.com/identity/protocols/oauth2",
+          "evidenceQuote": "To begin, obtain OAuth 2.0 client credentials from the Google API Console.",
+          "summary": "Google Identity provides OAuth 2.0 and OpenID Connect protocols for user authentication and authorization across various application scenarios such as web server, client-side, and mobile apps.",
+          "authMethods": [
+            "OAuth 2.0 client ID and client secret",
+            "Service account private key"
+          ],
+          "instead": ""
+        },
+        "quoteHolds": false,
+        "category": "oauth_provider"
+      },
+      "t": 9424
+    },
+    {
+      "type": "stage_start",
+      "stage": "read",
+      "t": 9424
+    },
+    {
+      "type": "sources",
+      "stage": "read",
+      "domains": [
+        "developers.google.com"
+      ],
+      "t": 13439
+    },
+    {
+      "type": "stage_done",
+      "stage": "read",
+      "detail": "6 of 6 setup items found in 10 pages",
+      "findings": {
+        "developerConsoleUrl": null,
+        "items": [
+          {
+            "key": "register_url",
+            "status": "found",
+            "answer": "To obtain credentials, visit the Google API Console or Google Cloud Console (https://console.cloud.google.com/apis/credentials).",
+            "sourceUrl": "https://developers.google.com/identity/protocols/oauth2/native-app"
+          },
+          {
+            "key": "app_types",
+            "status": "found",
+            "answer": "Google supports application types such as web server, installed (Desktop app), client-side, limited-input device, and service accounts.",
+            "sourceUrl": "https://developers.google.com/identity/protocols/oauth2"
+          },
+          {
+            "key": "required_fields",
+            "status": "found",
+            "answer": "For creating an OAuth client, fields include the <code>Name</code> field for the client. The consent screen also presents branding information such as your product name, logo, and a homepage URL.",
+            "sourceUrl": "https://developers.google.com/identity/openid-connect/openid-connect"
+          },
+          {
+            "key": "redirect_uris",
+            "status": "found",
+            "answer": "The redirect URI value must exactly match one of the authorized redirect URIs for the OAuth 2.0 client configured in the API Console, and note that the http or https scheme, case, and trailing slash must all match.",
+            "sourceUrl": "https://developers.google.com/identity/protocols/oauth2/web-server"
+          },
+          {
+            "key": "credentials",
+            "status": "found",
+            "answer": "Your client ID and client secret are generated and displayed in the Google Cloud console. Desktop apps should always use PKCE.",
+            "sourceUrl": "https://developers.google.com/identity/protocols/oauth2/native-app"
+          },
+          {
+            "key": "scopes",
+            "status": "found",
+            "answer": "You request access using the scope parameter included in the authentication request as a space-delimited list. Sensitive scopes require review by Google and have a sensitive indicator on the Google Cloud Console's OAuth consent screen configuration page.",
+            "sourceUrl": "https://developers.google.com/identity/protocols/oauth2/scopes"
+          }
+        ],
+        "pagesRead": [
+          "https://developers.google.com/identity/verification/authentication-policy-compliance",
+          "https://developers.google.com/api-client-library/dotnet/guide/aaa_oauth",
+          "https://developers.google.com/oauthplayground/",
+          "https://developers.google.com/identity/protocols/oauth2",
+          "https://developers.google.com/identity/protocols/oauth2/scopes",
+          "https://developers.google.com/identity/openid-connect/openid-connect",
+          "https://developers.google.com/identity/protocols/oauth2/web-server",
+          "https://developers.google.com/identity/protocols/oauth2/native-app",
+          "https://developers.google.com/identity/protocols/oauth2/service-account",
+          "https://developers.google.com/identity/authorization"
+        ]
+      },
+      "t": 16159
+    },
+    {
+      "type": "stage_start",
+      "stage": "approval",
+      "t": 16160
+    },
+    {
+      "type": "sources",
+      "stage": "approval",
+      "domains": [
+        "developers.google.com",
+        "support.google.com",
+        "cloud.google.com"
+      ],
+      "t": 25084
+    },
+    {
+      "type": "stage_done",
+      "stage": "approval",
+      "detail": "Development or testing apps with limited test users require no review.",
+      "findings": {
+        "gate": "none",
+        "gateDetail": "Development or testing apps with limited test users require no review.",
+        "gateQuote": "If your app is in the development or testing phases, you can leave the Publishing Status in the default setting of Testing .",
+        "gateUrl": "https://developers.google.com/identity/verification",
+        "timelineLabel": "2-3 business days",
+        "evidenceQuote": "In some cases, where a result cannot be automatically determined, your app may undergo a manual review process that usually takes 2-3 business days .",
+        "evidenceUrl": "https://developers.google.com/identity/verification",
+        "items": [
+          {
+            "key": "review",
+            "status": "found",
+            "answer": "Apps configured for external users in production with a logo or display name on the OAuth consent screen require brand verification. Additional verification is required for sensitive or restricted scopes.",
+            "sourceUrl": "https://developers.google.com/identity/verification"
+          },
+          {
+            "key": "test_limits",
+            "status": "found",
+            "answer": "Apps in testing or development phases are only available to users you add to the list of test users.",
+            "sourceUrl": "https://developers.google.com/identity/verification"
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          }
+        ],
+        "pagesRead": [
+          "https://developers.google.com/identity/verification/authentication-policy-compliance",
+          "https://developers.google.com/api-client-library/dotnet/guide/aaa_oauth",
+          "https://developers.google.com/oauthplayground/",
+          "https://developers.google.com/identity/protocols/oauth2",
+          "https://developers.google.com/identity/protocols/oauth2/scopes",
+          "https://developers.google.com/identity/openid-connect/openid-connect",
+          "https://developers.google.com/identity/protocols/oauth2/web-server",
+          "https://developers.google.com/identity/protocols/oauth2/native-app",
+          "https://developers.google.com/identity/protocols/oauth2/service-account",
+          "https://developers.google.com/identity/authorization",
+          "https://developers.google.com/site-verification",
+          "https://developers.google.com/identity/verification",
+          "https://developers.google.com/identity/verification/authentication-verification",
+          "https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification",
+          "https://support.google.com/user-security?hl=en",
+          "https://cloud.google.com/security/products/security-command-center"
+        ]
+      },
+      "t": 27239
+    },
+    {
+      "type": "stage_start",
+      "stage": "write",
+      "t": 27239
+    },
+    {
+      "type": "stage_done",
+      "stage": "write",
+      "detail": "5 steps written from the checklist",
+      "t": 30141
+    },
+    {
+      "type": "stage_start",
+      "stage": "verify",
+      "t": 30141
+    },
+    {
+      "type": "stage_done",
+      "stage": "verify",
+      "detail": "9 confirmed, 4 marked uncertain, 1 dropped",
+      "findings": {
+        "claimCheck": {
+          "checked": 14,
+          "kept": 9,
+          "downgraded": 4,
+          "dropped": 1
+        },
+        "verdicts": {
+          "S1": "yes",
+          "S2": "yes",
+          "S3": "yes",
+          "S4": "partly",
+          "S5": "yes",
+          "C:register_url": "partly",
+          "C:app_types": "yes",
+          "C:required_fields": "yes",
+          "C:redirect_uris": "yes",
+          "C:credentials": "yes",
+          "C:scopes": "partly",
+          "C:review": "partly",
+          "C:review_timeline": "yes",
+          "C:test_limits": "no",
+          "G": "no",
+          "G2": "no"
+        },
+        "gateConfirmed": false,
+        "gate": "unknown"
+      },
+      "t": 32067
+    },
+    {
+      "type": "guide",
+      "slug": "google-identity",
+      "uncertainCount": 1,
+      "claimCheck": {
+        "checked": 14,
+        "kept": 9,
+        "downgraded": 4,
+        "dropped": 1
+      },
+      "guide": {
+        "id": "google-identity",
+        "name": "Google Identity",
+        "init": "GI",
+        "color": "#525252",
+        "diff": "unknown",
+        "diffReason": "Unknown: the approval process couldn't be confirmed in the official docs",
+        "tested": false,
+        "generated": true,
+        "generatedAt": "2026-11-01T09:56:49.901Z",
+        "version": 4,
+        "setup": "~25 min",
+        "wait": "2-3 business days",
+        "review": "Unclear",
+        "site": "developers.google.com/identity/protocols/oauth2/native-app",
+        "steps": [
+          {
+            "t": "Register your app",
+            "d": "Create your OAuth client in the console.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://developers.google.com/identity/protocols/oauth2/native-app",
+            "link": {
+              "label": "Open the Google API Console",
+              "url": "https://console.cloud.google.com/apis/credentials"
+            }
+          },
+          {
+            "t": "Configure required fields",
+            "d": "Enter your <code>Name</code> and branding details on the consent screen.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://developers.google.com/identity/openid-connect/openid-connect"
+          },
+          {
+            "t": "Set redirect URIs",
+            "d": "Add your exact callback URL matching the schema.",
+            "o": "agent",
+            "e": "docs",
+            "source": "https://developers.google.com/identity/protocols/oauth2/web-server"
+          },
+          {
+            "t": "Choose scopes",
+            "d": "Select the required scopes for your request.",
+            "o": "agent",
+            "e": "uncertain",
+            "source": "https://developers.google.com/identity/protocols/oauth2/scopes"
+          },
+          {
+            "t": "Get credentials",
+            "d": "Copy your generated client ID and client secret.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://developers.google.com/identity/protocols/oauth2/native-app"
+          }
+        ],
+        "blockers": [
+          {
+            "b": "Brand Verification",
+            "s": "Apps configured for external users in production with a logo or display name require brand verification.",
+            "source": "https://developers.google.com/identity/verification"
+          },
+          {
+            "b": "Sensitive Scopes",
+            "s": "Additional verification is required for sensitive or restricted scopes.",
+            "source": "https://developers.google.com/identity/verification"
+          },
+          {
+            "b": "Test Limits",
+            "s": "Apps in testing phases are only available to users you add to the list of test users.",
+            "source": "https://developers.google.com/identity/verification"
+          },
+          {
+            "b": "Approval process not confirmed",
+            "s": "The official pages we read don't confirm whether Google Identity reviews apps before real users can connect. Check with Google Identity before you plan a launch."
+          }
+        ],
+        "agent": [
+          "Configure required fields",
+          "Set redirect URIs",
+          "Choose scopes"
+        ],
+        "you": [
+          "Register your app",
+          "Get credentials"
+        ],
+        "sources": [
+          [
+            "OAuth 2.0 for Desktop Apps | Google for Developers",
+            "developers.google.com/identity/protocols/oauth2/native-app"
+          ],
+          [
+            "OpenID Connect | Sign in with Google | Google for Developers",
+            "developers.google.com/identity/openid-connect/openid-connect"
+          ],
+          [
+            "Using OAuth 2.0 for Web Server Applications | Authorization | Google for Developers",
+            "developers.google.com/identity/protocols/oauth2/web-server"
+          ],
+          [
+            "OAuth 2.0 Scopes for Google APIs | Google for Developers",
+            "developers.google.com/identity/protocols/oauth2/scopes"
+          ],
+          [
+            "Using OAuth 2.0 to Access Google APIs | Authorization | Google for Developers",
+            "developers.google.com/identity/protocols/oauth2"
+          ],
+          [
+            "Brand Verification for Google Authentication APIs | Google for Developers",
+            "developers.google.com/identity/verification"
+          ]
+        ],
+        "otherPages": [
+          [
+            "Submit for brand verification | Brand Verification for Google Authentication APIs | Google for Developers",
+            "developers.google.com/identity/verification/authentication-verification"
+          ],
+          [
+            "Comply with OAuth 2.0 policies | Brand Verification for Google Authentication APIs | Google for Developers",
+            "developers.google.com/identity/verification/authentication-policy-compliance"
+          ],
+          [
+            "OAuth 2.0 | API Client Library for .NET | Google for Developers",
+            "developers.google.com/api-client-library/dotnet/guide/aaa_oauth"
+          ],
+          [
+            "OAuth 2.0 Playground",
+            "developers.google.com/oauthplayground"
+          ],
+          [
+            "Using OAuth 2.0 for Server to Server Applications | Authorization | Google for Developers",
+            "developers.google.com/identity/protocols/oauth2/service-account"
+          ],
+          [
+            "Authorization | Google for Developers",
+            "developers.google.com/identity/authorization"
+          ],
+          [
+            "Google Site Verification API | Google for Developers",
+            "developers.google.com/site-verification"
+          ],
+          [
+            "Submit for brand verification | App verification to use Google Authorization APIs | Google for Developers",
+            "developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification"
+          ],
+          [
+            "User Security Help",
+            "support.google.com/user-security?hl=en"
+          ],
+          [
+            "Security Command Center | Google Cloud",
+            "cloud.google.com/security/products/security-command-center"
+          ]
+        ],
+        "checklist": [
+          {
+            "key": "register_url",
+            "status": "uncertain",
+            "answer": "To obtain credentials, visit the Google API Console or Google Cloud Console (https://console.cloud.google.com/apis/credentials).",
+            "source": "https://developers.google.com/identity/protocols/oauth2/native-app"
+          },
+          {
+            "key": "app_types",
+            "status": "found",
+            "answer": "Google supports application types such as web server, installed (Desktop app), client-side, limited-input device, and service accounts.",
+            "source": "https://developers.google.com/identity/protocols/oauth2"
+          },
+          {
+            "key": "required_fields",
+            "status": "found",
+            "answer": "For creating an OAuth client, fields include the <code>Name</code> field for the client. The consent screen also presents branding information such as your product name, logo, and a homepage URL.",
+            "source": "https://developers.google.com/identity/openid-connect/openid-connect"
+          },
+          {
+            "key": "redirect_uris",
+            "status": "found",
+            "answer": "The redirect URI value must exactly match one of the authorized redirect URIs for the OAuth 2.0 client configured in the API Console, and note that the http or https scheme, case, and trailing slash must all match.",
+            "source": "https://developers.google.com/identity/protocols/oauth2/web-server"
+          },
+          {
+            "key": "credentials",
+            "status": "found",
+            "answer": "Your client ID and client secret are generated and displayed in the Google Cloud console. Desktop apps should always use PKCE.",
+            "source": "https://developers.google.com/identity/protocols/oauth2/native-app"
+          },
+          {
+            "key": "scopes",
+            "status": "uncertain",
+            "answer": "You request access using the scope parameter included in the authentication request as a space-delimited list. Sensitive scopes require review by Google and have a sensitive indicator on the Google Cloud Console's OAuth consent screen configuration page.",
+            "source": "https://developers.google.com/identity/protocols/oauth2/scopes"
+          },
+          {
+            "key": "review",
+            "status": "uncertain",
+            "answer": "Apps configured for external users in production with a logo or display name on the OAuth consent screen require brand verification. Additional verification is required for sensitive or restricted scopes.",
+            "source": "https://developers.google.com/identity/verification"
+          },
+          {
+            "key": "review_timeline",
+            "status": "found",
+            "answer": "“In some cases, where a result cannot be automatically determined, your app may undergo a manual review process that usually takes 2-3 business days .”",
+            "source": "https://developers.google.com/identity/verification/authentication-verification"
+          },
+          {
+            "key": "test_limits",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "not_found",
+            "answer": ""
+          }
+        ],
+        "claimCheck": {
+          "checked": 14,
+          "kept": 9,
+          "downgraded": 4,
+          "dropped": 1
+        }
+      },
+      "stats": {
+        "durationMs": 31976,
+        "modelCalls": 9,
+        "inputTokens": 45581,
+        "outputTokens": 2318,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "webSearches": 0,
+        "webFetches": 20,
+        "estimatedCostUsd": 0
+      },
+      "t": 32067
+    }
+  ]
+}

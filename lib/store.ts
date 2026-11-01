@@ -3,6 +3,7 @@ import { Redis } from "@upstash/redis";
 
 import { slugify } from "@/lib/agent/evidence";
 import { hostOf } from "@/lib/agent/urls";
+import type { GeneratedLink } from "@/lib/agent/events";
 import { GENERATED_VERSION, type GeneratedResult, isAppCard } from "@/types/guide";
 
 const DEFAULT_PER_HOUR = 20;
@@ -52,6 +53,37 @@ export async function checkRateLimit(ip: string) {
 
 export async function saveGeneratedResult(result: GeneratedResult): Promise<void> {
   await getRedis().set(resultKey(result.id), result);
+}
+
+const MAX_LISTED = 24;
+
+/**
+ * Saved results in the current format, newest first. Used when live generation
+ * is paused, so this never throws: an empty list just shows no links.
+ */
+export async function listGeneratedResults(): Promise<GeneratedLink[]> {
+  if (!isStoreConfigured()) return [];
+  try {
+    const keys: string[] = [];
+    let cursor = "0";
+    do {
+      const [next, found] = await getRedis().scan(cursor, { match: "guide:*", count: 200 });
+      keys.push(...found);
+      cursor = String(next);
+    } while (cursor !== "0" && keys.length < 500);
+    if (keys.length === 0) return [];
+
+    const results = await getRedis().mget<(GeneratedResult | null)[]>(...keys);
+    return results
+      .filter((result): result is GeneratedResult => Boolean(result?.version && result.generatedAt))
+      .filter((result) => !isAppCard(result) || result.category !== "unknown")
+      .map((result) => ({ slug: result.id, name: result.name, generatedAt: result.generatedAt! }))
+      .sort((a, b) => b.generatedAt.localeCompare(a.generatedAt))
+      .slice(0, MAX_LISTED);
+  } catch (error) {
+    console.error("couldn't list generated results", error);
+    return [];
+  }
 }
 
 export async function getGeneratedResult(slug: string): Promise<GeneratedResult | null> {

@@ -1,0 +1,106 @@
+{
+  "app": "Postmark",
+  "base": "http://localhost:3000",
+  "compare": true,
+  "httpStatus": 200,
+  "seconds": 10.251,
+  "events": [
+    {
+      "type": "stage_start",
+      "stage": "classify",
+      "t": 458
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "postmarkapp.com"
+      ],
+      "t": 4717
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "postmarkapp.com"
+      ],
+      "t": 8846
+    },
+    {
+      "type": "stage_done",
+      "stage": "classify",
+      "detail": "No OAuth for third-party apps",
+      "findings": {
+        "find": {
+          "outcome": "found",
+          "appName": "Postmark",
+          "officialDomains": [
+            "postmarkapp.com"
+          ],
+          "docsUrls": [
+            "https://postmarkapp.com/",
+            "https://postmarkapp.com/developer",
+            "https://postmarkapp.com/developer/api/overview"
+          ],
+          "options": []
+        },
+        "classified": {
+          "category": "no_oauth",
+          "evidenceUrl": "https://postmarkapp.com/developer/api/stats-api",
+          "evidenceQuote": "X-Postmark-Server-Token required",
+          "summary": "Postmark is an email delivery service providing APIs and SMTP for sending and processing transactional and broadcast emails.",
+          "authMethods": [
+            "X-Postmark-Server-Token"
+          ],
+          "instead": "Use the API keys or tokens it offers, and keep them server-side."
+        },
+        "quoteHolds": true,
+        "category": "no_oauth"
+      },
+      "t": 10248
+    },
+    {
+      "type": "card",
+      "slug": "postmark",
+      "card": {
+        "kind": "card",
+        "id": "postmark",
+        "name": "Postmark",
+        "category": "no_oauth",
+        "summary": "Postmark is an email delivery service providing APIs and SMTP for sending and processing transactional and broadcast emails.",
+        "authMethods": [
+          "X-Postmark-Server-Token"
+        ],
+        "instead": "Use the API keys or tokens it offers, and keep them server-side.",
+        "sources": [
+          [
+            "Stats API | Postmark Developer Documentation",
+            "postmarkapp.com/developer/api/stats-api"
+          ],
+          [
+            "How do I use two factor authentication (2FA)? | Postmark Support Center",
+            "postmarkapp.com/support/article/1081-how-do-i-use-two-factor-authentication-2fa"
+          ],
+          [
+            "How to Troubleshoot Two-Factor Authentication (2FA) Issues | Postmark Support Center",
+            "postmarkapp.com/support/article/how-to-troubleshoot-two-factor-authentication-2fa-issues"
+          ]
+        ],
+        "generatedAt": "2026-11-01T09:59:47.749Z",
+        "version": 4
+      },
+      "stats": {
+        "durationMs": 9832,
+        "modelCalls": 3,
+        "inputTokens": 23024,
+        "outputTokens": 400,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "webSearches": 0,
+        "webFetches": 7,
+        "estimatedCostUsd": 0
+      },
+      "t": 10248
+    }
+  ]
+}

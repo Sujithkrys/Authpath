@@ -1,5 +1,6 @@
 import type { ApprovalResult, GuideDraft } from "@/lib/agent/schemas";
 import { MIN_STEPS, isProviderLink, resolveOwner } from "@/lib/agent/rules";
+import { pageWeight } from "@/lib/agent/sources";
 import { stripProtocol, urlKey } from "@/lib/agent/urls";
 import type { ChecklistItem, Difficulty, Guide, GuideBlocker, GuideStep } from "@/types/guide";
 import { CHECKLIST, GENERATED_VERSION } from "@/types/guide";
@@ -162,7 +163,7 @@ export function rankLinks(links: string[], topics: string[], isAllowed: (url: st
       if (own.some((word) => word.startsWith(topic))) return total + weight;
       return parents.some((word) => word.startsWith(topic)) ? total + weight / 3 : total;
     }, 0);
-    if (score > 0) scored.set(urlKey(url), { url, score });
+    if (score > 0) scored.set(urlKey(url), { url, score: score * pageWeight(url) });
   }
 
   return [...scored.values()]

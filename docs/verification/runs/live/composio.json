@@ -1,0 +1,109 @@
+{
+  "app": "Composio",
+  "base": "https://authpath-two.vercel.app",
+  "compare": false,
+  "httpStatus": 200,
+  "seconds": 13.776,
+  "events": [
+    {
+      "type": "stage_start",
+      "stage": "classify",
+      "t": 938
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "composio.dev",
+        "docs.composio.dev"
+      ],
+      "t": 5648
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "docs.composio.dev"
+      ],
+      "t": 12067
+    },
+    {
+      "type": "stage_done",
+      "stage": "classify",
+      "detail": "Integration platform, not an OAuth provider",
+      "findings": {
+        "find": {
+          "outcome": "found",
+          "appName": "Composio",
+          "officialDomains": [
+            "composio.dev"
+          ],
+          "docsUrls": [
+            "https://composio.dev",
+            "https://docs.composio.dev",
+            "https://docs.composio.dev/framework/auth/intro"
+          ],
+          "options": []
+        },
+        "classified": {
+          "category": "platform",
+          "evidenceUrl": "https://docs.composio.dev/docs/authentication",
+          "evidenceQuote": "Each user connects their own accounts, their Gmail, their GitHub, their Slack, and Composio stores and refreshes those credentials against that userID .",
+          "summary": "Composio is an integration platform that allows agents and applications to connect to external user accounts and tools while managing authentication and token storage.",
+          "authMethods": [
+            "Project API key",
+            "x-api-key header"
+          ],
+          "instead": "There's no OAuth app to register with the platform itself. If they need OAuth credentials for a specific app it connects to (e.g. Slack), they register an app with that provider; otherwise they can use the platform's own API key and its managed auth."
+        },
+        "quoteHolds": true,
+        "category": "platform"
+      },
+      "t": 13575
+    },
+    {
+      "type": "card",
+      "slug": "composio",
+      "card": {
+        "kind": "card",
+        "id": "composio",
+        "name": "Composio",
+        "category": "platform",
+        "summary": "Composio is an integration platform that allows agents and applications to connect to external user accounts and tools while managing authentication and token storage.",
+        "authMethods": [
+          "Project API key",
+          "x-api-key header"
+        ],
+        "instead": "There's no OAuth app to register with the platform itself. If they need OAuth credentials for a specific app it connects to (e.g. Slack), they register an app with that provider; otherwise they can use the platform's own API key and its managed auth.",
+        "sources": [
+          [
+            "Authentication | Composio",
+            "docs.composio.dev/docs/authentication"
+          ],
+          [
+            "Authenticate an unattended agent | Composio",
+            "docs.composio.dev/docs/agent-setup/unattended-authentication"
+          ],
+          [
+            "White-labeling authentication | Composio",
+            "docs.composio.dev/docs/authentication/white-labeling-authentication"
+          ]
+        ],
+        "generatedAt": "2026-11-01T09:51:16.888Z",
+        "version": 4
+      },
+      "stats": {
+        "durationMs": 12902,
+        "modelCalls": 3,
+        "inputTokens": 32606,
+        "outputTokens": 472,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "webSearches": 0,
+        "webFetches": 7,
+        "estimatedCostUsd": 0
+      },
+      "t": 13771
+    }
+  ]
+}

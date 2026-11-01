@@ -1,0 +1,457 @@
+{
+  "app": "Xero",
+  "base": "https://authpath-two.vercel.app",
+  "compare": false,
+  "httpStatus": 200,
+  "seconds": 15.811,
+  "events": [
+    {
+      "type": "stage_start",
+      "stage": "classify",
+      "t": 1084
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "xero.com",
+        "developer.xero.com"
+      ],
+      "t": 4742
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "developer.xero.com"
+      ],
+      "t": 6021
+    },
+    {
+      "type": "stage_done",
+      "stage": "classify",
+      "detail": "OAuth provider",
+      "findings": {
+        "find": {
+          "outcome": "found",
+          "appName": "Xero",
+          "officialDomains": [
+            "xero.com",
+            "developer.xero.com"
+          ],
+          "docsUrls": [
+            "https://www.xero.com",
+            "https://developer.xero.com",
+            "https://developer.xero.com/documentation/oauth2/overview"
+          ],
+          "options": []
+        },
+        "classified": {
+          "category": "oauth_provider",
+          "evidenceUrl": "https://developer.xero.com/faq/oauth2",
+          "evidenceQuote": "The OAuth 2.0 spec (section 3.1.2 of RFC 6749) requires that a redirection URI must be an absolute URI.",
+          "summary": "Xero is an online accounting software platform that offers an API secured by OAuth 2.0 for third-party developer integrations.",
+          "authMethods": [
+            "OAuth 2.0"
+          ],
+          "instead": ""
+        },
+        "quoteHolds": true,
+        "category": "oauth_provider"
+      },
+      "t": 7018
+    },
+    {
+      "type": "stage_start",
+      "stage": "read",
+      "t": 7018
+    },
+    {
+      "type": "sources",
+      "stage": "read",
+      "domains": [
+        "developer.xero.com"
+      ],
+      "t": 7652
+    },
+    {
+      "type": "stage_done",
+      "stage": "read",
+      "detail": "3 of 6 setup items found in 8 pages",
+      "findings": {
+        "developerConsoleUrl": null,
+        "items": [
+          {
+            "key": "register_url",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "app_types",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "required_fields",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "redirect_uris",
+            "status": "found",
+            "answer": "The use of wildcards in redirect URI is not supported, and you can use up to 50 redirect URIs for your app.",
+            "sourceUrl": "https://developer.xero.com/faq/oauth2"
+          },
+          {
+            "key": "credentials",
+            "status": "found",
+            "answer": "Xero supports the Proof Key for Code Exchange (PKCE) extension to the authorization code flow, allowing native apps to securely connect without needing to store a client secret.",
+            "sourceUrl": "https://developer.xero.com/faq/oauth2"
+          },
+          {
+            "key": "scopes",
+            "status": "found",
+            "answer": "Apps created on or after 2 March 2026 will use the new granular scopes, and because you are requesting a different set of permissions, the user must provide explicit consent for them.",
+            "sourceUrl": "https://developer.xero.com/faq/granular-scopes"
+          }
+        ],
+        "pagesRead": [
+          "https://developer.xero.com/faq/oauth2",
+          "https://developer.xero.com/developer-events",
+          "https://developer.xero.com/partner/developer-partner",
+          "https://developer.xero.com/contact-xero-developer-platform-support",
+          "https://developer.xero.com/faq/granular-scopes",
+          "https://developer.xero.com/xero-app-store-meet-augusts-apps",
+          "https://developer.xero.com/faq/App-Awards",
+          "https://developer.xero.com/app-awards-judges"
+        ]
+      },
+      "t": 9052
+    },
+    {
+      "type": "stage_start",
+      "stage": "approval",
+      "t": 9052
+    },
+    {
+      "type": "sources",
+      "stage": "approval",
+      "domains": [
+        "developer.xero.com",
+        "xero.com"
+      ],
+      "t": 10630
+    },
+    {
+      "type": "stage_done",
+      "stage": "approval",
+      "detail": "App partners require a security assessment to be certified or listed.",
+      "findings": {
+        "gate": "security_assessment",
+        "gateDetail": "App partners require a security assessment to be certified or listed.",
+        "gateQuote": "App partners will not be certified or listed in Xero’s app marketplace without passing these assessments.",
+        "gateUrl": "https://developer.xero.com/faq/xero-ecosystem-security-requirements-update",
+        "timelineLabel": "around 5 working days, followed by 5-10 working days",
+        "evidenceQuote": "Typically the assessment takes around 5 working days to complete, followed by 5-10 working days for us to assess your answers.",
+        "evidenceUrl": "https://developer.xero.com/faq/xero-ecosystem-security-requirements-update",
+        "items": [
+          {
+            "key": "review",
+            "status": "found",
+            "answer": "App partners must undertake a security assessment which is reviewed by Xero's security team to be certified or listed in Xero's app marketplace.",
+            "sourceUrl": "https://developer.xero.com/faq/xero-ecosystem-security-requirements-update"
+          },
+          {
+            "key": "test_limits",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "found",
+            "answer": "Apps may fail the security assessment if they do not meet the security standards, requiring remediation items to be addressed.",
+            "sourceUrl": "https://developer.xero.com/faq/xero-ecosystem-security-requirements-update"
+          }
+        ],
+        "pagesRead": [
+          "https://developer.xero.com/faq/oauth2",
+          "https://developer.xero.com/developer-events",
+          "https://developer.xero.com/partner/developer-partner",
+          "https://developer.xero.com/contact-xero-developer-platform-support",
+          "https://developer.xero.com/faq/granular-scopes",
+          "https://developer.xero.com/xero-app-store-meet-augusts-apps",
+          "https://developer.xero.com/faq/App-Awards",
+          "https://developer.xero.com/app-awards-judges",
+          "https://developer.xero.com/partner/security-requirements-for-developer-partners",
+          "https://developer.xero.com/faq/xero-ecosystem-security-requirements-update",
+          "https://developer.xero.com/partner/security-standard-for-xero-api-consumers",
+          "https://developer.xero.com/partner/partner-resources/app-partner-support-documentation-guidelines",
+          "https://www.xero.com/us/support/community-guidelines/",
+          "https://developer.xero.com/faq/limits"
+        ]
+      },
+      "t": 12426
+    },
+    {
+      "type": "stage_start",
+      "stage": "write",
+      "t": 12426
+    },
+    {
+      "type": "stage_done",
+      "stage": "write",
+      "detail": "3 steps written from the checklist",
+      "t": 14389
+    },
+    {
+      "type": "stage_start",
+      "stage": "verify",
+      "t": 14389
+    },
+    {
+      "type": "stage_done",
+      "stage": "verify",
+      "detail": "9 confirmed, 0 marked uncertain, 0 dropped",
+      "findings": {
+        "claimCheck": {
+          "checked": 9,
+          "kept": 9,
+          "downgraded": 0,
+          "dropped": 0
+        },
+        "verdicts": {
+          "S1": "yes",
+          "S2": "yes",
+          "S3": "yes",
+          "C:redirect_uris": "yes",
+          "C:credentials": "yes",
+          "C:scopes": "yes",
+          "C:review": "yes",
+          "C:review_timeline": "yes",
+          "C:rejection_reasons": "yes",
+          "G": "partly"
+        },
+        "gateConfirmed": false,
+        "gate": "listing_only"
+      },
+      "t": 15594
+    },
+    {
+      "type": "guide",
+      "slug": "xero",
+      "uncertainCount": 0,
+      "claimCheck": {
+        "checked": 9,
+        "kept": 9,
+        "downgraded": 0,
+        "dropped": 0
+      },
+      "guide": {
+        "id": "xero",
+        "name": "Xero",
+        "init": "XE",
+        "color": "#525252",
+        "diff": "moderate",
+        "diffReason": "Moderate: review is only needed to be listed in its marketplace or app directory",
+        "tested": false,
+        "generated": true,
+        "generatedAt": "2026-11-01T09:49:58.578Z",
+        "version": 4,
+        "setup": "~15 min",
+        "wait": "around 5 working days, followed by 5-10 working days",
+        "review": "Listing only",
+        "site": "developer.xero.com/faq/oauth2",
+        "steps": [
+          {
+            "t": "Add redirect URIs",
+            "d": "Add your redirect URIs. Wildcards are not supported, and you can use up to <code>50</code> redirect URIs.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://developer.xero.com/faq/oauth2",
+            "link": {
+              "label": "Open the FAQ",
+              "url": "https://developer.xero.com/faq/oauth2"
+            }
+          },
+          {
+            "t": "Configure credentials",
+            "d": "Native apps can securely connect without needing to store a client secret by using the PKCE extension.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://developer.xero.com/faq/oauth2",
+            "link": {
+              "label": "Open the FAQ",
+              "url": "https://developer.xero.com/faq/oauth2"
+            }
+          },
+          {
+            "t": "Choose scopes",
+            "d": "Choose your scopes. Apps created on or after 2 March 2026 will use new granular scopes requiring explicit user consent.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://developer.xero.com/faq/granular-scopes",
+            "link": {
+              "label": "View granular scopes",
+              "url": "https://developer.xero.com/faq/granular-scopes"
+            }
+          }
+        ],
+        "blockers": [
+          {
+            "b": "Security assessment review",
+            "s": "App partners must undertake a security assessment reviewed by Xero's security team to be certified or listed.",
+            "source": "https://developer.xero.com/faq/xero-ecosystem-security-requirements-update"
+          }
+        ],
+        "agent": [
+          "Choose granular scopes for the app"
+        ],
+        "you": [
+          "Add redirect URIs without wildcards",
+          "Configure credentials using PKCE if building a native app",
+          "Complete the security assessment"
+        ],
+        "sources": [
+          [
+            "OAuth 2.0 FAQs — Xero Developer",
+            "developer.xero.com/faq/oauth2"
+          ],
+          [
+            "Granular Scopes FAQs — Xero Developer",
+            "developer.xero.com/faq/granular-scopes"
+          ],
+          [
+            "Xero Ecosystem Security Requirements Update FAQs — Xero Developer",
+            "developer.xero.com/faq/xero-ecosystem-security-requirements-update"
+          ]
+        ],
+        "otherPages": [
+          [
+            "Developer events — Xero Developer",
+            "developer.xero.com/developer-events"
+          ],
+          [
+            "Become a Custom Integrator — Xero Developer",
+            "developer.xero.com/partner/developer-partner"
+          ],
+          [
+            "Contact Xero Developer Support — Xero Developer",
+            "developer.xero.com/contact-xero-developer-platform-support"
+          ],
+          [
+            "Xero App Store: meet August’s apps — Xero Developer",
+            "developer.xero.com/xero-app-store-meet-augusts-apps"
+          ],
+          [
+            "App Awards FAQs — Xero Developer",
+            "developer.xero.com/faq/App-Awards"
+          ],
+          [
+            "App Awards Judges — Xero Developer",
+            "developer.xero.com/app-awards-judges"
+          ],
+          [
+            "Security – requirements for developer partners — Xero Developer",
+            "developer.xero.com/partner/security-requirements-for-developer-partners"
+          ],
+          [
+            "Security standard for Xero api consumers — Xero Developer",
+            "developer.xero.com/partner/security-standard-for-xero-api-consumers"
+          ],
+          [
+            "App Partner – Support Documentation — Xero Developer",
+            "developer.xero.com/partner/partner-resources/app-partner-support-documentation-guidelines"
+          ],
+          [
+            "Community Guidelines | Xero US",
+            "www.xero.com/us/support/community-guidelines"
+          ],
+          [
+            "Limits FAQs — Xero Developer",
+            "developer.xero.com/faq/limits"
+          ]
+        ],
+        "checklist": [
+          {
+            "key": "register_url",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "app_types",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "required_fields",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "redirect_uris",
+            "status": "found",
+            "answer": "The use of wildcards in redirect URI is not supported, and you can use up to 50 redirect URIs for your app.",
+            "source": "https://developer.xero.com/faq/oauth2"
+          },
+          {
+            "key": "credentials",
+            "status": "found",
+            "answer": "Xero supports the Proof Key for Code Exchange (PKCE) extension to the authorization code flow, allowing native apps to securely connect without needing to store a client secret.",
+            "source": "https://developer.xero.com/faq/oauth2"
+          },
+          {
+            "key": "scopes",
+            "status": "found",
+            "answer": "Apps created on or after 2 March 2026 will use the new granular scopes, and because you are requesting a different set of permissions, the user must provide explicit consent for them.",
+            "source": "https://developer.xero.com/faq/granular-scopes"
+          },
+          {
+            "key": "review",
+            "status": "found",
+            "answer": "App partners must undertake a security assessment which is reviewed by Xero's security team to be certified or listed in Xero's app marketplace.",
+            "source": "https://developer.xero.com/faq/xero-ecosystem-security-requirements-update"
+          },
+          {
+            "key": "review_timeline",
+            "status": "found",
+            "answer": "“Typically the assessment takes around 5 working days to complete, followed by 5-10 working days for us to assess your answers.”",
+            "source": "https://developer.xero.com/faq/xero-ecosystem-security-requirements-update"
+          },
+          {
+            "key": "test_limits",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "found",
+            "answer": "Apps may fail the security assessment if they do not meet the security standards, requiring remediation items to be addressed.",
+            "source": "https://developer.xero.com/faq/xero-ecosystem-security-requirements-update"
+          }
+        ],
+        "claimCheck": {
+          "checked": 9,
+          "kept": 9,
+          "downgraded": 0,
+          "dropped": 0
+        }
+      },
+      "stats": {
+        "durationMs": 14732,
+        "modelCalls": 8,
+        "inputTokens": 41905,
+        "outputTokens": 2098,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "webSearches": 0,
+        "webFetches": 18,
+        "estimatedCostUsd": 0
+      },
+      "t": 15808
+    }
+  ]
+}

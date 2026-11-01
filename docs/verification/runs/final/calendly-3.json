@@ -1,0 +1,146 @@
+{
+  "app": "Calendly",
+  "base": "http://localhost:3000",
+  "compare": true,
+  "httpStatus": 200,
+  "seconds": 47.405,
+  "events": [
+    {
+      "type": "stage_start",
+      "stage": "classify",
+      "t": 134
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "calendly.com",
+        "developer.calendly.com"
+      ],
+      "t": 10688
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "developer.calendly.com"
+      ],
+      "t": 13546
+    },
+    {
+      "type": "stage_done",
+      "stage": "classify",
+      "detail": "OAuth provider",
+      "findings": {
+        "find": {
+          "outcome": "found",
+          "appName": "Calendly",
+          "officialDomains": [
+            "calendly.com",
+            "developer.calendly.com"
+          ],
+          "docsUrls": [
+            "https://calendly.com",
+            "https://developer.calendly.com"
+          ],
+          "options": []
+        },
+        "classified": {
+          "category": "oauth_provider",
+          "evidenceUrl": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app",
+          "evidenceQuote": "Create an OAuth app to access Calendly data on behalf of other Calendly users.",
+          "summary": "Calendly is a scheduling platform that allows developers to access and manage scheduling data on behalf of Calendly users through its API.",
+          "authMethods": [
+            "OAuth 2.0 access token"
+          ],
+          "instead": ""
+        },
+        "quoteHolds": true,
+        "category": "oauth_provider"
+      },
+      "t": 21983
+    },
+    {
+      "type": "stage_start",
+      "stage": "read",
+      "t": 21983
+    },
+    {
+      "type": "sources",
+      "stage": "read",
+      "domains": [
+        "developer.calendly.com"
+      ],
+      "t": 33542
+    },
+    {
+      "type": "stage_done",
+      "stage": "read",
+      "detail": "5 of 6 setup items found in 8 pages",
+      "findings": {
+        "developerConsoleUrl": "https://calendly.com/app/developer",
+        "items": [
+          {
+            "key": "register_url",
+            "status": "found",
+            "answer": "To create an OAuth app, open Developer tools at <code>https://calendly.com/app/developer</code> or manage apps at <code>https://developer.calendly.com/login</code>.",
+            "sourceUrl": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app.md"
+          },
+          {
+            "key": "app_types",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "required_fields",
+            "status": "found",
+            "answer": "The app creation form requires <code>App name</code>, <code>Redirect URI</code>, <code>Environment type</code>, and selecting at least one scope.",
+            "sourceUrl": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app.md"
+          },
+          {
+            "key": "redirect_uris",
+            "status": "found",
+            "answer": "You must enter exactly one redirect URI. Sandbox permits <code>https</code> URIs and <code>http</code> URIs on <code>localhost</code>, whereas Production allows <code>https</code> URIs only.",
+            "sourceUrl": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app.md"
+          },
+          {
+            "key": "credentials",
+            "status": "found",
+            "answer": "Calendly issues a Client ID, Client secret, and Webhook signing key, none of which can be viewed again after leaving the creation screen. Every OAuth app must use PKCE with the <code>S256</code> method.",
+            "sourceUrl": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app.md"
+          },
+          {
+            "key": "scopes",
+            "status": "found",
+            "answer": "Apps must select at least one scope upon creation, and send scopes separated by spaces in the authorization URL. Scopes are categorized into read and write permissions across various resource domains.",
+            "sourceUrl": "https://developer.calendly.com/docs/authentication/scopes"
+          }
+        ],
+        "pagesRead": [
+          "https://developer.calendly.com/api-docs/calendly-o-auth/o-auth/get-oauth-authorize",
+          "https://developer.calendly.com/docs/authentication/creating-an-oauth-app",
+          "https://developer.calendly.com/api-docs/calendly-o-auth/o-auth/post-oauth-revoke",
+          "https://developer.calendly.com/api-docs/calendly-o-auth/o-auth/post-oauth-introspect",
+          "https://developer.calendly.com/docs/authentication/creating-an-oauth-app.md",
+          "https://developer.calendly.com/docs/authentication/scopes",
+          "https://developer.calendly.com/api-docs/calendly-o-auth/o-auth/get-oauth-authorize.md",
+          "https://developer.calendly.com/api-docs/calendly-o-auth/o-auth/post-oauth-revoke.md"
+        ]
+      },
+      "t": 46793
+    },
+    {
+      "type": "stage_start",
+      "stage": "approval",
+      "t": 46793
+    },
+    {
+      "type": "error",
+      "message": "The free AI quota for today has run out. It resets at midnight Pacific time.",
+      "retryable": false,
+      "detail": "gemini-3.5-flash-lite: ApiError: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To mo | gemini-3.5-flash: ApiError: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To mo",
+      "t": 47403
+    }
+  ]
+}

@@ -77,17 +77,25 @@ export const ReadResult = z.object({
 export type ReadResult = z.infer<typeof ReadResult>;
 
 export const ApprovalResult = z.object({
-  gate: z
-    .enum(GATES)
-    .describe(
-      "What stands between a working app and real users connecting. none: self-serve, anyone can authorize it. " +
-        "listing_only: review only for a public directory or marketplace listing. light_verification: light business or domain verification. " +
-        "mandatory_review: every app needs review before real users can connect. security_assessment: a security assessment or audit is required (for some scopes, say which). " +
-        "partner_program: a partner program is required. paid_plan: a paid plan is required. unknown: the pages don't say.",
-    ),
-  gateDetail: z.string().describe("At most 15 words on the gate, e.g. 'Restricted Gmail scopes require a security assessment'."),
-  gateQuote: z.string().nullable().describe("A sentence copied word for word from gateUrl that shows the gate. Null if none."),
-  gateUrl: nullableUrl.describe("The page gateQuote was copied from."),
+  gates: z
+    .array(
+      z.object({
+        gate: z
+          .enum(GATES)
+          .describe(
+            "listing_only: review only for an optional public directory or marketplace listing. " +
+              "limited: apps work without review but with limits until reviewed or certified, e.g. a test-user cap, a connection cap, or rate limits for unlisted apps. " +
+              "light_verification: light business, brand or domain verification. " +
+              "mandatory_review: a review or verification is required before real users can connect, for some or all common scopes. " +
+              "security_assessment: a security assessment or audit is required, for some or all common scopes. " +
+              "partner_program: a partner program is required. paid_plan: a paid plan is required.",
+          ),
+        detail: z.string().describe("At most 15 words, e.g. 'Restricted Gmail scopes require a security assessment'."),
+        quote: z.string().describe("A sentence copied word for word from url that shows this gate."),
+        url: z.string().describe("The page quote was copied from."),
+      }),
+    )
+    .describe("Every gate the pages show, not only the strictest. Empty if they show none."),
   timelineLabel: z
     .string()
     .nullable()
@@ -160,6 +168,7 @@ export const GeneratedGuideSchema = z
     color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
     diff: z.enum(["easy", "moderate", "hard", "unknown"]),
     diffReason: z.string().min(1),
+    diffConfirmed: z.boolean(),
     tested: z.literal(false),
     generated: z.literal(true),
     generatedAt: z.iso.datetime(),

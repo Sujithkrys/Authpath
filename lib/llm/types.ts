@@ -14,6 +14,13 @@ export class AgentError extends Error {
   }
 }
 
+/** The provider's daily quota is gone on every model. Nothing can run until it resets. */
+export class QuotaExhausted extends AgentError {
+  constructor(message: string, detail?: string) {
+    super(message, false, detail);
+  }
+}
+
 interface StageRequest<T extends z.ZodType> {
   system: string;
   user: string;
