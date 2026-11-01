@@ -117,6 +117,7 @@ Steps:
 - Build every step from checklist items. List them in from, and set sourceUrl to the source of one of them. A step built only from items that weren't found has sourceUrl null.
 - Never put a URL in the title or description. To send the reader somewhere, set link to a short label like "Open the developer console" and a URL from the checklist.
 - Use <code> only around values someone pastes or types: redirect URIs, scope names, form field names. No other markup.
+- Never present a tutorial's example values as the reader's own, such as a sample app's or tool's callback URL. Describe what to enter instead, e.g. your app's HTTPS callback URL.
 - Set owner to agent only for drafting text, building the redirect URI, choosing scopes or preparing form values. Anything that needs the developer's account is you: signing in, creating the app in a console, submitting, verifying, uploading documents, paying or waiting.
 
 Steps cover getting a working app: register it, set redirect URIs, choose scopes, get credentials. Don't write steps for optional things such as a marketplace listing; mention a review as a blocker instead.
@@ -590,6 +591,7 @@ ${lastProblem ? `\nYour previous attempt broke these rules. Fix every one:\n${la
     review: checkedItems.get("review"),
     registration: checkedItems.get("register_url"),
     reviewProposed: approval.items.some((item) => item.key === "review" && item.status !== "not_found" && item.answer.trim() !== ""),
+    verifiedGateQuote: gatePage ? (approval.gateQuote ?? "") : "",
   });
   const effectiveGate: Gate = decided.gate;
   const { diff, reason } = difficultyFor(decided.gate, true, decided.detail);

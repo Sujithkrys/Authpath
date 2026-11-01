@@ -228,6 +228,8 @@ const STRICT_GATES = new Set<Gate>(["light_verification", "mandatory_review", "s
 
 /** A review answer about getting listed rather than getting access. */
 const LISTING_TERMS = /\b(marketplace|app store|app directory|directory|listing|listed|publish(ed|ing)? (to|in|on) )/i;
+/** A review page whose path says it's about a marketplace or app store listing. */
+const LISTING_PATH = /[/\-_](marketplace|app-?store|app-?directory|listing)([/\-_.]|$)/i;
 
 export interface GateEvidence {
   /** The gate the approval stage proposed. */
@@ -236,10 +238,12 @@ export interface GateEvidence {
   proposedConfirmed: boolean;
   proposedDetail: string;
   /** The review and registration checklist answers, after the checker. */
-  review?: { status: string; answer: string };
+  review?: { status: string; answer: string; source?: string };
   registration?: { status: string };
   /** Whether the research proposed any review answer at all, before the checker. */
   reviewProposed: boolean;
+  /** The gate's quote, only when it was found word for word on a page read. */
+  verifiedGateQuote?: string;
 }
 
 /**
@@ -253,10 +257,21 @@ export interface GateEvidence {
  * - only with no review found at all does confirmed self-serve registration mean none.
  */
 export function decideGate(evidence: GateEvidence): { gate: Gate; detail: string } {
-  const { proposed, proposedConfirmed, proposedDetail, review, registration, reviewProposed } = evidence;
+  const { proposed, proposedConfirmed, proposedDetail, review, registration, reviewProposed, verifiedGateQuote = "" } = evidence;
   if (STRICT_GATES.has(proposed) && proposedConfirmed) return { gate: proposed, detail: proposedDetail };
+  // The checker confirmed on its page that apps are reviewed before being listed.
+  if (proposed === "listing_only" && proposedConfirmed) {
+    return { gate: "listing_only", detail: "review is only needed to be listed in its marketplace or app directory" };
+  }
   if (reviewProposed) {
-    return review?.status === "found" && LISTING_TERMS.test(review.answer)
+    // The answer's wording varies run to run, so the cited page's path counts too,
+    // e.g. docs.slack.dev/slack-marketplace/slack-marketplace-review-guide.
+    // So does a gate quote found word for word on a page, e.g. Xero's "will not be
+    // certified or listed in Xero's app marketplace without passing these assessments".
+    const aboutListing =
+      review?.status === "found" &&
+      (LISTING_TERMS.test(review.answer) || LISTING_PATH.test(review.source ?? "") || LISTING_TERMS.test(verifiedGateQuote));
+    return aboutListing
       ? { gate: "listing_only", detail: "review is only needed to be listed in its marketplace or app directory" }
       : { gate: "unknown", detail: "" };
   }

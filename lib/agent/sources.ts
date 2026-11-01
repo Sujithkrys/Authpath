@@ -73,6 +73,9 @@ const AUTH_PATH = /oauth|auth|scope|token|permission|consent|redirect|(^|[/\-_.]
 
 const ASSET = /\.(png|jpe?g|svg|gif|webp|css|js|ico|woff2?|xml|zip|json|txt|mp4|webm)$/i;
 
+/** Tutorials built around a third-party tool, whose example values (e.g. Postman's callback URL) aren't yours. */
+const THIRD_PARTY_TOOL_PAGE = /(^|[/\-_.])(postman|insomnia|zapier|n8n|ifttt|pipedream|retool)([/\-_.]|$)/i;
+
 /** True when a host is the provider's own site or one of its docs-type subdomains. */
 export function isOfficialHost(host: string, domains: string[]): boolean {
   const bare = host.toLowerCase().replace(/^www\./, "");
@@ -145,7 +148,7 @@ export function isOfficialSource(url: string, domains: string[]): boolean {
   } catch {
     return false;
   }
-  if (ASSET.test(path) || BLOCKED_PATH.test(path)) return false;
+  if (ASSET.test(path) || BLOCKED_PATH.test(path) || THIRD_PARTY_TOOL_PAGE.test(path)) return false;
   if (!isDocsHost(host) && MARKETING_ON_MAIN_SITE.test(path)) return false;
   if (ENDPOINT_REFERENCE.test(path) && !AUTH_PATH.test(path)) return false;
   return true;

@@ -26,7 +26,9 @@ const CandidatePages = z.object({
 });
 
 const MAX_OUTPUT_TOKENS = 16_000;
-const CALL_TIMEOUT_MS = 60_000;
+// Real calls here answer in about 3-15 seconds; a stall shouldn't cost a minute of the run.
+const CALL_TIMEOUT_MS = 35_000;
+const HIGH_DEMAND_WAIT_MS = 2_000;
 const PAGE_FETCH_TIMEOUT_MS = 10_000;
 const MAX_PAGE_BYTES = 3_000_000;
 const REDIRECT_TIMEOUT_MS = 5_000;
@@ -124,9 +126,11 @@ async function generate(
       failures.push(`${model}: ${stalled ? `no reply in ${CALL_TIMEOUT_MS / 1000}s` : String(error).slice(0, 220)}`);
       console.warn("gemini call failed", failures.at(-1));
 
-      // A per-minute limit says how long to wait. Waiting once, briefly, beats
-      // failing the whole run or moving to a slower model.
-      const delay = shortRetryDelay(error);
+      // Free-tier trouble is usually brief: a per-minute limit says how long to
+      // wait, "high demand" clears in seconds, and a stalled call often answers on
+      // a second try. One retry on the same model beats failing the run or moving
+      // to a model that is just as busy.
+      const delay = shortRetryDelay(error) ?? (error instanceof ApiError && error.status === 503 ? HIGH_DEMAND_WAIT_MS : stalled ? 0 : null);
       if (delay !== null && !waited) {
         waited = true;
         await pause(delay, signal);
