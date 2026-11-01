@@ -1,5 +1,6 @@
 import type { GenerationStats } from "@/lib/agent/events";
-import { type FetchedPage, hostOf, isUnder, urlKey } from "@/lib/agent/evidence";
+import type { FetchedPage } from "@/lib/agent/evidence";
+import { hostOf, urlKey } from "@/lib/agent/urls";
 
 export interface UsageTotals {
   modelCalls: number;
@@ -23,14 +24,19 @@ export class RunLedger {
   readonly rejected: string[] = [];
 
   private readonly startedAt = Date.now();
-  private officialDomains: string[] | null = null;
+  private isOfficial: ((url: string) => boolean) | null = null;
   private usage: UsageTotals = { modelCalls: 0, input: 0, output: 0, cacheRead: 0, cacheWrite: 0, searches: 0, fetches: 0 };
 
   constructor(private readonly estimateCost: (usage: UsageTotals) => number) {}
 
-  /** From here on, only pages on these domains count as evidence. */
-  restrictTo(domains: string[]) {
-    this.officialDomains = domains;
+  /** From here on, only pages that pass this test count as evidence. */
+  restrictTo(isOfficial: (url: string) => boolean) {
+    this.isOfficial = isOfficial;
+  }
+
+  /** Whether a URL would be accepted as evidence now. */
+  accepts(url: string): boolean {
+    return this.isOfficial ? this.isOfficial(url) : true;
   }
 
   /** Records a search result. Returns its domain the first time it's seen. */
@@ -46,7 +52,7 @@ export class RunLedger {
   addFetched(page: FetchedPage): string | null {
     const host = hostOf(page.url);
     if (!host) return null;
-    if (this.officialDomains && !this.officialDomains.some((domain) => isUnder(host, domain))) {
+    if (!this.accepts(page.url)) {
       this.rejected.push(page.url);
       return null;
     }

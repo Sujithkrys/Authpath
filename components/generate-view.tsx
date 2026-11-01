@@ -4,8 +4,9 @@ import { Check, RotateCcw, Sparkles } from "lucide-react";
 import Link from "next/link";
 import type { FormEvent, ReactNode } from "react";
 
+import { CardFacts, CategoryTag, cardHeadline } from "@/components/app-card-view";
 import { useAppState, type TraceOutcome, type TraceRun, type TraceStage } from "@/components/app-state";
-import { SearchField, buttonPrimary, heroTitle } from "@/components/ui";
+import { SearchField, buttonPrimary, describeClaimCheck, heroTitle } from "@/components/ui";
 import { STAGES } from "@/lib/agent/events";
 import { formatGeneratedAt } from "@/lib/format";
 
@@ -16,8 +17,6 @@ const STEP_ICON_STYLE: Record<TraceStage["status"], string> = {
   active: "border-accent text-accent",
   waiting: "border-border-strong text-text-3",
 };
-
-const domainOf = (url: string) => new URL(url).hostname.replace(/^www\./, "");
 
 interface TraceRowProps {
   title: string;
@@ -84,6 +83,9 @@ function OutcomePanel({ outcome, run, onRun }: { outcome: TraceOutcome; run: Tra
         <Footer>
           <span className={footerText}>
             Guide ready · {outcome.uncertainCount} {outcome.uncertainCount === 1 ? "item" : "items"} marked not confirmed
+            {outcome.claimCheck && (outcome.claimCheck.dropped > 0 || outcome.claimCheck.downgraded > 0) && (
+              <> · checker: {describeClaimCheck(outcome.claimCheck)}</>
+            )}
           </span>
           <Link href={`/guides/${outcome.slug}`} className={buttonPrimary}>
             Open guide
@@ -95,35 +97,43 @@ function OutcomePanel({ outcome, run, onRun }: { outcome: TraceOutcome; run: Tra
       return (
         <Footer>
           <span className={footerText}>Already generated on {formatGeneratedAt(outcome.generatedAt)}</span>
+          {/* A cached result can be a guide or a card, and both live at /guides/{slug}. */}
           <Link href={`/guides/${outcome.slug}`} className={buttonPrimary}>
-            Open guide
+            Open result
           </Link>
         </Footer>
       );
 
-    case "no_oauth":
+    case "card":
       return (
-        <Footer>
-          <div className={footerText}>
-            <b className="block text-[15px] text-text">{outcome.appName} doesn&apos;t appear to support OAuth</b>
-            <p className="mt-1">{outcome.summary}</p>
-            {outcome.authMethods.length > 0 && <p className="mt-1">It uses: {outcome.authMethods.join(", ")}.</p>}
-            <ul className="mt-2 flex flex-wrap gap-1">
-              {outcome.sources.map((url) => (
-                <li key={url}>
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-sm bg-accent-soft px-[7px] py-0.5 font-mono text-[11.5px] break-all text-accent-ink hover:underline"
-                  >
-                    {domainOf(url)}
-                  </a>
-                </li>
-              ))}
-            </ul>
+        <div className="border-t border-border bg-surface-2 px-[18px] py-4">
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <CategoryTag category={outcome.card.category} />
           </div>
-        </Footer>
+          <b className="mb-4 block text-[15px] font-semibold [overflow-wrap:anywhere]">{cardHeadline(outcome.card)}</b>
+          <CardFacts card={outcome.card} />
+          <div className="mt-4 mb-1 font-mono text-[11px] tracking-[.08em] text-text-3 uppercase">Sources</div>
+          <ul className="flex flex-wrap gap-1">
+            {outcome.card.sources.map(([title, url]) => (
+              <li key={url} className="min-w-0 max-w-full">
+                <a
+                  href={`https://${url}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  title={`${title} · https://${url}`}
+                  className="block max-w-full truncate rounded-sm bg-accent-soft px-[7px] py-0.5 font-mono text-[11.5px] text-accent-ink hover:underline"
+                >
+                  {url}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4 flex justify-end">
+            <Link href={`/guides/${outcome.slug}`} className={buttonPrimary}>
+              Open shareable page
+            </Link>
+          </div>
+        </div>
       );
 
     case "ambiguous":

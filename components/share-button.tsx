@@ -7,7 +7,7 @@ import { buttonPrimary } from "@/components/ui";
 
 const TOAST_MS = 2400;
 
-export function ShareButton() {
+export function ShareButton({ label = "Share guide" }: { label?: string }) {
   const [result, setResult] = useState<"copied" | "failed" | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -34,7 +34,7 @@ export function ShareButton() {
         ) : (
           <Share size={15} strokeWidth={1.8} aria-hidden="true" />
         )}
-        {result === "copied" ? "Link copied" : "Share guide"}
+        {result === "copied" ? "Link copied" : label}
       </button>
 
       {/* Stays mounted so screen readers announce the message when it appears. */}

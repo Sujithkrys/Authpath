@@ -12,11 +12,19 @@ import {
 import Link from "next/link";
 
 import { ShareButton } from "@/components/share-button";
-import { AppLogo, DifficultyTag, buttonGhost, panel, panelHeader, pill, rail } from "@/components/ui";
+import { OtherPages, SourceList } from "@/components/source-list";
+import { AppLogo, DifficultyTag, buttonGhost, describeClaimCheck, panel, panelHeader, pill, rail } from "@/components/ui";
 import { formatGeneratedAt } from "@/lib/format";
-import type { Evidence, GuideWithLogo, StepOwner } from "@/types/guide";
+import type { Evidence, GuideWithLogo, StepLink as StepLinkData, StepOwner } from "@/types/guide";
 
 const capitalize = (text: string) => text[0].toUpperCase() + text.slice(1);
+
+/** "Hard: Gmail scopes need a security assessment" reads "Gmail scopes need…" under a stat that already says Hard. */
+/** The stat already says the rating, so the note drops a leading "Hard:" and starts with a capital. */
+const reasonNote = (reason: string, diff: string) => {
+  const rest = reason.replace(new RegExp(`^${diff}\\s*[:—–-]\\s*`, "i"), "");
+  return rest.charAt(0).toUpperCase() + rest.slice(1);
+};
 
 const sectionHeading = "mb-3.5 text-[18px] font-semibold tracking-[-.01em]";
 const whoBlock = "p-4 [&+&]:border-t [&+&]:border-border";
@@ -30,7 +38,7 @@ function StepText({ text }: { text: string }) {
     index % 2 === 1 ? (
       <code
         key={index}
-        className="rounded-sm border border-border bg-surface-2 px-1.5 py-px font-mono text-[13px] break-all text-text"
+        className="rounded-sm border border-border bg-surface-2 px-1.5 py-px font-mono text-[13px] [overflow-wrap:anywhere] text-text"
       >
         {part}
       </code>
@@ -81,26 +89,46 @@ function EvidenceTag({ evidence }: { evidence: Evidence }) {
   );
 }
 
-/** A link to the page a generated step or blocker rests on. */
+/**
+ * A link to the page a generated step or blocker rests on. One line, cut short
+ * with an ellipsis, so a long address can't widen the page.
+ */
 function SourceLink({ url }: { url: string }) {
   return (
     <a
       href={url}
       target="_blank"
       rel="noreferrer"
-      className="mt-1 block font-mono text-[11.5px] break-all text-text-3 hover:text-text"
+      title={url}
+      className="mt-1 block max-w-full truncate font-mono text-[11.5px] text-text-3 hover:text-text"
     >
       {url.replace(/^https:\/\//, "")}
     </a>
   );
 }
 
+/** Where to do a step, by name: generated steps never show a raw URL. */
+function StepLink({ link }: { link: StepLinkData }) {
+  return (
+    <a
+      href={link.url}
+      target="_blank"
+      rel="noreferrer"
+      title={link.url}
+      className="mt-2 inline-flex max-w-full items-center gap-1.5 text-[14px] font-medium text-accent-ink hover:underline"
+    >
+      <span className="min-w-0 [overflow-wrap:anywhere]">{link.label}</span>
+      <ExternalLink size={13} strokeWidth={1.8} aria-hidden="true" />
+    </a>
+  );
+}
+
 function Stat({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div className="border-r border-border px-[18px] py-4 last:border-r-0 max-md:even:border-r-0 max-md:nth-[-n+2]:border-b">
+    <div className="min-w-0 border-r border-border px-[18px] py-4 last:border-r-0 max-md:even:border-r-0 max-md:nth-[-n+2]:border-b">
       <div className="mb-1.5 font-mono text-[11px] tracking-[.08em] text-text-3 uppercase">{label}</div>
-      <div className="text-[20px] font-semibold tracking-[-.01em] tabular-nums">{value}</div>
-      <div className="mt-0.5 text-[13px] text-text-2">{note}</div>
+      <div className="text-[20px] font-semibold tracking-[-.01em] tabular-nums [overflow-wrap:anywhere]">{value}</div>
+      <div className="mt-0.5 text-[13px] text-text-2 [overflow-wrap:anywhere]">{note}</div>
     </div>
   );
 }
@@ -117,9 +145,9 @@ export function GuideView({ guide }: { guide: GuideWithLogo }) {
       </Link>
 
       <div className="flex flex-wrap items-start justify-between gap-[18px] border-b border-border pb-6">
-        <div className="flex items-center gap-4">
+        <div className="flex min-w-0 items-center gap-4">
           <AppLogo guide={guide} size="lg" />
-          <div>
+          <div className="min-w-0">
             <h1
               id="guide-heading"
               className="mb-1 text-[28px] leading-[1.15] font-semibold tracking-[-.02em] max-sm:text-[24px]"
@@ -146,6 +174,11 @@ export function GuideView({ guide }: { guide: GuideWithLogo }) {
                 <span>From provider docs</span>
               )}
             </div>
+            {guide.claimCheck && (
+              <p className="mt-1.5 text-[13px] text-text-2">
+                Checked against cited pages: {describeClaimCheck(guide.claimCheck)}
+              </p>
+            )}
           </div>
         </div>
 
@@ -159,7 +192,11 @@ export function GuideView({ guide }: { guide: GuideWithLogo }) {
       </div>
 
       <div className="mt-6 mb-8 grid grid-cols-4 rounded-lg border border-border bg-surface max-md:grid-cols-2">
-        <Stat label="Difficulty" value={capitalize(guide.diff)} note={`${guide.steps.length} steps`} />
+        <Stat
+          label="Difficulty"
+          value={capitalize(guide.diff)}
+          note={guide.diffReason ? reasonNote(guide.diffReason, guide.diff) : `${guide.steps.length} steps`}
+        />
         <Stat label="Your setup time" value={guide.setup} note={guide.generated ? "Rough estimate" : "Hands-on work"} />
         <Stat label="Approval wait" value={guide.wait} note="Provider-side" />
         <Stat label="Review needed" value={guide.review} note="Before launch" />
@@ -183,9 +220,14 @@ export function GuideView({ guide }: { guide: GuideWithLogo }) {
                       <b className="text-[15px] font-semibold">{step.t}</b>
                       <OwnerTag owner={step.o} />
                     </div>
-                    <p className="max-w-[62ch] text-[15px] text-text-2">
+                    <p className="max-w-[62ch] text-[15px] text-text-2 [overflow-wrap:anywhere]">
                       <StepText text={step.d} />
                     </p>
+                    {step.link && (
+                      <div>
+                        <StepLink link={step.link} />
+                      </div>
+                    )}
                     <EvidenceTag evidence={step.e} />
                     {step.source && <SourceLink url={step.source} />}
                   </div>
@@ -204,7 +246,7 @@ export function GuideView({ guide }: { guide: GuideWithLogo }) {
                     className="flex gap-3 rounded-md border border-l-[3px] border-border border-l-warn bg-surface px-4 py-3.5"
                   >
                     <TriangleAlert size={18} strokeWidth={1.8} className="mt-px text-warn" aria-hidden="true" />
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <b className="mb-0.5 block text-[15px]">{blocker.b}</b>
                       <span className="text-[14px] text-text-2">{blocker.s}</span>
                       {blocker.source && <SourceLink url={blocker.source} />}
@@ -257,24 +299,8 @@ export function GuideView({ guide }: { guide: GuideWithLogo }) {
             <div className={panelHeader}>
               <h2>Sources checked</h2>
             </div>
-            <ul className="p-1.5">
-              {guide.sources.map(([title, url]) => (
-                <li key={title}>
-                  <a
-                    href={`https://${url}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-start gap-2.5 rounded-md px-2.5 py-[9px] text-[14px] text-text-2 hover:bg-hover hover:text-text"
-                  >
-                    <FileText size={15} strokeWidth={1.8} className="mt-0.5" aria-hidden="true" />
-                    <span className="min-w-0">
-                      {title}
-                      <span className="block font-mono text-[11.5px] break-all text-text-3">{url}</span>
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <SourceList sources={guide.sources} />
+            {guide.otherPages && <OtherPages pages={guide.otherPages} />}
             <p className="border-t border-border px-4 py-3 text-[13px] text-text-2">
               Approval times are the provider&apos;s stated ranges unless marked tested.
             </p>

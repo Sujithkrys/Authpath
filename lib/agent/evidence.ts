@@ -1,5 +1,10 @@
 import type { ApprovalResult, GuideDraft } from "@/lib/agent/schemas";
-import type { Guide, GuideBlocker, GuideStep } from "@/types/guide";
+import { MIN_STEPS, isProviderLink, resolveOwner } from "@/lib/agent/rules";
+import { stripProtocol, urlKey } from "@/lib/agent/urls";
+import type { ChecklistItem, Difficulty, Guide, GuideBlocker, GuideStep } from "@/types/guide";
+import { CHECKLIST, GENERATED_VERSION } from "@/types/guide";
+
+export { hostOf, isUnder, stripProtocol, urlKey } from "@/lib/agent/urls";
 
 /**
  * The evidence rules, enforced in code. The prompts ask the model to follow
@@ -10,41 +15,17 @@ import type { Guide, GuideBlocker, GuideStep } from "@/types/guide";
 export interface FetchedPage {
   url: string;
   title: string;
-  /** Page text. Empty for PDFs, which come back as base64. */
+  /** Page text. Empty until read, and for PDFs, which come back as base64. */
   text: string;
 }
 
 export const NOT_PUBLISHED = "Not published";
-
-/** Forces "you" whatever the model chose. Wrongly handing a step to the developer is the safe mistake. */
-const NEEDS_THE_DEVELOPER =
-  /\b(sign(ing)? (in|up)|log(ging)? ?in|submit|submitting|verify|verification|wait(ing)?|legal|contract|agreement|terms of service|business|approv(e|al)|payment|billing|contact|security (review|assessment))\b/i;
+/** The wait when a timeline is published but too involved for a short label. */
+export const SEE_TIMELINE = "See review timeline";
 
 const GENERATED_TILE_COLOR = "#525252";
 const MINUTES_PER_STEP = 5;
-
-export function urlKey(url: string): string {
-  try {
-    const parsed = new URL(url);
-    return `${parsed.hostname.toLowerCase().replace(/^www\./, "")}${parsed.pathname.replace(/\/+$/, "")}${parsed.search}`;
-  } catch {
-    return url.trim().toLowerCase();
-  }
-}
-
-export function hostOf(url: string): string | null {
-  try {
-    return new URL(url).hostname.toLowerCase().replace(/^www\./, "");
-  } catch {
-    return null;
-  }
-}
-
-export const isUnder = (host: string, domain: string) => host === domain || host.endsWith(`.${domain}`);
-
-export function stripProtocol(url: string): string {
-  return url.replace(/^https?:\/\//, "").replace(/\/+$/, "");
-}
+export const MAX_SOURCES = 6;
 
 export function slugify(name: string): string {
   return name
@@ -54,7 +35,7 @@ export function slugify(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-function initials(name: string): string {
+export function initials(name: string): string {
   const words = name.split(/\s+/).filter(Boolean);
   const letters = words.length > 1 ? words[0][0] + words[1][0] : name.slice(0, 2);
   return letters.toUpperCase().replace(/[^A-Z0-9]/g, "") || "?";
@@ -85,13 +66,15 @@ const HTML_ENTITIES: Record<string, string> = {
   mdash: "—",
 };
 
-/** Reduces a page to its readable text, for checking quotes against it. */
+/** Reduces a page to its readable text, for checking quotes and claims against it. */
 export function htmlToText(html: string): string {
   return html
     .replace(/<(script|style|noscript|svg)\b[\s\S]*?<\/\1>/gi, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/&#(\d+);/g, (_match, code) => String.fromCodePoint(Number(code)))
-    .replace(/&([a-z]+);/gi, (match, name: string) => HTML_ENTITIES[name.toLowerCase()] ?? match);
+    .replace(/&#x([0-9a-f]+);/gi, (_match, code) => String.fromCodePoint(parseInt(code, 16)))
+    .replace(/&([a-z]+);/gi, (match, name: string) => HTML_ENTITIES[name.toLowerCase()] ?? match)
+    .replace(/\s+/g, " ");
 }
 
 /** True only when the quote really is in the page, ignoring case and spacing. */
@@ -100,35 +83,33 @@ export function quoteAppearsIn(quote: string, text: string): boolean {
   return needle.length > 0 && flatten(text).includes(needle);
 }
 
-const numbersIn = (text: string): string[] => text.match(/\d+/g) ?? [];
+const numbersIn = (text: string): Set<string> => new Set(text.match(/\d+/g) ?? []);
 
-export interface ApprovalVerdict {
+export interface TimelineVerdict {
   wait: string;
-  /** Set when no timeline could be verified, so the guide needs the contact blocker. */
-  missingTimeline: boolean;
-  sourceUrl: string | null;
+  item: ChecklistItem;
 }
 
+const escapeHtml = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
 /**
- * Decides the approval wait. A time only survives if its quote is word for word
- * in a page fetched this run and every number in the label is in that quote, so
- * the model can't turn "a few weeks" into "2 weeks" or invent one outright.
+ * Decides the published review timeline. It only exists if its quote is word for
+ * word in a page read this run. The short label must carry exactly the numbers in
+ * that quote, so "5 days, then 5-10 days" can't shrink to "5 days" or grow into
+ * an invented "2 weeks". A label that fails still leaves the verified quote as the
+ * checklist answer.
  */
-export function resolveApproval(approval: ApprovalResult, pages: Map<string, FetchedPage>): ApprovalVerdict {
+export function resolveTimeline(approval: ApprovalResult, pages: Map<string, FetchedPage>): TimelineVerdict {
   const page = approval.evidenceUrl ? pages.get(urlKey(approval.evidenceUrl)) : undefined;
-  const quote = approval.evidenceQuote;
-  const quoteHolds = Boolean(page && quote && quoteAppearsIn(quote, page.text));
+  const quote = approval.evidenceQuote?.trim();
+  const notFound: TimelineVerdict = { wait: NOT_PUBLISHED, item: { key: "review_timeline", status: "not_found", answer: "" } };
+  if (!page || !quote || !quoteAppearsIn(quote, page.text) || numbersIn(quote).size === 0) return notFound;
 
-  if (quoteHolds && approval.reviewRequired === "no") {
-    return { wait: "None", missingTimeline: false, sourceUrl: page!.url };
-  }
-
-  const label = approval.timelineLabel?.trim();
-  if (quoteHolds && label && numbersIn(label).every((number) => numbersIn(quote!).includes(number))) {
-    return { wait: label, missingTimeline: false, sourceUrl: page!.url };
-  }
-
-  return { wait: NOT_PUBLISHED, missingTimeline: true, sourceUrl: page?.url ?? null };
+  const item: ChecklistItem = { key: "review_timeline", status: "found", answer: `“${escapeHtml(quote)}”`, source: page.url };
+  const label = approval.timelineLabel?.trim() ?? "";
+  const [inLabel, inQuote] = [numbersIn(label), numbersIn(quote)];
+  const sameNumbers = inLabel.size === inQuote.size && [...inQuote].every((number) => inLabel.has(number));
+  return { wait: label && sameNumbers && label.length <= 60 ? label : SEE_TIMELINE, item };
 }
 
 /** Absolute page links in a page's HTML, or in a sitemap's <loc> entries. */
@@ -143,23 +124,21 @@ export function linksIn(markup: string, baseUrl: string): string[] {
   });
 }
 
-const NOT_DOCS = /\.(png|jpe?g|svg|gif|webp|css|js|ico|woff2?|xml|zip)$|\/(blog|changelog|customers|pricing|careers|press|legal|privacy|terms|login|signup)(\/|$)/i;
-
 /**
- * Picks the links most likely to cover a topic. Earlier topic words count for
- * more, and only https pages on the official domains are considered.
+ * Picks the links most likely to cover a topic. Topics match whole path words
+ * (so "review" no longer matches a blog post about reviewing code), earlier
+ * topics count for more, and only pages that pass `isAllowed` are considered.
  */
-export function rankLinks(links: string[], topics: string[], domains: string[], limit: number): string[] {
+export function rankLinks(links: string[], topics: string[], isAllowed: (url: string) => boolean, limit: number): string[] {
   const scored = new Map<string, { url: string; score: number }>();
 
   for (const url of links) {
-    const host = hostOf(url);
-    if (!url.startsWith("https://") || !host || !domains.some((domain) => isUnder(host, domain))) continue;
-
-    const path = new URL(url).pathname.toLowerCase();
-    if (NOT_DOCS.test(path)) continue;
-
-    const score = topics.reduce((total, topic, index) => total + (path.includes(topic) ? topics.length - index : 0), 0);
+    if (!isAllowed(url)) continue;
+    const words = new URL(url).pathname.toLowerCase().split(/[/\-_.]+/).filter(Boolean);
+    const score = topics.reduce(
+      (total, topic, index) => total + (words.some((word) => word.startsWith(topic)) ? topics.length - index : 0),
+      0,
+    );
     if (score > 0) scored.set(urlKey(url), { url, score });
   }
 
@@ -169,10 +148,34 @@ export function rankLinks(links: string[], topics: string[], domains: string[], 
     .map((entry) => entry.url);
 }
 
+/** Merges the stages' checklist answers into all ten items, in order. A found answer needs a page read this run. */
+export function mergeChecklist(
+  answers: { key: string; status: "found" | "not_found"; answer: string; sourceUrl: string | null }[],
+  timeline: ChecklistItem,
+  pages: Map<string, FetchedPage>,
+): ChecklistItem[] {
+  return CHECKLIST.map(({ key }) => {
+    if (key === "review_timeline") return timeline;
+    const answer = answers.find((entry) => entry.key === key && entry.status === "found" && entry.answer.trim());
+    if (!answer) return { key, status: "not_found", answer: "" };
+    const page = answer.sourceUrl ? pages.get(urlKey(answer.sourceUrl)) : undefined;
+    return page
+      ? { key, status: "found", answer: answer.answer.trim(), source: page.url }
+      : // Claimed, but not from a page read this run: kept only as unconfirmed.
+        { key, status: "uncertain", answer: answer.answer.trim() };
+  });
+}
+
 interface BuildGuideInput {
   appName: string;
   draft: GuideDraft;
-  approval: ApprovalResult;
+  checklist: ChecklistItem[];
+  wait: string;
+  review: string;
+  diff: Difficulty;
+  diffReason: string;
+  /** Whether a blocker is needed because no timeline was published for a real review. */
+  contactBlocker: GuideBlocker | null;
   developerConsoleUrl: string | null;
   officialDomains: string[];
   /** Pages fetched this run, by urlKey. */
@@ -180,68 +183,95 @@ interface BuildGuideInput {
   generatedAt: string;
 }
 
-export function buildGuide({
-  appName,
-  draft,
-  approval,
-  developerConsoleUrl,
-  officialDomains,
-  pages,
-  generatedAt,
-}: BuildGuideInput): Guide {
-  const fetched = [...pages.values()];
+/**
+ * Turns a draft into a guide. Steps rest on checklist items: a step's source must
+ * be the source of an item it's built from, so a step can't cite a page its
+ * checklist answers didn't come from.
+ */
+export function buildGuide(input: BuildGuideInput): Guide {
+  const { appName, draft, checklist, pages, officialDomains } = input;
   const sourceFor = (url: string | null) => (url ? pages.get(urlKey(url))?.url : undefined);
+  const itemSource = (key: string) => checklist.find((item) => item.key === key && item.status === "found")?.source;
 
   const steps: GuideStep[] = draft.steps.map((step) => {
-    const source = sourceFor(step.sourceUrl);
+    const fromSources = step.from.map(itemSource).filter((url): url is string => Boolean(url));
+    const proposed = sourceFor(step.sourceUrl);
+    const source = proposed && fromSources.some((url) => urlKey(url) === urlKey(proposed)) ? proposed : fromSources[0];
+    const link = step.link && isProviderLink(step.link.url, officialDomains) ? { label: step.link.label.trim(), url: step.link.url } : null;
     return {
-      t: step.title,
-      d: step.description,
-      o: step.owner === "agent" && !NEEDS_THE_DEVELOPER.test(`${step.title} ${step.description}`) ? "agent" : "you",
-      // No fetched source means uncertain. Nothing generated can ever be "verified".
-      e: source && step.evidence === "docs" ? "docs" : "uncertain",
+      t: step.title.trim(),
+      d: step.description.trim(),
+      o: resolveOwner(step.owner, step.title, step.description),
+      // No checklist-backed source means uncertain. Nothing generated is ever "verified".
+      e: source ? "docs" : "uncertain",
       ...(source ? { source } : {}),
+      ...(link ? { link } : {}),
     };
   });
 
   const blockers: GuideBlocker[] = draft.blockers.map((blocker) => {
     const source = sourceFor(blocker.sourceUrl);
-    return { b: blocker.title, s: blocker.detail, ...(source ? { source } : {}) };
+    return { b: blocker.title.trim(), s: blocker.detail.trim(), ...(source ? { source } : {}) };
   });
-
-  const verdict = resolveApproval(approval, pages);
-  if (verdict.missingTimeline) {
-    blockers.push({
-      b: "Approval timeline not published",
-      s: `The docs we read don't give an approval timeline. Contact ${appName} before you plan a launch date.`,
-      source: verdict.sourceUrl ?? fetched.at(-1)?.url,
-    });
-  }
+  if (input.contactBlocker) blockers.push(input.contactBlocker);
 
   // This becomes a button, so a link planted in a web page must not reach it.
-  const consoleHost = developerConsoleUrl?.startsWith("https://") ? hostOf(developerConsoleUrl) : null;
-  const consoleIsOfficial = consoleHost && officialDomains.some((domain) => isUnder(consoleHost, domain));
-  const consoleUrl = consoleIsOfficial ? developerConsoleUrl! : fetched[0].url;
+  const registerSource = itemSource("register_url");
+  const consoleUrl =
+    input.developerConsoleUrl && isProviderLink(input.developerConsoleUrl, officialDomains)
+      ? input.developerConsoleUrl
+      : (registerSource ?? [...pages.values()][0]?.url ?? `https://${officialDomains[0]}`);
 
   return {
     id: slugify(appName),
     name: appName,
     init: initials(appName),
     color: GENERATED_TILE_COLOR,
-    diff: draft.difficulty,
+    diff: input.diff,
+    diffReason: input.diffReason,
     tested: false,
     generated: true,
-    generatedAt,
-    // A placeholder from the step count, shown as "Rough estimate". Nothing the
-    // model says about hands-on time could be sourced.
-    setup: `~${steps.length * MINUTES_PER_STEP} min`,
-    wait: verdict.wait,
-    review: approval.reviewRequired === "unknown" ? "Unclear" : approval.reviewLabel.trim() || "Unclear",
+    generatedAt: input.generatedAt,
+    version: GENERATED_VERSION,
+    setup: setupEstimate(steps.length),
+    wait: input.wait,
+    review: input.review,
     site: stripProtocol(consoleUrl),
     steps,
     blockers,
-    agent: draft.agentTasks,
-    you: draft.youTasks,
-    sources: fetched.map((page) => [page.title || stripProtocol(page.url), stripProtocol(page.url)]),
+    agent: draft.agentTasks.map((task) => task.trim()).filter(Boolean),
+    you: draft.youTasks.map((task) => task.trim()).filter(Boolean),
+    sources: [],
+    otherPages: [],
+    checklist,
+    claimCheck: { checked: 0, kept: 0, downgraded: 0, dropped: 0 },
+  };
+}
+
+/** A placeholder from the step count, shown as "Rough estimate". Nothing the model says about hands-on time could be sourced. */
+export const setupEstimate = (stepCount: number) => `~${Math.max(stepCount, MIN_STEPS) * MINUTES_PER_STEP} min`;
+
+/**
+ * Sources are only the pages something cites, in the order first cited and
+ * at most six. Every other page read goes to `otherPages`.
+ */
+export function splitSources(guide: Guide, pages: Map<string, FetchedPage>): Pick<Guide, "sources" | "otherPages"> {
+  const cited = [
+    ...guide.steps.map((step) => step.source),
+    ...(guide.checklist ?? []).map((item) => item.source),
+    ...guide.blockers.map((blocker) => blocker.source),
+  ].filter((url): url is string => Boolean(url));
+
+  const seen = new Set<string>();
+  const ordered = cited.filter((url) => !seen.has(urlKey(url)) && seen.add(urlKey(url)));
+  const entry = (url: string): [string, string] => {
+    const title = pages.get(urlKey(url))?.title?.trim();
+    return [title || stripProtocol(url), stripProtocol(url)];
+  };
+  const others = [...pages.values()].map((page) => page.url).filter((url) => !seen.has(urlKey(url)));
+
+  return {
+    sources: ordered.slice(0, MAX_SOURCES).map(entry),
+    otherPages: [...ordered.slice(MAX_SOURCES), ...others].map(entry),
   };
 }

@@ -6,14 +6,22 @@ import { runPipeline } from "@/lib/agent/pipeline";
 import { findLibraryGuide } from "@/lib/guides";
 import { getProvider } from "@/lib/llm";
 import { AgentError } from "@/lib/llm/types";
-import { RATE_LIMIT, checkRateLimit, findRecentGuide, isStoreConfigured } from "@/lib/store";
+import { RATE_LIMIT, checkRateLimit, findRecentResult, isStoreConfigured } from "@/lib/store";
 
 // 300s is the most Vercel's Hobby plan allows, and also the default on Pro, so
 // this is safe on either. The agent stops first so it can still report back.
 export const maxDuration = 300;
 const OVERALL_TIMEOUT_MS = 270_000;
 
-const Body = z.object({ input: z.string().trim().min(1).max(200) });
+const Body = z.object({ input: z.string().trim().min(1).max(200), compare: z.boolean().optional() });
+
+/**
+ * Compare mode generates even for library apps, so the agent can be checked
+ * against guides verified by hand. It skips the library redirect, the cache,
+ * the rate limit and saving, so it only works in local development with
+ * AUTHPATH_COMPARE=true, and never in production.
+ */
+const compareAllowed = () => process.env.NODE_ENV !== "production" && process.env.AUTHPATH_COMPARE === "true";
 
 const line = (event: GenerateEvent) => `${JSON.stringify(event)}\n`;
 
@@ -53,28 +61,33 @@ export async function POST(request: NextRequest) {
     return reply({ type: "error", message: "Enter an app name or website.", retryable: false }, 400);
   }
   const { input } = body.data;
+  const compare = body.data.compare === true && compareAllowed();
 
-  // These two are free, so they come before the rate limit and any model call.
-  const inLibrary = findLibraryGuide(input);
-  if (inLibrary) return reply({ type: "redirect", slug: inLibrary.id }, 200);
+  if (!compare) {
+    // These two are free, so they come before the rate limit and any model call.
+    const inLibrary = findLibraryGuide(input);
+    if (inLibrary) return reply({ type: "redirect", slug: inLibrary.id }, 200);
 
-  if (!isStoreConfigured()) return notSetUp("guide storage isn't connected");
+    if (!isStoreConfigured()) return notSetUp("guide storage isn't connected");
 
-  const recent = await findRecentGuide(input).catch((error: unknown) => {
-    console.error("recent guide lookup failed", error);
-    return null;
-  });
-  if (recent) return reply({ type: "cached", slug: recent.id, generatedAt: recent.generatedAt! }, 200);
+    const recent = await findRecentResult(input).catch((error: unknown) => {
+      console.error("recent result lookup failed", error);
+      return null;
+    });
+    if (recent) return reply({ type: "cached", slug: recent.id, generatedAt: recent.generatedAt! }, 200);
+  }
 
   if (!getProvider().isConfigured()) return notSetUp(`no API key for ${getProvider().name}`);
 
   // Fails closed: if the limit can't be checked, nothing runs on the API key.
   let storageFault: string | null = null;
-  const limit = await checkRateLimit(clientIp(request)).catch((error: unknown) => {
-    console.error("rate limit check failed", error);
-    storageFault = describeStorageFault(error);
-    return null;
-  });
+  const limit = compare
+    ? { success: true, reset: 0 }
+    : await checkRateLimit(clientIp(request)).catch((error: unknown) => {
+        console.error("rate limit check failed", error);
+        storageFault = describeStorageFault(error);
+        return null;
+      });
   if (storageFault) return notSetUp(storageFault);
   if (!limit) {
     return reply({ type: "error", message: "Something went wrong. Please try again.", retryable: true }, 503);
@@ -102,7 +115,7 @@ export async function POST(request: NextRequest) {
       };
 
       try {
-        await runPipeline(input, emit, signal);
+        await runPipeline(input, emit, signal, { compare });
       } catch (error) {
         console.error("generation failed", error);
         emit(toErrorEvent(error, timeout.aborted));

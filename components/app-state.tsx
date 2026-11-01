@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { createContext, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { STAGES, type AppOption, type GenerateEvent, type StageId } from "@/lib/agent/events";
-import type { Difficulty, WaitKey } from "@/types/guide";
+import type { AppCard, ClaimCheck, Difficulty, WaitKey } from "@/types/guide";
 
 export type DifficultyFilter = "all" | Difficulty;
 export type WaitFilter = "all" | WaitKey;
@@ -16,9 +16,9 @@ export interface TraceStage {
 }
 
 export type TraceOutcome =
-  | { kind: "guide"; slug: string; uncertainCount: number }
+  | { kind: "guide"; slug: string; uncertainCount: number; claimCheck?: ClaimCheck }
   | { kind: "cached"; slug: string; generatedAt: string }
-  | { kind: "no_oauth"; appName: string; summary: string; authMethods: string[]; sources: string[] }
+  | { kind: "card"; slug: string; card: AppCard }
   | { kind: "ambiguous"; options: AppOption[] }
   | { kind: "not_found"; message: string }
   | { kind: "error"; message: string; retryable: boolean };
@@ -68,20 +68,14 @@ function applyEvent(run: TraceRun, event: GenerateEvent): TraceRun {
     case "stage_done":
       return updateStage(event.stage, { status: "done", detail: event.detail });
     case "guide":
-      return { ...run, outcome: { kind: "guide", slug: event.slug, uncertainCount: event.uncertainCount } };
-    case "cached":
-      return { ...run, outcome: { kind: "cached", slug: event.slug, generatedAt: event.generatedAt } };
-    case "no_oauth":
       return {
         ...run,
-        outcome: {
-          kind: "no_oauth",
-          appName: event.appName,
-          summary: event.summary,
-          authMethods: event.authMethods,
-          sources: event.sources,
-        },
+        outcome: { kind: "guide", slug: event.slug, uncertainCount: event.uncertainCount, claimCheck: event.claimCheck },
       };
+    case "cached":
+      return { ...run, outcome: { kind: "cached", slug: event.slug, generatedAt: event.generatedAt } };
+    case "card":
+      return { ...run, outcome: { kind: "card", slug: event.slug, card: event.card } };
     case "ambiguous":
       return { ...run, outcome: { kind: "ambiguous", options: event.options } };
     case "not_found":

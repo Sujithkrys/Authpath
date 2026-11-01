@@ -1,17 +1,17 @@
 /** The stream contract between /api/generate and the trace UI. Safe to import on the client. */
 
-import type { Guide } from "@/types/guide";
+import type { AppCard, ClaimCheck, Guide } from "@/types/guide";
 
 export const STAGES = [
   {
-    id: "find",
-    title: "Finding the developer docs",
-    working: "Searching for official developer and OAuth docs",
+    id: "classify",
+    title: "Identifying the app",
+    working: "Finding its official docs and working out what kind of app it is",
   },
   {
     id: "read",
-    title: "Reading OAuth app registration",
-    working: "Reading the provider's own pages",
+    title: "Researching the setup checklist",
+    working: "Reading the provider's own pages for each checklist item",
   },
   {
     id: "approval",
@@ -21,7 +21,12 @@ export const STAGES = [
   {
     id: "write",
     title: "Writing the guide",
-    working: "Checking every step against the pages that were read",
+    working: "Turning the checklist answers into short steps",
+  },
+  {
+    id: "verify",
+    title: "Checking every claim",
+    working: "Comparing each claim with the page it cites",
   },
 ] as const;
 
@@ -52,10 +57,11 @@ export type GenerateEvent =
   | { type: "stage_done"; stage: StageId; detail: string; findings?: unknown }
   /** The app is already in the library. */
   | { type: "redirect"; slug: string }
-  /** A guide from the last 7 days, served instead of generating again. */
+  /** A guide or card from the last 7 days, served instead of generating again. */
   | { type: "cached"; slug: string; generatedAt: string }
-  | { type: "guide"; slug: string; uncertainCount: number; guide: Guide; stats: GenerationStats }
-  | { type: "no_oauth"; appName: string; summary: string; authMethods: string[]; sources: string[]; stats: GenerationStats }
+  | { type: "guide"; slug: string; uncertainCount: number; claimCheck: ClaimCheck; guide: Guide; stats: GenerationStats }
+  /** Not an OAuth provider (no_oauth, platform or unknown): a short result card instead of a guide. */
+  | { type: "card"; slug: string; card: AppCard; stats: GenerationStats }
   | { type: "ambiguous"; options: AppOption[]; stats: GenerationStats }
   | { type: "not_found"; message: string; stats: GenerationStats }
   | { type: "error"; message: string; retryable: boolean; detail?: string };

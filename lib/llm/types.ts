@@ -32,6 +32,8 @@ export interface ResearchRequest<T extends z.ZodType> extends StageRequest<T> {
     urls: string[];
     /** Words in a URL that suggest a page covers this stage, most telling first. */
     topics: string[];
+    /** Without search, whether to ask the model for more pages first. Defaults to true. */
+    propose?: boolean;
   };
   /** Pages to confirm exist when a provider can't search, taken from the stage's result. */
   candidates?: (result: z.infer<T>) => string[];

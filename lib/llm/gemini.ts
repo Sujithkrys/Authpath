@@ -1,7 +1,8 @@
 import { ApiError, GoogleGenAI, UrlRetrievalStatus, type GenerateContentConfig, type GenerateContentResponse } from "@google/genai";
 import { z } from "zod";
 
-import { hostOf, htmlToText, isUnder, linksIn, rankLinks, urlKey } from "@/lib/agent/evidence";
+import { htmlToText, linksIn, rankLinks } from "@/lib/agent/evidence";
+import { hostOf, isUnder, urlKey } from "@/lib/agent/urls";
 import type { RunLedger } from "@/lib/llm/ledger";
 import { AgentError, type LlmProvider, type ResearchRequest, type WriteRequest } from "@/lib/llm/types";
 
@@ -221,6 +222,8 @@ function siteHint(domains: string[] | undefined): string {
 async function researchWithoutSearch<T extends z.ZodType>(request: ResearchRequest<T>): Promise<z.infer<T>> {
   const { system, user, schema, read, candidates, ledger, onDomains, signal } = request;
 
+  if (read && read.propose === false) return readPages(request, "");
+
   if (read) {
     const { urls } = await structured({
       system: `${system}\n\n${NO_SEARCH_NOTE}`,
@@ -231,7 +234,7 @@ async function researchWithoutSearch<T extends z.ZodType>(request: ResearchReque
     });
     const official = urls.filter((url) => {
       const host = hostOf(url);
-      return host !== null && read.allowedDomains.some((domain) => isUnder(host, domain));
+      return host !== null && read.allowedDomains.some((domain) => isUnder(host, domain)) && ledger.accepts(url);
     });
     return readPages({ ...request, read: { ...read, urls: [...new Set([...official, ...read.urls])] } }, "");
   }
@@ -272,18 +275,31 @@ async function download(url: string, signal: AbortSignal): Promise<{ text: strin
  * the deep ones from the site itself: links on those pages, plus its sitemap.
  * They're only leads. A page still has to come back from URL context to count.
  */
-async function discoverPages(urls: string[], domains: string[], topics: string[], limit: number, signal: AbortSignal) {
+async function discoverPages(
+  urls: string[],
+  domains: string[],
+  topics: string[],
+  limit: number,
+  isAllowed: (url: string) => boolean,
+  signal: AbortSignal,
+) {
   const hosts = urls.flatMap((url) => hostOf(url) ?? []);
   const sitemaps = [...new Set([...hosts, ...domains])].map((host) => `https://${host}/sitemap.xml`);
   const pages = await Promise.all([...urls, ...sitemaps].map((url) => download(url, signal)));
-  return rankLinks(pages.flatMap(({ text, finalUrl }) => linksIn(text, finalUrl)), topics, domains, limit);
+  const onDomain = (url: string) => {
+    const host = hostOf(url);
+    return host !== null && domains.some((domain) => isUnder(host, domain)) && isAllowed(url);
+  };
+  return rankLinks(pages.flatMap(({ text, finalUrl }) => linksIn(text, finalUrl)), topics, onDomain, limit);
 }
 
 async function readPages<T extends z.ZodType>(request: ResearchRequest<T>, found: string): Promise<z.infer<T>> {
   const { system, user, schema, read, ledger, onDomains, signal } = request;
   const { urls, allowedDomains, topics, maxUses } = read!;
-  const deep = await discoverPages(urls, allowedDomains, topics, maxUses - 1, signal);
-  const pages = [...new Set([...deep, ...urls])].slice(0, maxUses);
+  // Pages named up front come first; discovery fills the remaining reads.
+  const given = [...new Set(urls.filter((url) => ledger.accepts(url)))];
+  const deep = await discoverPages(urls, allowedDomains, topics, maxUses, (url) => ledger.accepts(url), signal);
+  const pages = [...new Set([...given.slice(0, Math.ceil(maxUses / 2)), ...deep, ...given])].slice(0, maxUses);
 
   const note = found ? `\n\nA search found this:\n${found}` : "";
   const prompt = `${user}${note}\n\nRead these pages:\n${pages.join("\n")}${askForJson(schema)}`;
@@ -376,8 +392,12 @@ export const geminiProvider: LlmProvider = {
 
     const { text, finalUrl } = await download(page.url, signal);
     const finalHost = hostOf(finalUrl);
-    if (!text || !finalHost || (!isUnder(finalHost, host) && !isUnder(host, finalHost))) return "";
+    // A redirect may only land on the same site or another official docs page.
+    const stays = finalHost && (isUnder(finalHost, host) || isUnder(host, finalHost) || ledger.accepts(finalUrl));
+    if (!text || !stays) return "";
 
+    const title = text.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
+    if (title && !page.title) page.title = htmlToText(title).trim().slice(0, 140);
     page.text = htmlToText(text);
     return page.text;
   },
