@@ -53,7 +53,6 @@ const decodeEntities = (text: string) => text.replace(/&lt;/g, "<").replace(/&gt
 
 /** One checklist answer, with a copy button on each value someone pastes. */
 function NeedAnswer({ item }: { item: ChecklistItem }) {
-  if (item.status === "not_found") return <p className="text-[14px] text-text-3">Not found in official docs</p>;
   return (
     <>
       <p className="text-[14px] text-text-2 [overflow-wrap:anywhere]">
@@ -67,24 +66,58 @@ function NeedAnswer({ item }: { item: ChecklistItem }) {
   );
 }
 
-/** The stored research checklist, in its fixed order. */
+/**
+ * What someone needs in hand to start registering. The other items (review,
+ * timeline, limits, rejections, app types) either repeat the stats above or
+ * only matter later, so they sit behind "More details".
+ */
+const STARTER_KEYS: ReadonlySet<string> = new Set(["register_url", "required_fields", "redirect_uris", "credentials", "scopes"]);
+
+function NeedList({ rows }: { rows: { key: string; label: string; item: ChecklistItem }[] }) {
+  return (
+    <ul className="overflow-hidden rounded-lg border border-border">
+      {rows.map(({ key, label, item }) => (
+        <li key={key} className="border-b border-border bg-surface px-[18px] py-3.5 last:border-b-0">
+          <b className="mb-0.5 block text-[14px] font-semibold">{label}</b>
+          <NeedAnswer item={item} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** The stored research checklist, in its fixed order. Every item stays available. */
 function WhatYoullNeed({ items }: { items: ChecklistItem[] }) {
   const byKey = new Map(items.map((item) => [item.key, item]));
+  const all = CHECKLIST.flatMap(({ key, label }) => {
+    const item = byKey.get(key);
+    return item ? [{ key: key as string, label, item }] : [];
+  });
+  const answered = all.filter(({ item }) => item.status !== "not_found");
+  const missing = all.filter(({ item }) => item.status === "not_found");
+  const starter = answered.filter(({ key }) => STARTER_KEYS.has(key));
+  const later = answered.filter(({ key }) => !STARTER_KEYS.has(key));
+
   return (
     <div className="mb-[34px]">
       <h2 className={sectionHeading}>What you&apos;ll need</h2>
-      <ul className="overflow-hidden rounded-lg border border-border">
-        {CHECKLIST.flatMap(({ key, label }) => {
-          const item = byKey.get(key);
-          if (!item) return [];
-          return [
-            <li key={key} className="border-b border-border bg-surface px-[18px] py-3.5 last:border-b-0">
-              <b className="mb-0.5 block text-[14px] font-semibold">{label}</b>
-              <NeedAnswer item={item} />
-            </li>,
-          ];
-        })}
-      </ul>
+      {starter.length > 0 && <NeedList rows={starter} />}
+      {later.length > 0 && (
+        <details className="group mt-3">
+          <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-sm py-1 text-[14px] font-medium text-text-2 hover:text-text [&::-webkit-details-marker]:hidden">
+            <ChevronRight size={16} strokeWidth={1.8} className="transition-transform group-open:rotate-90" aria-hidden="true" />
+            More details ({later.length})
+          </summary>
+          <div className="mt-2">
+            <NeedList rows={later} />
+          </div>
+        </details>
+      )}
+      {missing.length > 0 && (
+        <p className="mt-3 text-[13.5px] text-text-3">
+          Not found in official docs: {missing.map(({ label }) => label.toLowerCase()).join(", ")}.
+        </p>
+      )}
     </div>
   );
 }
