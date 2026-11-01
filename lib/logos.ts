@@ -6,7 +6,7 @@
  * their simple-icons (CC0) marks, because that set only has their wordmarks.
  * The logos themselves remain trademarks of their owners.
  */
-const LOGOS = new Set(["github", "google", "hubspot", "linear", "notion", "salesforce", "slack", "stripe", "zoom"]);
+const LOGOS = new Set(["github", "gmail", "google", "hubspot", "linear", "notion", "salesforce", "slack", "stripe", "zoom"]);
 
 /** Single-colour dark marks that vanish on a dark card, so they're shown light there. */
 const DARK_MARKS = new Set(["github", "linear"]);

@@ -1,0 +1,208 @@
+{
+  "id": "gmail",
+  "name": "Gmail",
+  "init": "GM",
+  "color": "#EA4335",
+  "diff": "hard",
+  "tested": false,
+  "setup": "30-60 min",
+  "wait": "Up to 6 weeks",
+  "review": "Restricted scopes",
+  "waitKey": "weeks",
+  "site": "console.cloud.google.com",
+  "steps": [
+    {
+      "t": "Create a Cloud project",
+      "d": "In the Google Cloud console, go to IAM & Admin → Create a project and give it a name.",
+      "o": "you",
+      "e": "docs",
+      "source": "https://developers.google.com/workspace/guides/create-project",
+      "link": {
+        "label": "Open the Google Cloud console",
+        "url": "https://console.cloud.google.com/projectcreate"
+      }
+    },
+    {
+      "t": "Enable the Gmail API",
+      "d": "In APIs & Services → Library, open the Gmail API and click Enable.",
+      "o": "you",
+      "e": "docs",
+      "source": "https://developers.google.com/workspace/guides/enable-apis",
+      "link": {
+        "label": "Open the Gmail API",
+        "url": "https://console.cloud.google.com/apis/library/gmail.googleapis.com"
+      }
+    },
+    {
+      "t": "Set up the consent screen",
+      "d": "Fill in Branding, choose a user type under Audience, and add yourself as a test user.",
+      "o": "you",
+      "e": "docs",
+      "source": "https://developers.google.com/workspace/guides/configure-oauth-consent",
+      "link": {
+        "label": "Open Branding",
+        "url": "https://console.cloud.google.com/auth/branding"
+      }
+    },
+    {
+      "t": "Choose your Gmail scopes",
+      "d": "Pick the narrowest scopes you need, such as <code>gmail.labels</code> or <code>gmail.send</code>. Reading mail needs a restricted scope like <code>gmail.readonly</code>.",
+      "o": "agent",
+      "e": "docs",
+      "source": "https://developers.google.com/workspace/gmail/api/auth/scopes",
+      "link": {
+        "label": "Open Data Access",
+        "url": "https://console.cloud.google.com/auth/scopes"
+      }
+    },
+    {
+      "t": "Create the OAuth client",
+      "d": "Google Auth Platform → Clients → Create client. Add your HTTPS redirect URIs, then save the client secret: it's shown only once.",
+      "o": "you",
+      "e": "docs",
+      "source": "https://support.google.com/cloud/answer/15549257?hl=en",
+      "link": {
+        "label": "Open Clients",
+        "url": "https://console.cloud.google.com/auth/clients"
+      }
+    },
+    {
+      "t": "Submit for verification (only to go public)",
+      "d": "Needed for sensitive and restricted Gmail scopes. Restricted scopes also need a security assessment if you store the data on servers.",
+      "o": "you",
+      "e": "docs",
+      "source": "https://developers.google.com/workspace/gmail/api/auth/scopes",
+      "link": {
+        "label": "Open Verification Center",
+        "url": "https://console.cloud.google.com/auth/verification"
+      }
+    }
+  ],
+  "blockers": [
+    {
+      "b": "100-user cap in Testing",
+      "s": "In Testing, only up to 100 listed test users can sign in, and their authorizations expire after seven days.",
+      "source": "https://support.google.com/cloud/answer/15549945?hl=en"
+    },
+    {
+      "b": "Reading mail is restricted",
+      "s": "Scopes that read mail, such as gmail.readonly and gmail.modify, are restricted and may need a security assessment.",
+      "source": "https://developers.google.com/workspace/gmail/api/auth/scopes"
+    },
+    {
+      "b": "Domain verification",
+      "s": "Authorized domains must be verified in Google Search Console.",
+      "source": "https://support.google.com/cloud/answer/15549049?hl=en"
+    }
+  ],
+  "agent": [
+    "Pick the narrowest Gmail scopes",
+    "Write the consent-screen text"
+  ],
+  "you": [
+    "Create the project and enable the Gmail API",
+    "Add test users and create the OAuth client",
+    "Submit verification, if you go public"
+  ],
+  "sources": [
+    [
+      "Create a Google Cloud project",
+      "developers.google.com/workspace/guides/create-project"
+    ],
+    [
+      "Enable Google Workspace APIs",
+      "developers.google.com/workspace/guides/enable-apis"
+    ],
+    [
+      "Configure the OAuth consent screen and choose scopes",
+      "developers.google.com/workspace/guides/configure-oauth-consent"
+    ],
+    [
+      "Choose Gmail API scopes",
+      "developers.google.com/workspace/gmail/api/auth/scopes"
+    ],
+    [
+      "Manage OAuth clients",
+      "support.google.com/cloud/answer/15549257?hl=en"
+    ],
+    [
+      "Manage app branding",
+      "support.google.com/cloud/answer/15549049?hl=en"
+    ],
+    [
+      "Verification FAQ and timelines",
+      "support.google.com/cloud/answer/13463817?hl=en"
+    ],
+    [
+      "Manage app audience",
+      "support.google.com/cloud/answer/15549945?hl=en"
+    ],
+    [
+      "Verification requirements",
+      "support.google.com/cloud/answer/13464321?hl=en"
+    ]
+  ],
+  "diffReason": "Hard: you can test right away, but Gmail's sensitive and restricted scopes must complete Google's verification before you go public, and restricted scopes may need a security assessment",
+  "checklist": [
+    {
+      "key": "register_url",
+      "status": "found",
+      "answer": "In the Google Cloud console, open Google Auth Platform, go to Clients and click <code>Create client</code>. You first have to register the app under Branding.",
+      "source": "https://support.google.com/cloud/answer/15549257?hl=en"
+    },
+    {
+      "key": "app_types",
+      "status": "found",
+      "answer": "Client types are Web application, Android, iOS, Chrome Extension, TVs and Limited-input devices, and Desktop app.",
+      "source": "https://support.google.com/cloud/answer/15549257?hl=en"
+    },
+    {
+      "key": "required_fields",
+      "status": "found",
+      "answer": "Branding asks for an app name, a user support email, an app home page, privacy policy and terms of service links, authorized domains and developer contact information.",
+      "source": "https://support.google.com/cloud/answer/15549049?hl=en"
+    },
+    {
+      "key": "redirect_uris",
+      "status": "found",
+      "answer": "Redirect URIs must use HTTPS, except localhost. They can't contain wildcards or fragments.",
+      "source": "https://support.google.com/cloud/answer/15549257?hl=en"
+    },
+    {
+      "key": "credentials",
+      "status": "found",
+      "answer": "You get a client ID and a client secret. The secret is shown only once, when you create the client, so store it securely.",
+      "source": "https://support.google.com/cloud/answer/15549257?hl=en"
+    },
+    {
+      "key": "scopes",
+      "status": "found",
+      "answer": "<code>gmail.labels</code> is non-sensitive and <code>gmail.send</code> is sensitive. Reading mail with <code>gmail.readonly</code> or <code>gmail.modify</code>, or full access with <code>mail.google.com</code>, is restricted.",
+      "source": "https://developers.google.com/workspace/gmail/api/auth/scopes"
+    },
+    {
+      "key": "review",
+      "status": "found",
+      "answer": "Sensitive scopes need additional OAuth app verification, and restricted scopes need restricted scope verification. If you store restricted scope data on servers, you must also go through a security assessment.",
+      "source": "https://developers.google.com/workspace/gmail/api/auth/scopes"
+    },
+    {
+      "key": "review_timeline",
+      "status": "found",
+      "answer": "Google's estimates are 2-3 business days for brand verification, 10 business days for sensitive scopes and 6 weeks for restricted scopes. They aren't guaranteed.",
+      "source": "https://support.google.com/cloud/answer/13463817?hl=en"
+    },
+    {
+      "key": "test_limits",
+      "status": "found",
+      "answer": "In Testing status, only up to 100 listed test users can sign in, and their authorizations expire after seven days.",
+      "source": "https://support.google.com/cloud/answer/15549945?hl=en"
+    },
+    {
+      "key": "rejection_reasons",
+      "status": "found",
+      "answer": "A verification request can be rejected if your scope justification is judged insufficient, or if the app home page isn't hosted on a domain you've verified.",
+      "source": "https://support.google.com/cloud/answer/13464321?hl=en"
+    }
+  ]
+}

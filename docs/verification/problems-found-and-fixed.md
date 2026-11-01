@@ -90,3 +90,29 @@ Every sentence was checked by a script that fetches the cited official page and 
 | Zoom | 9 of 10 | Steps rewritten from the create-an-app and distribution pages. |
 
 Left as they were because no page confirms or contradicts them: the "Days" wait on Stripe, "Days to weeks" on Zoom and "Weeks" on Salesforce. The verdict line no longer repeats any wait that has no published timeline behind it.
+
+## Google guide: the real setup flow
+
+After the library update, the author did the Gmail setup by hand and reported it takes 30 to 60 minutes, not weeks. That was right. The guide mixed up two stages: getting the app working, which is quick, and going public, which needs Google's verification.
+
+| Problem | Fix |
+|---|---|
+| The guide never said to enable the API (Gmail, Sheets, Drive and others are turned on in one Google Cloud project) | Added the step, from Google's "Enable Google Workspace APIs" page |
+| It skipped the consent-screen steps that make testing work: choosing a user type, adding test users and adding scopes | Added both steps, from Google's "Configure the OAuth consent screen and choose scopes" page |
+| "Submit for verification" read like a normal step | Now "only to go public". Testing works with up to 100 test users |
+| The opening line only said scopes need a review | It now leads with the testing reality, then what going public needs |
+| The setup time said "~30 min" | Now "30-60 min", the author's own measured range. This comes from hands-on experience, so the guide stays marked "From provider docs" |
+
+The rating stays Hard because the rule asks whether real users can connect at scale without a review, and for sensitive and restricted scopes they can't. The page now says so next to the testing timing.
+
+## The library card for "Google" became Gmail
+
+"Google" is not an app you connect to. Gmail, Sheets, Drive and Calendar each have their own API and scopes, and Google sign-in is only one part of that. A single "Google" card therefore hid the real differences, especially which scopes need Google's review.
+
+| Problem | Fix |
+|---|---|
+| One "Google" card covered products with different review rules | The library card is now **Gmail**, built the same way as the others: 10 checklist items, 6 steps, every claim matched to words on Google's own pages |
+| Gmail's scopes were easy to mix up (`gmail.labels` is non-sensitive, `gmail.send` is sensitive, reading mail is restricted) | The scope list comes from Google's Gmail scopes page, and the checker script confirms each phrase is there |
+| The old Google page is linked from outside the site | `/guides/google` still works, and typing "Google" still opens it. It is just not a card any more |
+| "Review needed" showed nothing useful for restricted scopes | Added a sentence for it: test with up to 100 users, and sensitive or restricted scopes need Google's review before you go public |
+| "30-60 min" read badly in the opening line | Now "30 to 60 minutes" |

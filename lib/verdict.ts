@@ -2,8 +2,10 @@ import type { Guide } from "@/types/guide";
 
 type VerdictFields = Pick<Guide, "diff" | "diffConfirmed" | "setup" | "wait" | "review"> & Partial<Pick<Guide, "checklist">>;
 
-/** "~15 min" reads as "about 15 minutes". Anything else is used as it is. */
+/** "~15 min" reads as "about 15 minutes", and "30-60 min" as "30 to 60 minutes". Anything else is used as it is. */
 function aboutTime(setup: string): string {
+  const range = setup.match(/(\d+)\s*-\s*(\d+)\s*min/);
+  if (range) return `${range[1]} to ${range[2]} minutes`;
   const minutes = setup.match(/(\d+)\s*min/)?.[1];
   return minutes ? `about ${minutes} minutes` : setup;
 }
@@ -20,7 +22,8 @@ const REVIEW_SENTENCE: Record<string, string> = {
   "paid plan": "A paid plan is required before real users can connect.",
   "light verification": "Light verification is needed.",
   "to lift limits": "It works with limits until you're reviewed.",
-  "sensitive scopes": "Sensitive scopes need a review.",
+  "sensitive scopes": "You can test with up to 100 test users. Sensitive and restricted scopes need Google's review before you go public.",
+  "restricted scopes": "You can test with up to 100 test users. Sensitive and restricted scopes need Google's review before you go public.",
   "to publish": "A review is needed to publish.",
   "platform profile": "A completed platform profile is needed first.",
   unclear: "The approval process couldn't be confirmed.",

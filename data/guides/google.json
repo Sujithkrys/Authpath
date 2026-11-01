@@ -4,9 +4,9 @@
   "init": "G",
   "color": "#4285F4",
   "diff": "hard",
-  "diffReason": "Hard: sensitive and restricted scopes must complete Google's verification, and restricted scopes may also need a security assessment",
+  "diffReason": "Hard: you can test right away, but sensitive and restricted scopes must complete Google's verification before you go public, and restricted scopes may also need a security assessment",
   "tested": false,
-  "setup": "~30 min",
+  "setup": "30-60 min",
   "wait": "Up to 6 weeks",
   "review": "Sensitive scopes",
   "waitKey": "weeks",
@@ -24,14 +24,36 @@
       }
     },
     {
-      "t": "Configure branding",
-      "d": "Add the app name, support email, home page, privacy policy and authorized domains.",
-      "o": "agent",
+      "t": "Enable the APIs you need",
+      "d": "In APIs & Services → Library, open each API you want, such as the Gmail API or Sheets API, and click Enable. One project can hold many.",
+      "o": "you",
       "e": "docs",
-      "source": "https://support.google.com/cloud/answer/15549049?hl=en",
+      "source": "https://developers.google.com/workspace/guides/enable-apis",
+      "link": {
+        "label": "Open the API Library",
+        "url": "https://console.cloud.google.com/apis/library"
+      }
+    },
+    {
+      "t": "Set up the consent screen",
+      "d": "Fill in Branding, choose a user type under Audience, and add yourself as a test user.",
+      "o": "you",
+      "e": "docs",
+      "source": "https://developers.google.com/workspace/guides/configure-oauth-consent",
       "link": {
         "label": "Open Branding",
         "url": "https://console.cloud.google.com/auth/branding"
+      }
+    },
+    {
+      "t": "Add your scopes",
+      "d": "In Data Access, click Add or Remove Scopes and choose the minimum your app needs.",
+      "o": "agent",
+      "e": "docs",
+      "source": "https://developers.google.com/workspace/guides/configure-oauth-consent",
+      "link": {
+        "label": "Open Data Access",
+        "url": "https://console.cloud.google.com/auth/scopes"
       }
     },
     {
@@ -46,7 +68,7 @@
       }
     },
     {
-      "t": "Submit for verification",
+      "t": "Submit for verification (only to go public)",
       "d": "Needed for sensitive or restricted scopes. Restricted scopes may also need a security assessment.",
       "o": "you",
       "e": "docs",
@@ -88,8 +110,12 @@
       "developers.google.com/workspace/guides/create-project"
     ],
     [
-      "Manage app branding",
-      "support.google.com/cloud/answer/15549049?hl=en"
+      "Enable Google Workspace APIs",
+      "developers.google.com/workspace/guides/enable-apis"
+    ],
+    [
+      "Configure the OAuth consent screen and choose scopes",
+      "developers.google.com/workspace/guides/configure-oauth-consent"
     ],
     [
       "Manage OAuth clients",
@@ -98,6 +124,10 @@
     [
       "OAuth app verification",
       "support.google.com/cloud/answer/13463073?hl=en"
+    ],
+    [
+      "Manage app branding",
+      "support.google.com/cloud/answer/15549049?hl=en"
     ],
     [
       "Verification FAQ and timelines",
@@ -150,8 +180,8 @@
     {
       "key": "scopes",
       "status": "found",
-      "answer": "The console marks each scope you add to the project as non-sensitive, sensitive or restricted.",
-      "source": "https://support.google.com/cloud/answer/13463073?hl=en"
+      "answer": "In Data Access, click Add or Remove Scopes and pick the minimum your app needs. The console lists them as non-sensitive, sensitive or restricted.",
+      "source": "https://developers.google.com/workspace/guides/configure-oauth-consent"
     },
     {
       "key": "review",
