@@ -11,11 +11,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { CopyValue } from "@/components/copy-value";
 import { ShareButton } from "@/components/share-button";
 import { OtherPages, SourceList } from "@/components/source-list";
 import { AppLogo, DifficultyTag, buttonGhost, describeClaimCheck, panel, panelHeader, pill, rail } from "@/components/ui";
 import { formatGeneratedAt } from "@/lib/format";
-import type { Evidence, GuideWithLogo, StepLink as StepLinkData, StepOwner } from "@/types/guide";
+import { verdictLine } from "@/lib/verdict";
+import { CHECKLIST, type ChecklistItem, type Evidence, type GuideWithLogo, type StepLink as StepLinkData, type StepOwner } from "@/types/guide";
 
 const capitalize = (text: string) => text[0].toUpperCase() + text.slice(1);
 
@@ -45,6 +47,46 @@ function StepText({ text }: { text: string }) {
     ) : (
       part
     ),
+  );
+}
+
+const decodeEntities = (text: string) => text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+
+/** One checklist answer, with a copy button on each value someone pastes. */
+function NeedAnswer({ item }: { item: ChecklistItem }) {
+  if (item.status === "not_found") return <p className="text-[14px] text-text-3">Not found in official docs</p>;
+  return (
+    <>
+      <p className="text-[14px] text-text-2 [overflow-wrap:anywhere]">
+        {item.answer
+          .split(/<code>(.*?)<\/code>/)
+          .map((part, index) => (index % 2 === 1 ? <CopyValue key={index} value={decodeEntities(part)} /> : decodeEntities(part)))}
+      </p>
+      {item.status === "uncertain" && <EvidenceTag evidence="uncertain" />}
+      {item.source && <SourceLink url={item.source} />}
+    </>
+  );
+}
+
+/** The stored research checklist, in its fixed order. */
+function WhatYoullNeed({ items }: { items: ChecklistItem[] }) {
+  const byKey = new Map(items.map((item) => [item.key, item]));
+  return (
+    <div className="mb-[34px]">
+      <h2 className={sectionHeading}>What you&apos;ll need</h2>
+      <ul className="overflow-hidden rounded-lg border border-border">
+        {CHECKLIST.flatMap(({ key, label }) => {
+          const item = byKey.get(key);
+          if (!item) return [];
+          return [
+            <li key={key} className="border-b border-border bg-surface px-[18px] py-3.5 last:border-b-0">
+              <b className="mb-0.5 block text-[14px] font-semibold">{label}</b>
+              <NeedAnswer item={item} />
+            </li>,
+          ];
+        })}
+      </ul>
+    </div>
   );
 }
 
@@ -193,7 +235,9 @@ export function GuideView({ guide }: { guide: GuideWithLogo }) {
         </div>
       </div>
 
-      <div className="mt-6 mb-8 grid grid-cols-4 rounded-lg border border-border bg-surface max-md:grid-cols-2">
+      <p className="mt-5 text-[16px] font-medium [overflow-wrap:anywhere]">{verdictLine(guide)}</p>
+
+      <div className="mt-4 mb-8 grid grid-cols-4 rounded-lg border border-border bg-surface max-md:grid-cols-2">
         <Stat
           label="Difficulty"
           value={estimated ? `${capitalize(guide.diff)} (not fully confirmed)` : capitalize(guide.diff)}
@@ -206,6 +250,7 @@ export function GuideView({ guide }: { guide: GuideWithLogo }) {
 
       <div className="grid grid-cols-[minmax(0,1fr)_340px] items-start gap-8 max-lg:grid-cols-1">
         <div>
+          {guide.checklist && guide.checklist.length > 0 && <WhatYoullNeed items={guide.checklist} />}
           <div className="mb-[34px]">
             <h2 className={sectionHeading}>Setup steps</h2>
             <ol className="overflow-hidden rounded-lg border border-border">

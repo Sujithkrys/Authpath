@@ -1,0 +1,12 @@
+Warming 8 apps on https://authpath-two.vercel.app, at most one new generation every 90s
+
+[1/8]    Calendly                    1.0s  already cached /guides/calendly
+[2/8]    Xero                       17.7s  generated guide (hard, 3 steps) /guides/xero
+[3/8]    Linear                     14.1s  generated guide (easy, 4 steps) /guides/linear
+[4/8]    Composio                   12.5s  generated card (platform) /guides/composio
+[5/8]    Postmark                    5.4s  generated card (no_oauth) /guides/postmark
+[6/8]    Notion                      0.5s  in the library /guides/notion
+[7/8]    Dropbox                    18.2s  generated guide (easy, 4 steps) /guides/dropbox
+[8/8]    Shopify                    15.0s  The agent couldn't produce a valid guide.
+
+Done, with 1 failed. Run this again to retry them.

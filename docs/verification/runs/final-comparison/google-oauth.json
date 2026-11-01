@@ -1,0 +1,491 @@
+{
+  "app": "Google OAuth",
+  "base": "http://localhost:3000",
+  "compare": true,
+  "httpStatus": 200,
+  "seconds": 33.644,
+  "events": [
+    {
+      "type": "stage_start",
+      "stage": "classify",
+      "t": 179
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "developers.google.com"
+      ],
+      "t": 4696
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "developers.google.com"
+      ],
+      "t": 9062
+    },
+    {
+      "type": "stage_done",
+      "stage": "classify",
+      "detail": "OAuth provider",
+      "findings": {
+        "find": {
+          "outcome": "found",
+          "appName": "Google Identity",
+          "officialDomains": [
+            "developers.google.com",
+            "google.com"
+          ],
+          "docsUrls": [
+            "https://developers.google.com/identity",
+            "https://developers.google.com/identity/protocols/oauth2"
+          ],
+          "options": []
+        },
+        "classified": {
+          "category": "oauth_provider",
+          "evidenceUrl": "https://developers.google.com/identity/protocols/oauth2",
+          "evidenceQuote": "To begin, obtain OAuth 2.0 client credentials from the Google API Console .",
+          "summary": "Google Identity provides OAuth 2.0 and OpenID Connect protocols for user authentication and authorization across various application types.",
+          "authMethods": [
+            "OAuth 2.0 client ID and client secret",
+            "Service account private key"
+          ],
+          "instead": ""
+        },
+        "quoteHolds": true,
+        "category": "oauth_provider",
+        "pagesRead": [
+          "https://developers.google.com/identity/verification/authentication-policy-compliance",
+          "https://developers.google.com/identity/protocols/oauth2",
+          "https://developers.google.com/identity/authorization",
+          "https://developers.google.com/api-client-library/dotnet/guide/aaa_oauth"
+        ]
+      },
+      "t": 11398
+    },
+    {
+      "type": "stage_start",
+      "stage": "read",
+      "t": 11399
+    },
+    {
+      "type": "sources",
+      "stage": "read",
+      "domains": [
+        "developers.google.com"
+      ],
+      "t": 14081
+    },
+    {
+      "type": "stage_done",
+      "stage": "read",
+      "detail": "6 of 6 setup items found in 8 pages",
+      "findings": {
+        "developerConsoleUrl": "https://console.cloud.google.com/apis/credentials",
+        "items": [
+          {
+            "key": "register_url",
+            "status": "found",
+            "answer": "To get these credentials for your application, visit <code>https://console.cloud.google.com/apis/credentials</code>.",
+            "sourceUrl": "https://developers.google.com/identity/protocols/oauth2/web-server"
+          },
+          {
+            "key": "app_types",
+            "status": "found",
+            "answer": "Different application types, such as web server, installed, client-side, limited-input device, and service accounts, have specific authorization flows.",
+            "sourceUrl": "https://developers.google.com/identity/protocols/oauth2"
+          },
+          {
+            "key": "required_fields",
+            "status": "found",
+            "answer": "Make sure all branding information on the OAuth consent screen, such as the app name, support email, home page URI, privacy policy URI, etc., accurately represents the app's identity.",
+            "sourceUrl": "https://developers.google.com/identity/verification/authentication-verification"
+          },
+          {
+            "key": "redirect_uris",
+            "status": "found",
+            "answer": "OAuth 2.0 clients for web apps must secure their data using HTTPS redirect URIs and JavaScript origins, not plain HTTP. The value must exactly match one of the authorized redirect URIs for the OAuth 2.0 client.",
+            "sourceUrl": "https://developers.google.com/identity/verification/authentication-policy-compliance"
+          },
+          {
+            "key": "credentials",
+            "status": "found",
+            "answer": "Visit the Google API Console to obtain OAuth 2.0 credentials such as a client ID and client secret that are known to both Google and your application.",
+            "sourceUrl": "https://developers.google.com/identity/protocols/oauth2"
+          },
+          {
+            "key": "scopes",
+            "status": "found",
+            "answer": "A variable parameter called scope controls the set of resources and operations that an app can access. Sensitive scopes require review by Google and have a sensitive indicator on the Google Cloud Console's OAuth consent screen configuration page.",
+            "sourceUrl": "https://developers.google.com/identity/protocols/oauth2/scopes"
+          }
+        ],
+        "pagesRead": [
+          "https://developers.google.com/identity/verification/authentication-policy-compliance",
+          "https://developers.google.com/identity/protocols/oauth2",
+          "https://developers.google.com/identity/authorization",
+          "https://developers.google.com/api-client-library/dotnet/guide/aaa_oauth",
+          "https://developers.google.com/identity/protocols/oauth2/scopes",
+          "https://developers.google.com/identity/verification/authentication-verification",
+          "https://developers.google.com/identity/openid-connect/openid-connect",
+          "https://developers.google.com/identity/protocols/oauth2/web-server"
+        ]
+      },
+      "t": 16416
+    },
+    {
+      "type": "stage_start",
+      "stage": "approval",
+      "t": 16416
+    },
+    {
+      "type": "sources",
+      "stage": "approval",
+      "domains": [
+        "developers.google.com"
+      ],
+      "t": 25041
+    },
+    {
+      "type": "stage_done",
+      "stage": "approval",
+      "detail": "Unverified apps show an unverified app screen to users.",
+      "findings": {
+        "gates": [
+          {
+            "gate": "limited",
+            "detail": "Unverified apps show an unverified app screen to users.",
+            "quote": "You and your limited number of users might be comfortable with advancing through the unverified app screen and granting your personal accounts access to your app.",
+            "url": "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification"
+          },
+          {
+            "gate": "light_verification",
+            "detail": "Domain ownership must be verified within the Google Search Console.",
+            "quote": "Verify ownership of your project's authorized domains within the Google Search Console .",
+            "url": "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification"
+          },
+          {
+            "gate": "mandatory_review",
+            "detail": "Sensitive or restricted scopes require review by Google before access.",
+            "quote": "Sensitive scopes require review by Google before a Google Account can grant access and might be restricted by Google Workspace organization administrators.",
+            "url": "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification"
+          },
+          {
+            "gate": "security_assessment",
+            "detail": "Restricted scope data accessed via servers requires an annual security assessment.",
+            "quote": "Apps accessing restricted data from or through a third-party server must undergo an annual security assessment by a Google-approved third party.",
+            "url": "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification"
+          }
+        ],
+        "timelineLabel": "2-3 business days",
+        "evidenceQuote": "In some cases, where a result cannot be automatically determined, your app may undergo a manual review process that usually takes 2-3 business days .",
+        "evidenceUrl": "https://developers.google.com/identity/verification/authentication-verification",
+        "items": [
+          {
+            "key": "review",
+            "status": "found",
+            "answer": "Apps requesting sensitive or restricted scopes, or wishing to display a verified brand name and logo in production, must undergo verification and review processes.",
+            "sourceUrl": "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification"
+          },
+          {
+            "key": "test_limits",
+            "status": "found",
+            "answer": "Apps in testing status are restricted to users added to the list of test users.",
+            "sourceUrl": "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification"
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          }
+        ],
+        "pagesRead": [
+          "https://developers.google.com/identity/verification/authentication-policy-compliance",
+          "https://developers.google.com/identity/protocols/oauth2",
+          "https://developers.google.com/identity/authorization",
+          "https://developers.google.com/api-client-library/dotnet/guide/aaa_oauth",
+          "https://developers.google.com/identity/protocols/oauth2/scopes",
+          "https://developers.google.com/identity/verification/authentication-verification",
+          "https://developers.google.com/identity/openid-connect/openid-connect",
+          "https://developers.google.com/identity/protocols/oauth2/web-server",
+          "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification",
+          "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification",
+          "https://developers.google.com/site-verification",
+          "https://developers.google.com/identity/verification"
+        ]
+      },
+      "t": 28151
+    },
+    {
+      "type": "stage_start",
+      "stage": "write",
+      "t": 28151
+    },
+    {
+      "type": "stage_done",
+      "stage": "write",
+      "detail": "4 steps written from the checklist",
+      "t": 31208
+    },
+    {
+      "type": "stage_start",
+      "stage": "verify",
+      "t": 31208
+    },
+    {
+      "type": "stage_done",
+      "stage": "verify",
+      "detail": "9 confirmed, 4 marked uncertain, 0 dropped",
+      "findings": {
+        "claimCheck": {
+          "checked": 13,
+          "kept": 9,
+          "downgraded": 4,
+          "dropped": 0
+        },
+        "verdicts": {
+          "S1": "yes",
+          "S2": "yes",
+          "S3": "partly",
+          "S4": "yes",
+          "C:register_url": "yes",
+          "C:app_types": "yes",
+          "C:required_fields": "yes",
+          "C:redirect_uris": "partly",
+          "C:credentials": "yes",
+          "C:scopes": "partly",
+          "C:review": "partly",
+          "C:review_timeline": "yes",
+          "C:test_limits": "yes",
+          "G1": "no",
+          "G2": "yes",
+          "G3": "yes",
+          "G4": "partly"
+        },
+        "decision": {
+          "gate": "security_assessment",
+          "detail": "Restricted scope data accessed via servers requires an annual security assessment.",
+          "confirmed": false
+        }
+      },
+      "t": 33642
+    },
+    {
+      "type": "guide",
+      "slug": "google-identity",
+      "uncertainCount": 1,
+      "claimCheck": {
+        "checked": 13,
+        "kept": 9,
+        "downgraded": 4,
+        "dropped": 0
+      },
+      "guide": {
+        "id": "google-identity",
+        "name": "Google Identity",
+        "init": "GI",
+        "color": "#525252",
+        "diff": "hard",
+        "diffReason": "Hard: Restricted scope data accessed via servers requires an annual security assessment (the cited page only partly confirms this)",
+        "diffConfirmed": false,
+        "tested": false,
+        "generated": true,
+        "generatedAt": "2026-11-01T11:42:57.435Z",
+        "version": 5,
+        "setup": "~20 min",
+        "wait": "2-3 business days",
+        "review": "Security assessment",
+        "site": "console.cloud.google.com/apis/credentials",
+        "steps": [
+          {
+            "t": "Open the credentials page",
+            "d": "Visit the Google API Console to obtain your OAuth 2.0 credentials.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://developers.google.com/identity/protocols/oauth2/web-server",
+            "link": {
+              "label": "Open the credentials page",
+              "url": "https://console.cloud.google.com/apis/credentials"
+            }
+          },
+          {
+            "t": "Configure branding information",
+            "d": "Make sure all branding information on the OAuth consent screen accurately represents your app's identity.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://developers.google.com/identity/verification/authentication-verification"
+          },
+          {
+            "t": "Set redirect URIs",
+            "d": "Configure your HTTPS redirect URIs and JavaScript origins to secure your data.",
+            "o": "agent",
+            "e": "uncertain",
+            "source": "https://developers.google.com/identity/verification/authentication-policy-compliance"
+          },
+          {
+            "t": "Choose scopes",
+            "d": "Select the appropriate scopes to control the set of resources and operations your app can access.",
+            "o": "agent",
+            "e": "docs",
+            "source": "https://developers.google.com/identity/protocols/oauth2/scopes"
+          }
+        ],
+        "blockers": [
+          {
+            "b": "Sensitive or restricted scopes review",
+            "s": "Apps requesting sensitive or restricted scopes, or wishing to display a verified brand name and logo in production, must undergo verification and review processes.",
+            "source": "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification"
+          },
+          {
+            "b": "Test user limits",
+            "s": "Apps in testing status are restricted to users added to the list of test users.",
+            "source": "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification"
+          }
+        ],
+        "agent": [
+          "Configure branding information on the OAuth consent screen",
+          "Set HTTPS redirect URIs and JavaScript origins",
+          "Choose the required scopes"
+        ],
+        "you": [
+          "Open the credentials page to obtain OAuth 2.0 credentials"
+        ],
+        "sources": [
+          [
+            "Using OAuth 2.0 for Web Server Applications | Authorization | Google for Developers",
+            "developers.google.com/identity/protocols/oauth2/web-server"
+          ],
+          [
+            "Submit for brand verification | Brand Verification for Google Authentication APIs | Google for Developers",
+            "developers.google.com/identity/verification/authentication-verification"
+          ],
+          [
+            "Comply with OAuth 2.0 policies | Brand Verification for Google Authentication APIs | Google for Developers",
+            "developers.google.com/identity/verification/authentication-policy-compliance"
+          ],
+          [
+            "OAuth 2.0 Scopes for Google APIs | Google for Developers",
+            "developers.google.com/identity/protocols/oauth2/scopes"
+          ],
+          [
+            "Using OAuth 2.0 to Access Google APIs | Authorization | Google for Developers",
+            "developers.google.com/identity/protocols/oauth2"
+          ],
+          [
+            "Sensitive scope verification | App verification to use Google Authorization APIs | Google for Developers",
+            "developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification"
+          ]
+        ],
+        "otherPages": [
+          [
+            "Authorization | Google for Developers",
+            "developers.google.com/identity/authorization"
+          ],
+          [
+            "OAuth 2.0 | API Client Library for .NET | Google for Developers",
+            "developers.google.com/api-client-library/dotnet/guide/aaa_oauth"
+          ],
+          [
+            "OpenID Connect | Sign in with Google | Google for Developers",
+            "developers.google.com/identity/openid-connect/openid-connect"
+          ],
+          [
+            "Restricted scope verification | App verification to use Google Authorization APIs | Google for Developers",
+            "developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification"
+          ],
+          [
+            "Google Site Verification API | Google for Developers",
+            "developers.google.com/site-verification"
+          ],
+          [
+            "Brand Verification for Google Authentication APIs | Google for Developers",
+            "developers.google.com/identity/verification"
+          ]
+        ],
+        "checklist": [
+          {
+            "key": "register_url",
+            "status": "found",
+            "answer": "To get these credentials for your application, visit <code>https://console.cloud.google.com/apis/credentials</code>.",
+            "source": "https://developers.google.com/identity/protocols/oauth2/web-server"
+          },
+          {
+            "key": "app_types",
+            "status": "found",
+            "answer": "Different application types, such as web server, installed, client-side, limited-input device, and service accounts, have specific authorization flows.",
+            "source": "https://developers.google.com/identity/protocols/oauth2"
+          },
+          {
+            "key": "required_fields",
+            "status": "found",
+            "answer": "Make sure all branding information on the OAuth consent screen, such as the app name, support email, home page URI, privacy policy URI, etc., accurately represents the app's identity.",
+            "source": "https://developers.google.com/identity/verification/authentication-verification"
+          },
+          {
+            "key": "redirect_uris",
+            "status": "uncertain",
+            "answer": "OAuth 2.0 clients for web apps must secure their data using HTTPS redirect URIs and JavaScript origins, not plain HTTP. The value must exactly match one of the authorized redirect URIs for the OAuth 2.0 client.",
+            "source": "https://developers.google.com/identity/verification/authentication-policy-compliance"
+          },
+          {
+            "key": "credentials",
+            "status": "found",
+            "answer": "Visit the Google API Console to obtain OAuth 2.0 credentials such as a client ID and client secret that are known to both Google and your application.",
+            "source": "https://developers.google.com/identity/protocols/oauth2"
+          },
+          {
+            "key": "scopes",
+            "status": "uncertain",
+            "answer": "A variable parameter called scope controls the set of resources and operations that an app can access. Sensitive scopes require review by Google and have a sensitive indicator on the Google Cloud Console's OAuth consent screen configuration page.",
+            "source": "https://developers.google.com/identity/protocols/oauth2/scopes"
+          },
+          {
+            "key": "review",
+            "status": "uncertain",
+            "answer": "Apps requesting sensitive or restricted scopes, or wishing to display a verified brand name and logo in production, must undergo verification and review processes.",
+            "source": "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification"
+          },
+          {
+            "key": "review_timeline",
+            "status": "found",
+            "answer": "“In some cases, where a result cannot be automatically determined, your app may undergo a manual review process that usually takes 2-3 business days .”",
+            "source": "https://developers.google.com/identity/verification/authentication-verification"
+          },
+          {
+            "key": "test_limits",
+            "status": "found",
+            "answer": "Apps in testing status are restricted to users added to the list of test users.",
+            "source": "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification"
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "not_found",
+            "answer": ""
+          }
+        ],
+        "claimCheck": {
+          "checked": 13,
+          "kept": 9,
+          "downgraded": 4,
+          "dropped": 0
+        }
+      },
+      "stats": {
+        "durationMs": 33478,
+        "modelCalls": 8,
+        "inputTokens": 46806,
+        "outputTokens": 2555,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "webSearches": 0,
+        "webFetches": 19,
+        "estimatedCostUsd": 0
+      },
+      "t": 33642
+    }
+  ]
+}

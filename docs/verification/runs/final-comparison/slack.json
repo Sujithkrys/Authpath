@@ -1,0 +1,464 @@
+{
+  "app": "Slack",
+  "base": "http://localhost:3000",
+  "compare": true,
+  "httpStatus": 200,
+  "seconds": 25.416,
+  "events": [
+    {
+      "type": "stage_start",
+      "stage": "classify",
+      "t": 123
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "slack.com",
+        "api.slack.com",
+        "docs.slack.dev"
+      ],
+      "t": 5803
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "docs.slack.dev"
+      ],
+      "t": 8142
+    },
+    {
+      "type": "stage_done",
+      "stage": "classify",
+      "detail": "OAuth provider",
+      "findings": {
+        "find": {
+          "outcome": "found",
+          "appName": "Slack",
+          "officialDomains": [
+            "slack.com"
+          ],
+          "docsUrls": [
+            "https://slack.com/",
+            "https://api.slack.com/",
+            "https://api.slack.com/authentication"
+          ],
+          "options": []
+        },
+        "classified": {
+          "category": "oauth_provider",
+          "evidenceUrl": "https://docs.slack.dev/authentication/installing-with-oauth/",
+          "evidenceQuote": "Slack apps are installed with a v2 OAuth 2.0 flow.",
+          "summary": "Slack is a messaging platform that lets third-party developers build apps using a v2 OAuth 2.0 flow to obtain access tokens and interact with Slack workspaces.",
+          "authMethods": [
+            "OAuth 2.0 access token",
+            "Bot token",
+            "User token",
+            "App token"
+          ],
+          "instead": ""
+        },
+        "quoteHolds": true,
+        "category": "oauth_provider",
+        "pagesRead": [
+          "https://docs.slack.dev/authentication/installing-with-oauth/",
+          "https://docs.slack.dev/authentication/",
+          "https://docs.slack.dev/authentication/using-pkce/"
+        ]
+      },
+      "t": 10085
+    },
+    {
+      "type": "stage_start",
+      "stage": "read",
+      "t": 10085
+    },
+    {
+      "type": "sources",
+      "stage": "read",
+      "domains": [
+        "docs.slack.dev"
+      ],
+      "t": 12472
+    },
+    {
+      "type": "stage_done",
+      "stage": "read",
+      "detail": "5 of 6 setup items found in 7 pages",
+      "findings": {
+        "developerConsoleUrl": "https://api.slack.com/apps",
+        "items": [
+          {
+            "key": "register_url",
+            "status": "found",
+            "answer": "Developers can create and configure apps in the app settings on <code>api.slack.com/apps</code>.",
+            "sourceUrl": "https://docs.slack.dev/tools/python-slack-sdk/tutorial/understanding-oauth-scopes/"
+          },
+          {
+            "key": "app_types",
+            "status": "found",
+            "answer": "The documentation mentions standard (non-directory) apps, directory apps, and classic apps.",
+            "sourceUrl": "https://docs.slack.dev/authentication/using-pkce/"
+          },
+          {
+            "key": "required_fields",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "redirect_uris",
+            "status": "found",
+            "answer": "The redirect_uri must use <code>HTTPS</code>.",
+            "sourceUrl": "https://docs.slack.dev/authentication/installing-with-oauth/"
+          },
+          {
+            "key": "credentials",
+            "status": "found",
+            "answer": "Slack issues a client ID and client secret, and PKCE is supported as an optional security feature.",
+            "sourceUrl": "https://docs.slack.dev/authentication/using-pkce/"
+          },
+          {
+            "key": "scopes",
+            "status": "found",
+            "answer": "Scopes are requested by specifying them as query parameters (e.g. <code>scope=</code> or <code>user_scope=</code>) or within the manifest <code>oauth_config.scopes</code> object.",
+            "sourceUrl": "https://docs.slack.dev/authentication/installing-with-oauth/"
+          }
+        ],
+        "pagesRead": [
+          "https://docs.slack.dev/authentication/installing-with-oauth/",
+          "https://docs.slack.dev/authentication/",
+          "https://docs.slack.dev/authentication/using-pkce/",
+          "https://docs.slack.dev/authentication/enterprise-managed-authorization/",
+          "https://docs.slack.dev/messaging/creating-interactive-messages/",
+          "https://docs.slack.dev/admins/managing-apps-workflows-and-connector-permissions/",
+          "https://docs.slack.dev/tools/python-slack-sdk/tutorial/understanding-oauth-scopes/"
+        ]
+      },
+      "t": 14542
+    },
+    {
+      "type": "stage_start",
+      "stage": "approval",
+      "t": 14542
+    },
+    {
+      "type": "sources",
+      "stage": "approval",
+      "domains": [
+        "docs.slack.dev"
+      ],
+      "t": 18590
+    },
+    {
+      "type": "stage_done",
+      "stage": "approval",
+      "detail": "Apps intended for commercial distribution should be submitted and approved for listing.",
+      "findings": {
+        "gates": [
+          {
+            "gate": "listing_only",
+            "detail": "Apps intended for commercial distribution should be submitted and approved for listing.",
+            "quote": "apps intended for commercial distribution should be submitted and approved for listing in the Slack Marketplace.",
+            "url": "https://docs.slack.dev/app-management/distribution/"
+          }
+        ],
+        "timelineLabel": "up to 10 weeks for new submissions and 6 weeks for published apps resubmitting changes",
+        "evidenceQuote": "Feedback from this part of the review generally takes up to 10 weeks for new submissions and 6 weeks for published apps resubmitting changes (though we try to handle small changes like copy/URL edits much faster).",
+        "evidenceUrl": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/",
+        "items": [
+          {
+            "key": "review",
+            "status": "found",
+            "answer": "Unlike unlisted distributed apps, apps listed in the Slack Marketplace are reviewed against our requirements & guidelines to ensure a quality experience for end users.",
+            "sourceUrl": "https://docs.slack.dev/app-management/distribution/"
+          },
+          {
+            "key": "test_limits",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "found",
+            "answer": "If your app is submitted with bugs, poor user experience, or we repeatedly run into issues of low quality when reviewing, we will return it and ask you to spend more time on it before resubmitting.",
+            "sourceUrl": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/"
+          }
+        ],
+        "pagesRead": [
+          "https://docs.slack.dev/authentication/installing-with-oauth/",
+          "https://docs.slack.dev/authentication/",
+          "https://docs.slack.dev/authentication/using-pkce/",
+          "https://docs.slack.dev/authentication/enterprise-managed-authorization/",
+          "https://docs.slack.dev/messaging/creating-interactive-messages/",
+          "https://docs.slack.dev/admins/managing-apps-workflows-and-connector-permissions/",
+          "https://docs.slack.dev/tools/python-slack-sdk/tutorial/understanding-oauth-scopes/",
+          "https://docs.slack.dev/slack-marketplace/marketplace-terms-conditions/slack-security-review/",
+          "https://docs.slack.dev/apis/web-api/rate-limits/",
+          "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/",
+          "https://docs.slack.dev/concepts/security/",
+          "https://docs.slack.dev/app-management/distribution/"
+        ]
+      },
+      "t": 21071
+    },
+    {
+      "type": "stage_start",
+      "stage": "write",
+      "t": 21071
+    },
+    {
+      "type": "stage_done",
+      "stage": "write",
+      "detail": "4 steps written from the checklist",
+      "t": 23385
+    },
+    {
+      "type": "stage_start",
+      "stage": "verify",
+      "t": 23386
+    },
+    {
+      "type": "stage_done",
+      "stage": "verify",
+      "detail": "9 confirmed, 2 marked uncertain, 1 dropped",
+      "findings": {
+        "claimCheck": {
+          "checked": 12,
+          "kept": 9,
+          "downgraded": 2,
+          "dropped": 1
+        },
+        "verdicts": {
+          "S1": "yes",
+          "S2": "yes",
+          "S3": "yes",
+          "S4": "partly",
+          "C:register_url": "yes",
+          "C:app_types": "no",
+          "C:redirect_uris": "yes",
+          "C:credentials": "partly",
+          "C:scopes": "yes",
+          "C:review": "yes",
+          "C:review_timeline": "yes",
+          "C:rejection_reasons": "yes",
+          "G1": "yes"
+        },
+        "decision": {
+          "gate": "listing_only",
+          "detail": "Apps intended for commercial distribution should be submitted and approved for listing.",
+          "confirmed": true
+        }
+      },
+      "t": 25413
+    },
+    {
+      "type": "guide",
+      "slug": "slack",
+      "uncertainCount": 1,
+      "claimCheck": {
+        "checked": 12,
+        "kept": 9,
+        "downgraded": 2,
+        "dropped": 1
+      },
+      "guide": {
+        "id": "slack",
+        "name": "Slack",
+        "init": "SL",
+        "color": "#525252",
+        "diff": "easy",
+        "diffReason": "Easy: Apps intended for commercial distribution should be submitted and approved for listing",
+        "diffConfirmed": true,
+        "tested": false,
+        "generated": true,
+        "generatedAt": "2026-11-01T11:41:53.783Z",
+        "version": 5,
+        "setup": "~20 min",
+        "wait": "See review timeline",
+        "review": "Listing only",
+        "site": "api.slack.com/apps",
+        "steps": [
+          {
+            "t": "Create your app",
+            "d": "Create and configure your app in the app settings.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://docs.slack.dev/tools/python-slack-sdk/tutorial/understanding-oauth-scopes/",
+            "link": {
+              "label": "Open the developer console",
+              "url": "https://api.slack.com/apps"
+            }
+          },
+          {
+            "t": "Configure redirect URIs",
+            "d": "Set up your redirect URI using <code>HTTPS</code>.",
+            "o": "agent",
+            "e": "docs",
+            "source": "https://docs.slack.dev/authentication/installing-with-oauth/"
+          },
+          {
+            "t": "Choose scopes",
+            "d": "Specify your scopes using <code>scope=</code> or <code>user_scope=</code> query parameters.",
+            "o": "agent",
+            "e": "docs",
+            "source": "https://docs.slack.dev/authentication/installing-with-oauth/"
+          },
+          {
+            "t": "Get credentials",
+            "d": "Retrieve your client ID and client secret issued by Slack.",
+            "o": "you",
+            "e": "uncertain",
+            "source": "https://docs.slack.dev/authentication/using-pkce/"
+          }
+        ],
+        "blockers": [
+          {
+            "b": "Marketplace Review",
+            "s": "Apps listed in the Slack Marketplace are reviewed against requirements and guidelines.",
+            "source": "https://docs.slack.dev/app-management/distribution/"
+          }
+        ],
+        "agent": [
+          "Configure redirect URIs",
+          "Choose scopes"
+        ],
+        "you": [
+          "Create your app",
+          "Get credentials"
+        ],
+        "sources": [
+          [
+            "Understanding OAuth scopes for bots | Slack Developer Docs",
+            "docs.slack.dev/tools/python-slack-sdk/tutorial/understanding-oauth-scopes"
+          ],
+          [
+            "Installing via OAuth authorization code flow | Slack Developer Docs",
+            "docs.slack.dev/authentication/installing-with-oauth"
+          ],
+          [
+            "Using PKCE | Slack Developer Docs",
+            "docs.slack.dev/authentication/using-pkce"
+          ],
+          [
+            "App lifecycle & distribution | Slack Developer Docs",
+            "docs.slack.dev/app-management/distribution"
+          ],
+          [
+            "Slack Marketplace review process | Slack Developer Docs",
+            "docs.slack.dev/slack-marketplace/slack-marketplace-review-guide"
+          ]
+        ],
+        "otherPages": [
+          [
+            "Authentication overview | Slack Developer Docs",
+            "docs.slack.dev/authentication"
+          ],
+          [
+            "Enterprise-managed authorization | Slack Developer Docs",
+            "docs.slack.dev/authentication/enterprise-managed-authorization"
+          ],
+          [
+            "Creating interactive messages | Slack Developer Docs",
+            "docs.slack.dev/messaging/creating-interactive-messages"
+          ],
+          [
+            "Managing apps, workflows, and connector permissions | Slack Developer Docs",
+            "docs.slack.dev/admins/managing-apps-workflows-and-connector-permissions"
+          ],
+          [
+            "Slack Security Review | Slack Developer Docs",
+            "docs.slack.dev/slack-marketplace/marketplace-terms-conditions/slack-security-review"
+          ],
+          [
+            "Rate limits | Slack Developer Docs",
+            "docs.slack.dev/apis/web-api/rate-limits"
+          ],
+          [
+            "Security best practices | Slack Developer Docs",
+            "docs.slack.dev/concepts/security"
+          ]
+        ],
+        "checklist": [
+          {
+            "key": "register_url",
+            "status": "found",
+            "answer": "Developers can create and configure apps in the app settings on <code>api.slack.com/apps</code>.",
+            "source": "https://docs.slack.dev/tools/python-slack-sdk/tutorial/understanding-oauth-scopes/"
+          },
+          {
+            "key": "app_types",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "required_fields",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "redirect_uris",
+            "status": "found",
+            "answer": "The redirect_uri must use <code>HTTPS</code>.",
+            "source": "https://docs.slack.dev/authentication/installing-with-oauth/"
+          },
+          {
+            "key": "credentials",
+            "status": "uncertain",
+            "answer": "Slack issues a client ID and client secret, and PKCE is supported as an optional security feature.",
+            "source": "https://docs.slack.dev/authentication/using-pkce/"
+          },
+          {
+            "key": "scopes",
+            "status": "found",
+            "answer": "Scopes are requested by specifying them as query parameters (e.g. <code>scope=</code> or <code>user_scope=</code>) or within the manifest <code>oauth_config.scopes</code> object.",
+            "source": "https://docs.slack.dev/authentication/installing-with-oauth/"
+          },
+          {
+            "key": "review",
+            "status": "found",
+            "answer": "Unlike unlisted distributed apps, apps listed in the Slack Marketplace are reviewed against our requirements & guidelines to ensure a quality experience for end users.",
+            "source": "https://docs.slack.dev/app-management/distribution/"
+          },
+          {
+            "key": "review_timeline",
+            "status": "found",
+            "answer": "“Feedback from this part of the review generally takes up to 10 weeks for new submissions and 6 weeks for published apps resubmitting changes (though we try to handle small changes like copy/URL edits much faster).”",
+            "source": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/"
+          },
+          {
+            "key": "test_limits",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "found",
+            "answer": "If your app is submitted with bugs, poor user experience, or we repeatedly run into issues of low quality when reviewing, we will return it and ask you to spend more time on it before resubmitting.",
+            "source": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide/"
+          }
+        ],
+        "claimCheck": {
+          "checked": 12,
+          "kept": 9,
+          "downgraded": 2,
+          "dropped": 1
+        }
+      },
+      "stats": {
+        "durationMs": 25304,
+        "modelCalls": 8,
+        "inputTokens": 40500,
+        "outputTokens": 1983,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "webSearches": 0,
+        "webFetches": 19,
+        "estimatedCostUsd": 0
+      },
+      "t": 25414
+    }
+  ]
+}

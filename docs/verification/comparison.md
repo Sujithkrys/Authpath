@@ -1,62 +1,55 @@
 # Comparison with the answer keys
 
-The generator ran locally in compare mode on 1 November 2026, using `gemini-3.5-flash-lite` with no web search. Each result was graded by hand against [answer-keys.json](answer-keys.json), which was built separately from the official docs. Raw results are in [runs/final](runs/final).
-
-These runs predate the new difficulty rule and the main-docs ranking. The "new rule" row says what each app should get now; see the [summary](summary.md) for the repeat runs.
+The generator ran locally in compare mode on 1 November 2026, on the final research code, with `gemini-3.5-flash-lite` and no web search. Each result was graded by hand against [answer-keys.json](answer-keys.json), which was built separately from the official docs. Raw results are in [runs/final-comparison](runs/final-comparison).
 
 ## Overall
 
 | | GitHub | Slack | Google |
 |---|---|---|---|
-| Time | 17.5s | 26.3s | 32.1s |
-| Steps | 4 | 4 | 5 |
-| Claims checked | 11 | 12 | 14 |
-| Kept / downgraded / dropped | 7 / 4 / 0 | 12 / 0 / 0 | 9 / 4 / 1 |
-| Difficulty at the time | Moderate | Moderate | Unknown |
-| Answer key's rating | Easy | Moderate | Hard |
-| Under the new rule | Should be Easy | Should be Moderate | Should be Hard, or Hard (not fully confirmed) |
+| Difficulty | Easy | Easy | Hard (not fully confirmed) |
+| Expected | Easy | Moderate | Hard, or Hard (not fully confirmed) |
+| Match? | Yes | **No** | Yes |
+| Time | 25.6s | 25.4s | 33.6s |
+| Steps | 4 | 4 | 4 |
+| Claims checked | 11 | 12 | 13 |
+| Kept / downgraded / dropped | 10 / 1 / 0 | 9 / 2 / 1 | 9 / 4 / 0 |
+
+## Checklist score
+
+| | GitHub | Slack | Google | Average |
+|---|---|---|---|---|
+| Answered, of 10 | 7 | 7 | 9 | 7.7 |
+| Fully confirmed by the checker | 6 | 6 | 6 | 6.0 |
+| Partly confirmed | 1 | 1 | 3 | 1.7 |
+| Empty, and the docs don't publish it either | 3 | 0 | 0 | |
+| Missed: the docs have it | 0 | 3 | 1 | 1.3 |
+| Wrong claims in the result | 0 | 0 | 0 | 0 |
 
 ## Checklist items
 
-**Correct:** the answer matches the key. **Partial:** right but incomplete. **Uncertain:** the checker only partly accepted it. **Empty, correct:** the docs don't publish this, and the agent said so. **Missed:** the docs have it and the agent didn't find it.
+**Correct:** matches the key. **Partial:** right but incomplete. **Uncertain:** right, but the checker only partly accepted it. **Empty, correct:** the docs don't publish this. **Missed:** the docs have it and the agent didn't report it.
 
 | Item | GitHub | Slack | Google |
 |---|---|---|---|
-| Where to register | Correct | Correct | Uncertain; right console |
-| App types | Uncertain; right content | Missed | Correct |
-| Required fields | Correct | Correct | Partial: name and branding, no support email or domains |
-| Redirect URI rules | Uncertain; 10 URLs right, HTTPS claim wrong | Partial: where to add them, not the rules | Correct on exact match; no localhost or wildcard rules |
-| Credentials | Uncertain; right content | Partial: client ID only, no PKCE | Correct; doesn't say the secret is shown once |
-| Scopes | Correct | Correct | Uncertain; right content |
-| Review | Correct | Correct | Uncertain; right content |
-| Published timeline | Empty, correct | Correct, word for word | Partial: brand review only |
-| Test limits | Empty, correct | Missed | Missed in this run, found in an earlier one |
+| Where to register | Correct | Correct | Correct |
+| App types | Correct | Missed; the checker removed the answer | Correct |
+| Required fields | Correct | Missed | Correct |
+| Redirect URI rules | Uncertain | Partial: HTTPS, not the `#` rule | Uncertain; HTTPS and exact match |
+| Credentials | Correct, with PKCE | Uncertain, with PKCE | Correct |
+| Scopes | Correct | Correct | Uncertain |
+| Review | Correct | Correct | Uncertain |
+| Published timeline | Empty, correct | Partial: the functional review part, word for word | Partial: brand review only |
+| Test limits | Empty, correct | Missed | Correct: test users only |
 | Rejection reasons | Empty, correct | Correct | Missed |
 
-## Wrong claims
+## Wrong results
 
-| App | Claim | What happened |
+| App | What's wrong | Why |
 |---|---|---|
-| GitHub | "HTTPS is required when wildcard matching is disabled" | The official docs don't state this. The checker marked it uncertain. |
-| Slack | None in the final run | An earlier run told readers to add Postman's callback URL, copied from a tutorial. Fixed. |
-| Google | None found | |
+| Slack | Rated Easy; should be Moderate | It read the rate-limits page but reported no limits, so only the optional listing review counted |
 
-## Wrong or non-official sources
+No wrong claim about setup survived into these three guides. The checker removed one answer from Slack's result.
 
-No result cited a third-party site. Two weaker choices appeared:
+## Sources
 
-- Slack's setup answers came from SDK tutorial pages rather than its main OAuth page. The new ranking addresses this.
-- Earlier GitHub runs cited GitHub App pages for OAuth app questions. The new ranking prefers pages with "oauth" in the name.
-
-## Real-page ranking check
-
-This ran after the ranking change, on the real docs sites, with no model calls.
-
-| Site and stage | Pages it now picks first |
-|---|---|
-| Slack, setup | `authentication/installing-with-oauth`, `authentication/using-pkce`, `authentication/` |
-| Slack, approval | `slack-security-review`, `apis/web-api/rate-limits`, `slack-marketplace-review-guide`, `app-management/distribution` |
-| Google, approval | `sensitive-scope-verification`, `restricted-scope-verification`, `brand-verification` |
-| Postmark, classification | `developer/api/email-api`, `stats-api`, `bounce-api`, `server-api` |
-
-Slack's main OAuth page does contain "The redirect_uri must use HTTPS." A Postmark two-factor help article now fails the card check.
+No result cited a third-party site. Slack still cited one SDK tutorial page, for where to register, alongside its main docs.

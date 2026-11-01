@@ -87,7 +87,8 @@ let failed = 0;
 for (const [index, app] of apps.entries()) {
   const started = Date.now();
   const event = await generate(options.base, app).catch((error) => ({ type: "error", message: String(error) }));
-  console.log(`${`[${index + 1}/${apps.length}]`.padEnd(8)} ${app.padEnd(24)} ${describe(event)}`);
+  const seconds = ((Date.now() - started) / 1000).toFixed(1);
+  console.log(`${`[${index + 1}/${apps.length}]`.padEnd(8)} ${app.padEnd(24)} ${seconds.padStart(6)}s  ${describe(event)}`);
 
   if (event.type === "paused") {
     console.log(`\nStopped: the daily quota is gone until ${new Date(event.resumesAt).toLocaleString()}. Run this again after that.`);

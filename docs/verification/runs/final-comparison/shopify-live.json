@@ -1,0 +1,475 @@
+{
+  "app": "Shopify",
+  "base": "https://authpath-two.vercel.app",
+  "compare": false,
+  "httpStatus": 200,
+  "seconds": 14.26,
+  "events": [
+    {
+      "type": "stage_start",
+      "stage": "classify",
+      "t": 970
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "shopify.com",
+        "shopify.dev"
+      ],
+      "t": 4447
+    },
+    {
+      "type": "sources",
+      "stage": "classify",
+      "domains": [
+        "shopify.dev"
+      ],
+      "t": 5030
+    },
+    {
+      "type": "stage_done",
+      "stage": "classify",
+      "detail": "OAuth provider",
+      "findings": {
+        "find": {
+          "outcome": "found",
+          "appName": "Shopify",
+          "officialDomains": [
+            "shopify.com",
+            "shopify.dev"
+          ],
+          "docsUrls": [
+            "https://www.shopify.com",
+            "https://shopify.dev",
+            "https://shopify.dev/docs/apps/auth"
+          ],
+          "options": []
+        },
+        "classified": {
+          "category": "oauth_provider",
+          "evidenceUrl": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node",
+          "evidenceQuote": "Because they can't use ID tokens , they authenticate using the OAuth authorization code grant flow: redirect the merchant to Shopify, get their approval, and exchange a code for an access token.",
+          "summary": "Shopify is an e-commerce platform that allows developers to build apps and integrate with store data using APIs such as the GraphQL Admin API, Storefront API, and Customer Account API.",
+          "authMethods": [
+            "OAuth",
+            "Client credentials grant",
+            "Token exchange"
+          ],
+          "instead": ""
+        },
+        "quoteHolds": true,
+        "category": "oauth_provider",
+        "pagesRead": [
+          "https://shopify.dev/docs/api/usage/authentication",
+          "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node",
+          "https://shopify.dev/docs/apps/build/authentication-authorization",
+          "https://shopify.dev/docs/apps/build/authentication-authorization.md"
+        ]
+      },
+      "t": 6162
+    },
+    {
+      "type": "stage_start",
+      "stage": "read",
+      "t": 6162
+    },
+    {
+      "type": "sources",
+      "stage": "read",
+      "domains": [
+        "shopify.dev"
+      ],
+      "t": 6646
+    },
+    {
+      "type": "stage_done",
+      "stage": "read",
+      "detail": "4 of 6 setup items found in 8 pages",
+      "findings": {
+        "developerConsoleUrl": null,
+        "items": [
+          {
+            "key": "register_url",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "app_types",
+            "status": "found",
+            "answer": "Standalone and API-only apps run outside the Shopify admin, unlike embedded apps. A standalone app serves its own UI, and an API-only app has no UI and runs as a server-side integration.",
+            "sourceUrl": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node"
+          },
+          {
+            "key": "required_fields",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "redirect_uris",
+            "status": "found",
+            "answer": "Must exactly match a redirect URI you've configured in the Dev Dashboard or your app's configuration TOML file.",
+            "sourceUrl": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node"
+          },
+          {
+            "key": "credentials",
+            "status": "found",
+            "answer": "You have your app's client ID and client secret from the Dev Dashboard.",
+            "sourceUrl": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node"
+          },
+          {
+            "key": "scopes",
+            "status": "found",
+            "answer": "A comma-separated list of access scopes your app needs is passed in the <code>scope</code> parameter.",
+            "sourceUrl": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node"
+          }
+        ],
+        "pagesRead": [
+          "https://shopify.dev/docs/api/usage/authentication",
+          "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node",
+          "https://shopify.dev/docs/apps/build/authentication-authorization",
+          "https://shopify.dev/docs/apps/build/authentication-authorization.md",
+          "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps.md",
+          "https://shopify.dev/docs/apps/build/authentication-authorization/manage-access-scopes",
+          "https://shopify.dev/docs/apps/build/authentication-authorization/cli-app-authentication",
+          "https://shopify.dev/docs/apps/build/authentication-authorization/client-credentials-grant?lang=node"
+        ]
+      },
+      "t": 8538
+    },
+    {
+      "type": "stage_start",
+      "stage": "approval",
+      "t": 8538
+    },
+    {
+      "type": "sources",
+      "stage": "approval",
+      "domains": [
+        "shopify.dev"
+      ],
+      "t": 10018
+    },
+    {
+      "type": "stage_done",
+      "stage": "approval",
+      "detail": "Public distribution requires submitting your app to Shopify's App Approval team.",
+      "findings": {
+        "gates": [
+          {
+            "gate": "mandatory_review",
+            "detail": "Public distribution requires submitting your app to Shopify's App Approval team.",
+            "quote": "When you’re ready to distribute your app on the Shopify App Store , you need to submit it to Shopify’s App Approval team and make sure it meets all requirements.",
+            "url": "https://shopify.dev/docs/apps/launch/app-store-review"
+          }
+        ],
+        "timelineLabel": null,
+        "evidenceQuote": null,
+        "evidenceUrl": null,
+        "items": [
+          {
+            "key": "review",
+            "status": "found",
+            "answer": "When you want to distribute your app publicly on the Shopify App Store, you need to submit it to Shopify’s App Approval team.",
+            "sourceUrl": "https://shopify.dev/docs/apps/launch/app-store-review"
+          },
+          {
+            "key": "test_limits",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "not_found",
+            "answer": "",
+            "sourceUrl": null
+          }
+        ],
+        "pagesRead": [
+          "https://shopify.dev/docs/api/usage/authentication",
+          "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node",
+          "https://shopify.dev/docs/apps/build/authentication-authorization",
+          "https://shopify.dev/docs/apps/build/authentication-authorization.md",
+          "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps.md",
+          "https://shopify.dev/docs/apps/build/authentication-authorization/manage-access-scopes",
+          "https://shopify.dev/docs/apps/build/authentication-authorization/cli-app-authentication",
+          "https://shopify.dev/docs/apps/build/authentication-authorization/client-credentials-grant?lang=node",
+          "https://shopify.dev/docs/apps/launch/app-store-review",
+          "https://shopify.dev/docs/api/usage/limits",
+          "https://shopify.dev/docs/apps/launch/distribution",
+          "https://shopify.dev/docs/apps/launch/distribution.md",
+          "https://shopify.dev/docs/apps/launch/distribution/select-distribution-method",
+          "https://shopify.dev/docs/apps/launch/distribution/revenue-share",
+          "https://shopify.dev/docs/apps/launch/shopify-app-store/best-practices"
+        ]
+      },
+      "t": 11328
+    },
+    {
+      "type": "stage_start",
+      "stage": "write",
+      "t": 11328
+    },
+    {
+      "type": "stage_done",
+      "stage": "write",
+      "detail": "3 steps written from the checklist",
+      "t": 12874
+    },
+    {
+      "type": "stage_start",
+      "stage": "verify",
+      "t": 12874
+    },
+    {
+      "type": "stage_done",
+      "stage": "verify",
+      "detail": "8 confirmed, 0 marked uncertain, 0 dropped",
+      "findings": {
+        "claimCheck": {
+          "checked": 8,
+          "kept": 8,
+          "downgraded": 0,
+          "dropped": 0
+        },
+        "verdicts": {
+          "S1": "yes",
+          "S2": "yes",
+          "S3": "yes",
+          "C:app_types": "yes",
+          "C:redirect_uris": "yes",
+          "C:credentials": "yes",
+          "C:scopes": "yes",
+          "C:review": "yes",
+          "G1": "partly"
+        },
+        "decision": {
+          "gate": "mandatory_review",
+          "detail": "Public distribution requires submitting your app to Shopify's App Approval team.",
+          "confirmed": false
+        }
+      },
+      "t": 14041
+    },
+    {
+      "type": "guide",
+      "slug": "shopify",
+      "uncertainCount": 0,
+      "claimCheck": {
+        "checked": 8,
+        "kept": 8,
+        "downgraded": 0,
+        "dropped": 0
+      },
+      "guide": {
+        "id": "shopify",
+        "name": "Shopify",
+        "init": "SH",
+        "color": "#525252",
+        "diff": "hard",
+        "diffReason": "Hard: Public distribution requires submitting your app to Shopify's App Approval team (the cited page only partly confirms this)",
+        "diffConfirmed": false,
+        "tested": false,
+        "generated": true,
+        "generatedAt": "2026-11-01T11:49:11.245Z",
+        "version": 5,
+        "setup": "~15 min",
+        "wait": "Not published",
+        "review": "Required",
+        "site": "shopify.dev/docs/api/usage/authentication",
+        "steps": [
+          {
+            "t": "Configure redirect URIs",
+            "d": "Configure your redirect URIs to match your app configuration TOML file or Dev Dashboard.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node",
+            "link": {
+              "label": "Dev Dashboard",
+              "url": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node"
+            }
+          },
+          {
+            "t": "Obtain credentials",
+            "d": "Retrieve your app client ID and client secret from the Dev Dashboard.",
+            "o": "you",
+            "e": "docs",
+            "source": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node",
+            "link": {
+              "label": "Dev Dashboard",
+              "url": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node"
+            }
+          },
+          {
+            "t": "Select scopes",
+            "d": "Pass a comma-separated list of access scopes your app needs in the <code>scope</code> parameter.",
+            "o": "agent",
+            "e": "docs",
+            "source": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node"
+          }
+        ],
+        "blockers": [
+          {
+            "b": "App Store Review",
+            "s": "When you want to distribute your app publicly on the Shopify App Store, you need to submit it to Shopify’s App Approval team.",
+            "source": "https://shopify.dev/docs/apps/launch/app-store-review"
+          },
+          {
+            "b": "Approval timeline not published",
+            "s": "The docs we read don't give a review timeline. Contact Shopify before you plan a launch date."
+          }
+        ],
+        "agent": [
+          "Select access scopes for the <code>scope</code> parameter"
+        ],
+        "you": [
+          "Configure redirect URIs",
+          "Obtain credentials",
+          "Submit your app for review"
+        ],
+        "sources": [
+          [
+            "Authenticate a standalone or API-only app",
+            "shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node"
+          ],
+          [
+            "About the Shopify App Store",
+            "shopify.dev/docs/apps/launch/app-store-review"
+          ]
+        ],
+        "otherPages": [
+          [
+            "Shopify API authentication",
+            "shopify.dev/docs/api/usage/authentication"
+          ],
+          [
+            "About app authentication",
+            "shopify.dev/docs/apps/build/authentication-authorization"
+          ],
+          [
+            "shopify.dev/docs/apps/build/authentication-authorization.md",
+            "shopify.dev/docs/apps/build/authentication-authorization.md"
+          ],
+          [
+            "shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps.md",
+            "shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps.md"
+          ],
+          [
+            "Manage access scopes",
+            "shopify.dev/docs/apps/build/authentication-authorization/manage-access-scopes"
+          ],
+          [
+            "Authentication for apps built with Shopify CLI",
+            "shopify.dev/docs/apps/build/authentication-authorization/cli-app-authentication"
+          ],
+          [
+            "Authenticate an app for stores in your organization",
+            "shopify.dev/docs/apps/build/authentication-authorization/client-credentials-grant?lang=node"
+          ],
+          [
+            "Shopify API limits",
+            "shopify.dev/docs/api/usage/limits"
+          ],
+          [
+            "About app distribution",
+            "shopify.dev/docs/apps/launch/distribution"
+          ],
+          [
+            "shopify.dev/docs/apps/launch/distribution.md",
+            "shopify.dev/docs/apps/launch/distribution.md"
+          ],
+          [
+            "Select a distribution method",
+            "shopify.dev/docs/apps/launch/distribution/select-distribution-method"
+          ],
+          [
+            "Revenue share for Shopify App Store developers",
+            "shopify.dev/docs/apps/launch/distribution/revenue-share"
+          ],
+          [
+            "Best practices for apps in the Shopify App Store",
+            "shopify.dev/docs/apps/launch/shopify-app-store/best-practices"
+          ]
+        ],
+        "checklist": [
+          {
+            "key": "register_url",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "app_types",
+            "status": "found",
+            "answer": "Standalone and API-only apps run outside the Shopify admin, unlike embedded apps. A standalone app serves its own UI, and an API-only app has no UI and runs as a server-side integration.",
+            "source": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node"
+          },
+          {
+            "key": "required_fields",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "redirect_uris",
+            "status": "found",
+            "answer": "Must exactly match a redirect URI you've configured in the Dev Dashboard or your app's configuration TOML file.",
+            "source": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node"
+          },
+          {
+            "key": "credentials",
+            "status": "found",
+            "answer": "You have your app's client ID and client secret from the Dev Dashboard.",
+            "source": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node"
+          },
+          {
+            "key": "scopes",
+            "status": "found",
+            "answer": "A comma-separated list of access scopes your app needs is passed in the <code>scope</code> parameter.",
+            "source": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node"
+          },
+          {
+            "key": "review",
+            "status": "found",
+            "answer": "When you want to distribute your app publicly on the Shopify App Store, you need to submit it to Shopify’s App Approval team.",
+            "source": "https://shopify.dev/docs/apps/launch/app-store-review"
+          },
+          {
+            "key": "review_timeline",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "test_limits",
+            "status": "not_found",
+            "answer": ""
+          },
+          {
+            "key": "rejection_reasons",
+            "status": "not_found",
+            "answer": ""
+          }
+        ],
+        "claimCheck": {
+          "checked": 8,
+          "kept": 8,
+          "downgraded": 0,
+          "dropped": 0
+        }
+      },
+      "stats": {
+        "durationMs": 13335,
+        "modelCalls": 8,
+        "inputTokens": 40545,
+        "outputTokens": 1842,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "webSearches": 0,
+        "webFetches": 22,
+        "estimatedCostUsd": 0
+      },
+      "t": 14258
+    }
+  ]
+}
