@@ -46,7 +46,11 @@
   "sources": [
     [
       "External Client Apps",
-      "help.salesforce.com"
+      "help.salesforce.com/s/articleView?id=xcloud.external_client_apps.htm&type=5"
+    ],
+    [
+      "AppExchange security review",
+      "developer.salesforce.com/docs/platform/isvforce/guide/security-review-guidelines.html"
     ]
   ]
 }

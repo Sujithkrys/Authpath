@@ -1,6 +1,6 @@
 {
   "app": "Composio",
-  "base": "https://authpath-two.vercel.app",
+  "base": "https://authpath-sujith.vercel.app",
   "compare": false,
   "httpStatus": 200,
   "seconds": 13.776,

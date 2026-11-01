@@ -1,6 +1,6 @@
 {
   "app": "Postmark",
-  "base": "https://authpath-two.vercel.app",
+  "base": "https://authpath-sujith.vercel.app",
   "compare": false,
   "httpStatus": 200,
   "seconds": 12.565,

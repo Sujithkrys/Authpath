@@ -51,6 +51,11 @@ export async function checkRateLimit(ip: string) {
   return limiter.limit(ip);
 }
 
+/**
+ * Saved with no expiry, so a shared link keeps working indefinitely. The 7-day
+ * window and the result version only decide whether to generate again
+ * (findRecentResult); /guides/[slug] shows whatever is saved, in any version.
+ */
 export async function saveGeneratedResult(result: GeneratedResult): Promise<void> {
   await getRedis().set(resultKey(result.id), result);
 }

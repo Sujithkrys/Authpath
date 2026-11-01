@@ -15,7 +15,7 @@
  */
 import { readFileSync } from "node:fs";
 
-const DEFAULT_BASE = "https://authpath-two.vercel.app";
+const DEFAULT_BASE = process.env.NEXT_PUBLIC_SITE_URL || "https://authpath-sujith.vercel.app";
 const LIST = new URL("./warm-cache-apps.txt", import.meta.url);
 
 function parseArgs(argv) {

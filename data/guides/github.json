@@ -4,6 +4,7 @@
   "init": "GH",
   "color": "#181717",
   "diff": "easy",
+  "diffReason": "Easy: registering an OAuth app is self-serve, and review applies only to an optional GitHub Marketplace listing",
   "tested": false,
   "setup": "~10 min",
   "wait": "None",
@@ -13,25 +14,25 @@
   "steps": [
     {
       "t": "Pick OAuth App or GitHub App",
-      "d": "GitHub Apps get fine-grained permissions and are GitHub's recommended option; OAuth Apps act as the user.",
+      "d": "GitHub Apps get fine-grained permissions and GitHub generally prefers them; OAuth Apps act only on behalf of the user.",
       "o": "you",
       "e": "docs"
     },
     {
       "t": "Register the app",
-      "d": "Settings → Developer settings → OAuth Apps → New OAuth App.",
+      "d": "Settings → Developer settings → OAuth Apps → New OAuth App. Enter the application name, homepage URL and callback URL.",
       "o": "you",
       "e": "docs"
     },
     {
       "t": "Set the callback URL",
-      "d": "Paste your redirect URI, e.g. <code>https://yourapp.com/api/auth/callback/github</code>",
+      "d": "Paste your redirect URI, e.g. <code>https://yourapp.com/api/auth/callback/github</code>. You can add up to 10.",
       "o": "agent",
       "e": "docs"
     },
     {
       "t": "Generate a client secret",
-      "d": "Copy it once — GitHub won't show it again. Store it as an env var.",
+      "d": "On the app's settings page, click Generate a new client secret, then store it as an env var.",
       "o": "you",
       "e": "docs"
     }
@@ -39,7 +40,7 @@
   "blockers": [
     {
       "b": "Org access restrictions",
-      "s": "Orgs with OAuth app restrictions must approve your app before members can connect."
+      "s": "Organizations with OAuth app access restrictions must approve your app before it can reach their private data."
     }
   ],
   "agent": [
@@ -49,17 +50,21 @@
   ],
   "you": [
     "Sign in and click Register",
-    "Copy and store the client secret",
+    "Generate and store the client secret",
     "Ask org admins to approve, if restricted"
   ],
   "sources": [
     [
       "Creating an OAuth app",
-      "docs.github.com/apps/oauth-apps"
+      "docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
     ],
     [
-      "Differences between GitHub Apps and OAuth Apps",
-      "docs.github.com/apps/oauth-apps"
+      "Differences between GitHub Apps and OAuth apps",
+      "docs.github.com/en/apps/oauth-apps/building-oauth-apps/differences-between-github-apps-and-oauth-apps"
+    ],
+    [
+      "About OAuth app access restrictions",
+      "docs.github.com/en/organizations/managing-oauth-access-to-your-organizations-data/about-oauth-app-access-restrictions"
     ]
   ]
 }

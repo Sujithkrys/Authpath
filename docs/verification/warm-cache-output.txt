@@ -1,4 +1,4 @@
-Warming 8 apps on https://authpath-two.vercel.app, at most one new generation every 90s
+Warming 8 apps on https://authpath-sujith.vercel.app, at most one new generation every 90s
 
 [1/8]    Calendly                    1.0s  already cached /guides/calendly
 [2/8]    Xero                       17.7s  generated guide (hard, 3 steps) /guides/xero

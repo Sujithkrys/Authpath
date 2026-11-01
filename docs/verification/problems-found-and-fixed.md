@@ -59,3 +59,15 @@ Each problem came from a real run or a test. They're grouped by what went wrong.
 | Problem | Cause | Fix |
 |---|---|---|
 | GitHub and Slack were marked "Tested hands-on" | They came from the original mockup | Both are now "From provider docs", until someone actually creates those OAuth apps |
+| Library guides were never fact-checked | They began as sample content from the mockup | GitHub, Slack and Google were checked against the answer keys and corrected; every library source now opens a specific official page that returns 200 |
+
+## Library guide corrections
+
+| Guide | What was wrong | Now |
+|---|---|---|
+| GitHub | Said the client secret is shown only once (the docs don't say this); both sources pointed at the same index page | Generate the secret on the app's settings page; three specific source pages |
+| Slack | No redirect rules or PKCE; no mention of the limits on unlisted apps; wait "Days–weeks"; sources on the old domain | HTTPS and no `#` in redirect URLs, PKCE optional, the rate limits on unlisted apps as a blocker, wait "Up to 10 weeks"; five docs.slack.dev sources |
+| Google | Old console navigation; no reason for the Hard rating; wait "Weeks" | Google Auth Platform clients, the secret shown only once, the 100-test-user cap, a scope-verification reason, wait "Up to 6 weeks"; five official sources |
+| Salesforce | Its only source went to the help home page | An External Client Apps article and the security review guide |
+| HubSpot, Notion, Zoom | Sources went through redirects | Their final addresses |
+| Stripe | Nothing | Unchanged |

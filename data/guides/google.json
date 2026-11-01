@@ -4,9 +4,10 @@
   "init": "G",
   "color": "#4285F4",
   "diff": "hard",
+  "diffReason": "Hard: sensitive and restricted scopes need Google verification before more than 100 users can connect, and restricted scopes also need an annual security assessment",
   "tested": false,
   "setup": "~30 min",
-  "wait": "Weeks",
+  "wait": "Up to 6 weeks",
   "review": "Sensitive scopes",
   "waitKey": "weeks",
   "site": "console.cloud.google.com",
@@ -18,32 +19,36 @@
       "e": "docs"
     },
     {
-      "t": "Configure the consent screen",
-      "d": "Add app name, support email, privacy policy and authorised domains.",
+      "t": "Configure branding and audience",
+      "d": "Add the app name, support email, home page, privacy policy and authorized domains, and choose External or Internal users.",
       "o": "agent",
       "e": "docs"
     },
     {
-      "t": "Create OAuth client credentials",
-      "d": "APIs & Services → Credentials → OAuth client ID.",
+      "t": "Create the OAuth client",
+      "d": "Google Auth Platform → Clients → Create client. Add your HTTPS redirect URIs, then save the client secret: it's shown only once.",
       "o": "you",
       "e": "docs"
     },
     {
       "t": "Submit for verification",
-      "d": "Required for sensitive or restricted scopes (e.g. Gmail). Restricted scopes may need a security assessment.",
+      "d": "Needed for sensitive or restricted scopes, after you publish to production. Restricted scopes such as full Gmail also need a security assessment.",
       "o": "you",
-      "e": "uncertain"
+      "e": "docs"
     }
   ],
   "blockers": [
     {
+      "b": "100-user cap until verified",
+      "s": "In Testing, only up to 100 listed test users can sign in, and their authorizations expire after seven days."
+    },
+    {
       "b": "Restricted scopes",
-      "s": "Gmail read access can require a third-party security assessment."
+      "s": "Restricted scopes need an annual third-party security assessment. Google estimates restricted scope verification at 6 weeks."
     },
     {
       "b": "Domain verification",
-      "s": "Authorised domains must be verified in Search Console."
+      "s": "Authorized domains must be verified in Search Console."
     }
   ],
   "agent": [
@@ -56,12 +61,24 @@
   ],
   "sources": [
     [
-      "Setting up OAuth 2.0",
-      "support.google.com/cloud/answer/6158849"
+      "Manage OAuth clients",
+      "support.google.com/cloud/answer/15549257?hl=en"
+    ],
+    [
+      "Manage app audience",
+      "support.google.com/cloud/answer/15549945?hl=en"
     ],
     [
       "OAuth app verification",
-      "support.google.com/cloud/answer/13463073"
+      "support.google.com/cloud/answer/13463073?hl=en"
+    ],
+    [
+      "Verification FAQ and timelines",
+      "support.google.com/cloud/answer/13463817?hl=en"
+    ],
+    [
+      "Restricted scope verification",
+      "developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification"
     ]
   ]
 }

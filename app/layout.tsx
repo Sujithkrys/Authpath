@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import { AppStateProvider } from "@/components/app-state";
 import { Sidebar } from "@/components/sidebar";
+import { SITE_URL } from "@/lib/site";
 
 import "./globals.css";
 
@@ -11,6 +12,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains-mono" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: { default: "Authpath", template: "%s · Authpath" },
   description: "OAuth app setup guides for developers.",
 };
