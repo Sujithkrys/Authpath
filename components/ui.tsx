@@ -4,16 +4,16 @@ import type { ComponentProps } from "react";
 import type { Difficulty, GuideWithLogo } from "@/types/guide";
 
 export const buttonBase =
-  "inline-flex items-center justify-center gap-2 h-10 px-4 rounded-sm font-semibold text-[15px] whitespace-nowrap transition-colors duration-150";
+  "inline-flex items-center justify-center gap-2 h-9 px-3.5 rounded-sm font-semibold text-[13.5px] whitespace-nowrap transition-colors duration-150";
 export const buttonPrimary = `${buttonBase} bg-accent text-on-accent hover:bg-accent-hover`;
 export const buttonGhost = `${buttonBase} border border-border-strong bg-surface hover:bg-hover`;
 
 export const panel = "rounded-lg border border-border bg-surface";
 export const panelHeader =
-  "flex items-center justify-between border-b border-border px-4 py-3.5 text-[15px] font-semibold";
+  "flex h-10 items-center justify-between border-b border-border px-3.5 text-[13.5px] font-medium";
 export const rail =
-  "sticky top-7 flex flex-col gap-4 max-lg:static max-lg:grid max-lg:grid-cols-2 max-sm:grid-cols-1";
-export const pill = "rounded-full bg-accent-soft px-2 py-px text-[11.5px] font-semibold text-accent-ink";
+  "sticky top-4 flex flex-col gap-4 max-lg:static max-lg:grid max-lg:grid-cols-2 max-sm:grid-cols-1";
+export const pill = "rounded-full bg-accent-soft px-2 py-px text-[11px] font-semibold text-accent-ink";
 export const heroTitle = "font-semibold tracking-[-.025em] text-balance";
 
 const DIFFICULTY_STYLE: Record<Difficulty, string> = {
@@ -25,7 +25,7 @@ const DIFFICULTY_STYLE: Record<Difficulty, string> = {
 export function DifficultyTag({ diff, className = "" }: { diff: Difficulty; className?: string }) {
   return (
     <span
-      className={`inline-flex items-center gap-[5px] rounded-sm px-[7px] py-0.5 font-mono text-[11px] font-semibold tracking-[.02em] uppercase ${DIFFICULTY_STYLE[diff]} ${className}`}
+      className={`inline-flex items-center gap-[5px] rounded-sm px-1.5 py-px font-mono text-[10.5px] font-semibold tracking-[.02em] uppercase ${DIFFICULTY_STYLE[diff]} ${className}`}
     >
       {diff}
     </span>
@@ -46,11 +46,27 @@ interface AppLogoProps {
 export function AppLogo({ guide, size = "md", framed = true }: AppLogoProps) {
   const large = size === "lg";
 
+  // Bare 36px mark, as in the Composio app directory cards.
+  if (!framed) {
+    return guide.logoSrc ? (
+      // eslint-disable-next-line @next/next/no-img-element -- next/image refuses SVG by default
+      <img src={guide.logoSrc} alt="" aria-hidden="true" width={36} height={36} className="size-9 flex-none object-contain" />
+    ) : (
+      <span
+        aria-hidden="true"
+        className="grid size-9 flex-none place-items-center rounded-sm text-[15px] font-semibold text-on-accent"
+        style={{ backgroundColor: guide.color }}
+      >
+        {guide.init}
+      </span>
+    );
+  }
+
   if (guide.logoSrc) {
     return (
       <span
         aria-hidden="true"
-        className={`grid flex-none place-items-center rounded-lg bg-logo-tile ${framed ? "border border-border shadow-card" : ""} ${large ? "size-14" : "size-11"}`}
+        className={`grid flex-none place-items-center rounded-lg border border-border bg-logo-tile shadow-card ${large ? "size-14" : "size-11"}`}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- next/image refuses SVG by default */}
         <img
@@ -85,12 +101,12 @@ interface SearchFieldProps extends ComponentProps<"input"> {
 export function SearchField({ label, iconSize = 16, fieldClassName, ...input }: SearchFieldProps) {
   return (
     <label
-      className={`flex items-center gap-2.5 rounded-sm border border-border-strong bg-surface px-3 text-text-3 focus-within:border-accent focus-within:ring-3 focus-within:ring-accent-soft ${fieldClassName}`}
+      className={`flex items-center gap-2.5 rounded-sm border border-border bg-surface px-3 text-text-2 focus-within:border-accent focus-within:ring-3 focus-within:ring-accent-soft ${fieldClassName}`}
     >
       <Search size={iconSize} aria-hidden="true" />
       <span className="sr-only">{label}</span>
       <input
-        className="min-w-0 flex-1 bg-transparent text-[15px] text-text outline-none placeholder:text-text-3"
+        className="min-w-0 flex-1 bg-transparent text-[13.5px] text-text outline-none placeholder:text-text-2"
         {...input}
       />
     </label>

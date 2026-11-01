@@ -20,9 +20,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body>
         <AppStateProvider>
-          <div className="grid min-h-screen grid-cols-[260px_minmax(0,1fr)] bg-[linear-gradient(to_right,var(--side)_259px,var(--border)_259px,var(--border)_260px,var(--bg)_260px)] max-md:grid-cols-1 max-md:grid-rows-[auto_1fr] max-md:bg-none">
+          <div className="grid min-h-screen grid-cols-[256px_minmax(0,1fr)] bg-[linear-gradient(to_right,var(--side)_255px,var(--border)_255px,var(--border)_256px,var(--bg)_256px)] max-md:grid-cols-1 max-md:grid-rows-[auto_1fr] max-md:bg-none">
             <Sidebar />
-            <main className="min-w-0 px-10 pt-7 pb-16 max-md:px-4 max-md:pt-[22px] max-md:pb-12">
+            <main className="min-w-0 px-8 pt-4 pb-16 max-md:px-4 max-md:pt-[22px] max-md:pb-12">
               {children}
               <p className="mt-7 font-mono text-[12px] text-text-3">
                 Sample content for layout review — verify every fact against provider docs during the build.

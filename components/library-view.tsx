@@ -21,22 +21,25 @@ const WAIT_ROWS: { key: WaitFilter; label: string }[] = [
   { key: "weeks", label: "Weeks" },
 ];
 
-/** Flat, compact cards like the Composio app directory: name, one detail line, a tag in the corner. */
+/**
+ * Sized from the Composio app directory: a 71px-tall box, a bare 36px logo 12px
+ * from the edge, a 15.5px name, a 12px grey detail line and a small corner mark.
+ */
 function GuideCard({ guide }: { guide: GuideWithLogo }) {
   return (
     <Link
       href={`/guides/${guide.id}`}
       aria-label={`Open ${guide.name} guide`}
-      className="relative flex w-full items-center gap-3 rounded-sm border border-border bg-surface px-4 py-[15px] text-left transition-[border-color,box-shadow] duration-150 hover:border-border-strong hover:shadow-card"
+      className="relative flex w-full items-center gap-3 rounded-sm border border-border bg-surface px-3 pt-3 pb-[11px] text-left transition-colors duration-150 hover:border-border-strong"
     >
       <AppLogo guide={guide} framed={false} />
       <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-1.5 pr-[76px] text-[16px] leading-6 font-medium">
+        <span className="flex items-center gap-1.5 pr-[70px] text-[15.5px] leading-[22px]">
           {guide.name}
-          {guide.tested && <ShieldCheck size={15} strokeWidth={1.8} className="text-accent" aria-hidden="true" />}
+          {guide.tested && <ShieldCheck size={14} strokeWidth={1.8} className="text-accent" aria-hidden="true" />}
         </span>
-        <span className="mt-0.5 flex items-start gap-1.5 text-[13px] leading-5 text-text-2">
-          <Clock size={13} strokeWidth={1.8} className="mt-[3.5px]" aria-hidden="true" />
+        <span className="mt-2 flex items-center gap-1 text-[12px] leading-4 text-text-2">
+          <Clock size={14} strokeWidth={1.6} aria-hidden="true" />
           <span>
             {guide.setup} · {guide.wait === "None" ? "No approval" : `${guide.wait} wait`}
           </span>
@@ -57,7 +60,7 @@ function GuideGrid({ guides }: { guides: GuideWithLogo[] }) {
   );
 }
 
-const sectionHeading = "text-[20px] font-semibold tracking-[-.015em]";
+const sectionHeading = "text-[17.5px] leading-[26px] font-semibold tracking-[-.01em]";
 
 export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
   const { difficulty, setDifficulty, wait, setWait, query, setQuery } = useAppState();
@@ -86,11 +89,11 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
 
   return (
     <section aria-labelledby="library-heading">
-      <div className="mb-7 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
+      <div className="mb-7 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
         <div
           role="group"
           aria-label="Filter by difficulty"
-          className="inline-flex gap-0.5 rounded-md bg-surface-2 p-[3px] max-sm:flex max-sm:w-full max-sm:flex-wrap"
+          className="inline-flex h-9 gap-0.5 rounded-md bg-surface-2 p-[3px] max-sm:flex max-sm:w-full"
         >
           {DIFFICULTY_TABS.map(({ key, label }) => (
             <button
@@ -98,46 +101,46 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
               type="button"
               aria-pressed={difficulty === key}
               onClick={() => setDifficulty(key)}
-              className="group flex items-center justify-center gap-[7px] rounded-sm px-3 py-1.5 text-[15px] text-text-2 aria-pressed:bg-surface aria-pressed:font-semibold aria-pressed:text-text aria-pressed:shadow-card max-sm:flex-1 max-sm:px-2"
+              className="group flex h-full items-center justify-center gap-1.5 rounded-sm px-2.5 text-[13.5px] text-text-2 aria-pressed:bg-surface aria-pressed:font-medium aria-pressed:text-text aria-pressed:shadow-[0_1px_2px_rgba(0,0,0,.12)] max-sm:flex-1 max-sm:px-1.5"
             >
               {label}
-              <span className="rounded-full border border-border bg-surface-2 px-1.5 font-mono text-[11px] text-text-2 group-aria-pressed:bg-hover">
+              <span className="rounded-full bg-hover px-1.5 font-mono text-[11px] leading-[18px] text-text-2 group-aria-pressed:text-text">
                 {difficultyCount(key)}
               </span>
             </button>
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 max-sm:w-full">
+        <div className="flex flex-wrap items-center gap-3 max-sm:w-full">
           <SearchField
             label="Search apps"
             type="search"
             placeholder="Search apps"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            fieldClassName="h-10 w-[320px] max-w-full max-sm:w-full"
+            fieldClassName="h-9 w-64 max-w-full max-sm:w-full"
           />
           <Link href="/generate" className={buttonPrimary}>
-            <Plus size={16} strokeWidth={2.2} aria-hidden="true" />
+            <Plus size={16} strokeWidth={2} aria-hidden="true" />
             Generate guide
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-[minmax(0,1fr)_300px] items-start gap-8 max-lg:grid-cols-1">
+      <div className="grid grid-cols-[minmax(0,1fr)_256px] items-start gap-8 max-lg:grid-cols-1">
         <div>
-          <div className="mb-7 flex items-baseline gap-2.5">
-            <h1 id="library-heading" className="text-[22px] font-semibold tracking-[-.02em]">
+          <div className="mb-9 flex items-baseline gap-2.5">
+            <h1 id="library-heading" className="text-[18px] leading-6 font-semibold tracking-[-.01em]">
               Library
             </h1>
-            <span className="text-[16px] text-text-2" aria-live="polite">
+            <span className="text-[13px] text-text-2" aria-live="polite">
               {matches.length} {matches.length === 1 ? "guide" : "guides"}
             </span>
           </div>
 
           {tested.length > 0 && (
             <>
-              <div className="mb-4 flex items-center gap-2.5">
+              <div className="mb-3.5 flex items-center gap-2.5">
                 <h2 className={sectionHeading}>Tested hands-on</h2>
                 <span className={pill}>Verified</span>
               </div>
@@ -147,7 +150,7 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
 
           {fromDocs.length > 0 && (
             <>
-              <div className="mb-4 flex items-center gap-2.5">
+              <div className="mb-3.5 flex items-center gap-2.5">
                 <h2 className={sectionHeading}>From provider docs</h2>
               </div>
               <GuideGrid guides={fromDocs} />
@@ -166,7 +169,7 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
           <div className={panel}>
             <div className={panelHeader}>
               Approval wait
-              <span className="flex items-center gap-1 text-text-3">
+              <span className="flex items-center gap-1 text-text">
                 <ChevronUp size={16} aria-hidden="true" />
                 <button
                   type="button"
@@ -180,17 +183,17 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
                 </button>
               </span>
             </div>
-            <div className="p-2.5">
+            <div className="flex flex-col gap-1 p-3">
               {WAIT_ROWS.map(({ key, label }) => (
                 <button
                   key={key}
                   type="button"
                   aria-pressed={wait === key}
                   onClick={() => setWait(key)}
-                  className="flex w-full items-center justify-between rounded-md px-2.5 py-[9px] text-left text-[15px] text-text-2 hover:bg-hover aria-pressed:bg-hover aria-pressed:font-medium aria-pressed:text-text"
+                  className="flex h-9 w-full items-center justify-between rounded-md px-3 text-left text-[13.5px] text-text-2 hover:bg-surface-2 aria-pressed:bg-surface-2 aria-pressed:font-medium aria-pressed:text-text"
                 >
                   <span>{label}</span>
-                  <span className="font-mono text-[12px] font-normal text-text-3">{waitCount(key)}</span>
+                  <span className="font-mono text-[12px] font-normal">{waitCount(key)}</span>
                 </button>
               ))}
             </div>
@@ -199,10 +202,10 @@ export function LibraryView({ guides }: { guides: GuideWithLogo[] }) {
           <div className={panel}>
             <Link
               href="/generate"
-              className="flex w-full items-center justify-between gap-2 rounded-lg px-4 py-3.5 text-[14px] font-semibold hover:bg-hover"
+              className="flex h-10 w-full items-center justify-between gap-2 rounded-lg px-3.5 text-[13.5px] font-medium hover:bg-hover"
             >
-              Don&apos;t see your app? Generate one
-              <ExternalLink size={15} strokeWidth={1.8} aria-hidden="true" />
+              Generate a guide
+              <ExternalLink size={15} strokeWidth={1.7} aria-hidden="true" />
             </Link>
           </div>
         </div>

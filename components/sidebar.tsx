@@ -26,7 +26,7 @@ export function Sidebar() {
       aria-label="Main"
       className="sticky top-0 flex h-screen flex-col border-r border-border bg-side max-md:z-5 max-md:h-auto max-md:flex-row max-md:items-center max-md:overflow-x-auto max-md:border-r-0 max-md:border-b"
     >
-      <div className="flex items-center justify-between border-b border-border px-[18px] pt-[18px] pb-4 max-md:flex-none max-md:gap-2.5 max-md:border-b-0 max-md:px-3.5 max-md:py-3">
+      <div className="flex h-14 flex-none items-center justify-between border-b border-border px-[18px] max-md:h-auto max-md:flex-none max-md:gap-2.5 max-md:border-b-0 max-md:px-3.5 max-md:py-3">
         <div className="flex items-center gap-2.5">
           <div className="grid size-[26px] place-items-center rounded-sm bg-text text-bg">
             <ShieldCheck size={15} strokeWidth={1.8} aria-hidden="true" />
@@ -37,26 +37,26 @@ export function Sidebar() {
         </div>
       </div>
 
-      <nav className="flex flex-col gap-0.5 px-2.5 py-3.5 max-md:flex-none max-md:flex-row max-md:p-2">
+      <nav className="flex flex-col gap-1 px-2 py-3.5 max-md:flex-none max-md:flex-row max-md:p-2">
         {NAV.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
             aria-current={isCurrent(href, pathname) ? "page" : undefined}
-            className="flex w-full items-center gap-3 rounded-md px-3 py-[9px] text-left text-[15px] text-text-2 transition-colors duration-150 hover:bg-hover hover:text-text aria-[current=page]:bg-hover aria-[current=page]:font-medium aria-[current=page]:text-text max-md:px-2.5 max-md:py-2 max-md:text-[15px] max-md:whitespace-nowrap"
+            className="flex h-9 w-full items-center gap-2 rounded-md px-2.5 text-left text-[13.5px] text-text transition-colors duration-150 hover:bg-hover aria-[current=page]:bg-hover max-md:whitespace-nowrap"
           >
-            <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
+            <Icon size={17} strokeWidth={1.7} aria-hidden="true" />
             {label}
           </Link>
         ))}
       </nav>
 
-      <div className="mx-3 mt-auto mb-3 rounded-lg border border-border bg-surface p-3.5 shadow-card max-md:hidden">
-        <h2 className="mb-1.5 flex items-center gap-2 text-[15px] font-semibold">
+      <div className="mx-2 mt-auto mb-3 rounded-lg border border-border bg-surface p-3.5 shadow-card max-md:hidden">
+        <h2 className="mb-1 flex items-center gap-2 text-[14px] font-semibold">
           <ShieldCheck size={16} strokeWidth={1.8} className="text-accent" aria-hidden="true" />
           Evidence levels
         </h2>
-        <p className="mb-3 text-[13px] leading-[1.45] text-text-2">Every step says how we know it.</p>
+        <p className="mb-3 text-[13.5px] leading-[1.45] text-text-2">Every step says how we know it.</p>
         <div className="flex flex-col gap-[7px] text-[13px] text-text-2">
           <span className="flex items-center gap-2">
             <Check size={14} strokeWidth={2.4} className="text-ok" aria-hidden="true" />
@@ -78,7 +78,7 @@ export function Sidebar() {
           S
         </div>
         <div>
-          <b className="block text-[15px] leading-[1.2] font-semibold">Sujith T.</b>
+          <b className="block text-[14px] leading-[1.2] font-medium">Sujith T.</b>
           <small className="text-[12px] text-text-3">APM take-home</small>
         </div>
         <ThemeToggle />
