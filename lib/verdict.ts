@@ -1,6 +1,6 @@
 import type { Guide } from "@/types/guide";
 
-type VerdictFields = Pick<Guide, "diff" | "diffConfirmed" | "setup" | "wait" | "review">;
+type VerdictFields = Pick<Guide, "diff" | "diffConfirmed" | "setup" | "wait" | "review"> & Partial<Pick<Guide, "checklist">>;
 
 /** "~15 min" reads as "about 15 minutes". Anything else is used as it is. */
 function aboutTime(setup: string): string {
@@ -22,6 +22,7 @@ const REVIEW_SENTENCE: Record<string, string> = {
   "to lift limits": "It works with limits until you're reviewed.",
   "sensitive scopes": "Sensitive scopes need a review.",
   "to publish": "A review is needed to publish.",
+  "platform profile": "A completed platform profile is needed first.",
   unclear: "The approval process couldn't be confirmed.",
 };
 
@@ -37,17 +38,19 @@ function listingName(review: string): string | null {
  * One plain sentence for the top of a guide, built only from what it already
  * stores: "Self-serve in about 15 minutes. No review needed unless you list on the Marketplace."
  */
-export function verdictLine({ diff, diffConfirmed, setup, wait, review }: VerdictFields): string {
+export function verdictLine({ diff, diffConfirmed, setup, wait, review, checklist }: VerdictFields): string {
   const time = aboutTime(setup);
   const opening = diff === "easy" ? `Self-serve in ${time}.` : `Takes ${time} to set up.`;
 
-  const known = statedWait(wait);
+  // A wait is only stated when a cited page publishes a timeline. Otherwise the tile alone shows it.
+  const timelineFound = !checklist || checklist.some((item) => item.key === "review_timeline" && item.status === "found");
+  const known = timelineFound ? statedWait(wait) : null;
   const listing = listingName(review);
   const reviewKey = review.trim().toLowerCase();
 
   let approval: string;
   if (reviewKey === "no") approval = "No review needed.";
-  else if (listing) approval = `No review needed unless you list on ${listing}.`;
+  else if (listing) approval = diff === "hard" ? `A review applies if you list on ${listing}.` : `No review needed unless you list on ${listing}.`;
   else approval = REVIEW_SENTENCE[reviewKey] ?? `Approval needed: ${review.trim().toLowerCase()}.`;
 
   // An optional listing's wait doesn't matter to an easy setup. On a hard guide the

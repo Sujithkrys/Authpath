@@ -28,10 +28,10 @@ export function Sidebar() {
       className="sticky top-0 flex h-screen flex-col border-r border-border bg-side max-md:z-5 max-md:h-auto max-md:flex-row max-md:items-center max-md:overflow-x-auto max-md:border-r-0 max-md:border-b"
     >
       <div className="flex h-14 flex-none items-center justify-between border-b border-border px-[18px] max-md:h-auto max-md:flex-none max-md:gap-2.5 max-md:border-b-0 max-md:px-3.5 max-md:py-3">
-        <div className="flex items-center gap-2.5">
+        <Link href="/" aria-label="Authpath, back to the library" className="flex items-center gap-2.5 rounded-md">
           <BrandMark size={28} />
           <span className="text-[17px] font-semibold tracking-[-.02em] max-md:hidden">Authpath</span>
-        </div>
+        </Link>
       </div>
 
       <nav className="flex flex-col gap-1 px-2 py-3.5 max-md:flex-none max-md:flex-row max-md:p-2">

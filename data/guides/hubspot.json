@@ -12,34 +12,137 @@
   "site": "developers.hubspot.com",
   "steps": [
     {
-      "t": "Create a developer account",
-      "d": "Separate from your regular HubSpot login.",
+      "t": "Create the app project",
+      "d": "Install the HubSpot CLI, run <code>hs project create</code> and choose App. Pick the distribution and OAuth when it asks.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app",
+      "link": {
+        "label": "Open HubSpot's setup guide",
+        "url": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app"
+      }
     },
     {
-      "t": "Create a public app",
-      "d": "Set redirect URL and required scopes.",
+      "t": "Add redirect URLs and scopes",
+      "d": "In <code>app-hsmeta.json</code>, add your redirect URLs and list the scopes under <code>requiredScopes</code>.",
       "o": "agent",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app"
+    },
+    {
+      "t": "Upload the project",
+      "d": "Run <code>hs project upload</code> to send it to your HubSpot account.",
+      "o": "you",
+      "e": "docs",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app"
+    },
+    {
+      "t": "Copy your client credentials",
+      "d": "On the project details page, open the app's Auth tab and copy the Client ID and Client secret into your OAuth server.",
+      "o": "you",
+      "e": "docs",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app"
+    },
+    {
+      "t": "Test in a developer test account",
+      "d": "Install the app in a developer test account first. Installers see an unverified-app warning until it's listed.",
+      "o": "you",
+      "e": "docs",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app"
     }
   ],
   "blockers": [
     {
-      "b": "Install minimums",
-      "s": "Marketplace listing has install-count requirements."
+      "b": "Install minimum for the Marketplace",
+      "s": "A Marketplace listing needs at least three active, unique installs.",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/list-apps/listing-your-app/app-marketplace-listing-requirements"
+    },
+    {
+      "b": "Unverified until listed",
+      "s": "Until a listing is approved, installers must authorize installing an unverified app.",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app"
     }
   ],
   "agent": [
-    "Choose scopes"
+    "Choose the scopes your app needs",
+    "Write the redirect URLs"
   ],
   "you": [
-    "Create the dev account"
+    "Run the CLI and upload the project",
+    "Copy the client credentials",
+    "Submit a Marketplace listing, if you want one"
   ],
   "sources": [
     [
-      "OAuth quickstart",
-      "developers.hubspot.com/docs/apps/legacy-apps/authentication/oauth-quickstart-guide"
+      "Create a new app using the CLI",
+      "developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app"
+    ],
+    [
+      "App Marketplace listing requirements",
+      "developers.hubspot.com/docs/apps/developer-platform/list-apps/listing-your-app/app-marketplace-listing-requirements"
     ]
+  ],
+  "diffReason": "Moderate: apps work without review, but installers must accept an unverified-app warning until HubSpot's team approves a Marketplace listing",
+  "checklist": [
+    {
+      "key": "register_url",
+      "status": "found",
+      "answer": "Run <code>hs project create</code> in the HubSpot CLI and choose App when it asks for the project contents.",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app"
+    },
+    {
+      "key": "app_types",
+      "status": "found",
+      "answer": "Choose whether to distribute on the HubSpot Marketplace or restrict installs to specific accounts. Use OAuth for many accounts, or a static token for one.",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app"
+    },
+    {
+      "key": "required_fields",
+      "status": "found",
+      "answer": "The <code>app-hsmeta.json</code> file sets the app's <code>uid</code>, <code>name</code>, <code>description</code>, <code>distribution</code>, <code>auth</code> and support details.",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app"
+    },
+    {
+      "key": "redirect_uris",
+      "status": "found",
+      "answer": "Add one or more valid redirect URLs to the <code>app-hsmeta.json</code> file. HubSpot's example uses a localhost URL for development.",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app"
+    },
+    {
+      "key": "credentials",
+      "status": "found",
+      "answer": "Open your project's details page, click the Auth tab and copy the Client ID and Client secret from Client credentials.",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app"
+    },
+    {
+      "key": "scopes",
+      "status": "found",
+      "answer": "List scopes under <code>requiredScopes</code>, and optionally under <code>optionalScopes</code> and <code>conditionallyRequiredScopes</code>.",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app"
+    },
+    {
+      "key": "review",
+      "status": "found",
+      "answer": "Marketplace listing submissions are reviewed manually by the HubSpot Ecosystem Quality team and rejected if they don't meet the criteria.",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/list-apps/listing-your-app/app-marketplace-listing-requirements"
+    },
+    {
+      "key": "review_timeline",
+      "status": "found",
+      "answer": "“Once you submit your listing, the HubSpot Ecosystem Quality team will complete an initial review within 10 business days.”",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/list-apps/listing-your-app/app-marketplace-listing-requirements"
+    },
+    {
+      "key": "test_limits",
+      "status": "found",
+      "answer": "You can test in a developer test account. Until the app is verified, anyone installing it must tick a box authorizing an unverified app.",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app"
+    },
+    {
+      "key": "rejection_reasons",
+      "status": "found",
+      "answer": "Listings are rejected if they don't meet the criteria, which include using OAuth as the only authorization method and requesting only the scopes your app needs.",
+      "source": "https://developers.hubspot.com/docs/apps/developer-platform/list-apps/listing-your-app/app-marketplace-listing-requirements"
+    }
   ]
 }

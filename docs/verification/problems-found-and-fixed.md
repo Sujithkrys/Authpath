@@ -71,3 +71,22 @@ Each problem came from a real run or a test. They're grouped by what went wrong.
 | Salesforce | Its only source went to the help home page | An External Client Apps article and the security review guide |
 | HubSpot, Notion, Zoom | Sources went through redirects | Their final addresses |
 | Stripe | Nothing | Unchanged |
+
+## Library guides now show the same detail as generated ones
+
+Library guides used to have two to four plain steps and no research checklist. Each now has the ten-item "What you'll need" checklist, a source page and where possible a console link on every step, and a one-line reason for its rating.
+
+Every sentence was checked by a script that fetches the cited official page and confirms the wording is on it. The check found five wrong citations in the first draft, all fixed: a GitHub secret-button label no GitHub page contains, two Google claims that sat on a different page, a Slack "From scratch" label (Slack's docs say "Blank app"), and a "full Gmail" example no cited page mentions.
+
+| Guide | Answers found | Changed because the docs say otherwise |
+|---|---|---|
+| GitHub | 8 of 10 | Review label is now "Listing only". The old "shown once" and "Generate a new client secret" wording is gone. |
+| Slack | 10 of 10 | Step 1 now says "Blank app". |
+| Google | 10 of 10 | Rating reason now states only what the cited pages show. |
+| Salesforce | 8 of 10 | Steps rewritten from the developer docs. New connected apps can no longer be created. Review label is now "AgentExchange only". |
+| Stripe | 7 of 10, 1 uncertain | Steps rewritten. The old "platform profile" step is now an uncertain review answer, because Stripe only mentions it for accounts created in the Dashboard. |
+| Notion | 9 of 10 | The unsupported "needs a website and privacy policy" claim is removed. Review label is now "Listing only". |
+| HubSpot | 10 of 10 | Steps follow HubSpot's current developer platform, because its docs now call the older flow "legacy". |
+| Zoom | 9 of 10 | Steps rewritten from the create-an-app and distribution pages. |
+
+Left as they were because no page confirms or contradicts them: the "Days" wait on Stripe, "Days to weeks" on Zoom and "Weeks" on Salesforce. The verdict line no longer repeats any wait that has no published timeline behind it.

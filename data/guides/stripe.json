@@ -12,22 +12,43 @@
   "site": "dashboard.stripe.com",
   "steps": [
     {
-      "t": "Complete platform profile",
-      "d": "Connect → settings → describe your platform.",
+      "t": "Turn on OAuth",
+      "d": "In your Connect settings, enable onboarding accounts with OAuth in the OAuth settings.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://docs.stripe.com/connect/oauth-standard-accounts",
+      "link": {
+        "label": "Open Connect settings",
+        "url": "https://dashboard.stripe.com/settings/connect"
+      }
     },
     {
-      "t": "Get your client ID",
-      "d": "Shown in Connect settings once the profile is done.",
+      "t": "Copy your client ID",
+      "d": "Copy the <code>client_id</code> Stripe generates for your platform. Live and test mode have different ones.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://docs.stripe.com/connect/oauth-standard-accounts"
+    },
+    {
+      "t": "Add your redirect URLs",
+      "d": "List every redirect URL in your platform settings. Stripe uses the first one if you don't send <code>redirect_uri</code>.",
+      "o": "agent",
+      "e": "docs",
+      "source": "https://docs.stripe.com/connect/oauth-standard-accounts"
+    },
+    {
+      "t": "Link users to Stripe",
+      "d": "Send users to <code>connect.stripe.com/oauth/authorize</code> with <code>response_type=code</code>, your <code>client_id</code> and <code>read_write</code> scope.",
+      "o": "you",
+      "e": "docs",
+      "source": "https://docs.stripe.com/connect/oauth-standard-accounts"
     }
   ],
   "blockers": [
     {
-      "b": "OAuth vs account links",
-      "s": "Stripe steers new platforms to Account Links over OAuth; confirm which fits."
+      "b": "OAuth isn't recommended for new platforms",
+      "s": "Stripe recommends Connect Onboarding for Standard accounts instead of OAuth.",
+      "source": "https://docs.stripe.com/connect/oauth-standard-accounts"
     }
   ],
   "agent": [
@@ -38,8 +59,77 @@
   ],
   "sources": [
     [
-      "Connect OAuth",
-      "docs.stripe.com/connect/oauth-reference"
+      "Using OAuth with Standard accounts",
+      "docs.stripe.com/connect/oauth-standard-accounts"
+    ],
+    [
+      "Manage individual accounts",
+      "docs.stripe.com/connect/dashboard/managing-individual-accounts"
+    ],
+    [
+      "Testing Stripe Connect",
+      "docs.stripe.com/connect/testing"
     ]
+  ],
+  "diffReason": "Moderate: Stripe needs a completed platform profile before you can create connected accounts, and recommends Connect Onboarding over OAuth for new platforms",
+  "checklist": [
+    {
+      "key": "register_url",
+      "status": "found",
+      "answer": "In your Connect settings, enable onboarding accounts with OAuth in the OAuth settings, then copy your <code>client_id</code>.",
+      "source": "https://docs.stripe.com/connect/oauth-standard-accounts"
+    },
+    {
+      "key": "app_types",
+      "status": "found",
+      "answer": "OAuth connects Standard accounts. Stripe says OAuth isn't recommended for new Connect platforms and recommends Connect Onboarding instead.",
+      "source": "https://docs.stripe.com/connect/oauth-standard-accounts"
+    },
+    {
+      "key": "required_fields",
+      "status": "found",
+      "answer": "The authorize link needs <code>response_type=code</code>, your <code>client_id</code> and a <code>scope</code> of <code>read_write</code>.",
+      "source": "https://docs.stripe.com/connect/oauth-standard-accounts"
+    },
+    {
+      "key": "redirect_uris",
+      "status": "found",
+      "answer": "List every redirect URL in your platform settings. If you don't send <code>redirect_uri</code>, Stripe uses the first one you configured.",
+      "source": "https://docs.stripe.com/connect/oauth-standard-accounts"
+    },
+    {
+      "key": "credentials",
+      "status": "found",
+      "answer": "Stripe generates your <code>client_id</code>. The token request uses your live or test secret API key.",
+      "source": "https://docs.stripe.com/connect/oauth-standard-accounts"
+    },
+    {
+      "key": "scopes",
+      "status": "found",
+      "answer": "<code>read_write</code> lets your platform act for the connected account, and <code>read_only</code> is the default.",
+      "source": "https://docs.stripe.com/connect/oauth-standard-accounts"
+    },
+    {
+      "key": "review",
+      "status": "uncertain",
+      "answer": "No review is described for OAuth. The platform needs a completed platform profile before you can create connected accounts in the Dashboard.",
+      "source": "https://docs.stripe.com/connect/dashboard/managing-individual-accounts"
+    },
+    {
+      "key": "review_timeline",
+      "status": "not_found",
+      "answer": ""
+    },
+    {
+      "key": "test_limits",
+      "status": "found",
+      "answer": "A test <code>client_id</code> lets you use a non-HTTPS or localhost redirect URI while you test.",
+      "source": "https://docs.stripe.com/connect/testing"
+    },
+    {
+      "key": "rejection_reasons",
+      "status": "not_found",
+      "answer": ""
+    }
   ]
 }

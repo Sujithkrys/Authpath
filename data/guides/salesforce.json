@@ -7,50 +7,145 @@
   "tested": false,
   "setup": "~45 min",
   "wait": "Weeks",
-  "review": "AppExchange only",
+  "review": "AgentExchange only",
   "waitKey": "weeks",
   "site": "developer.salesforce.com",
   "steps": [
     {
-      "t": "Get a Developer Edition org",
-      "d": "Free signup at developer.salesforce.com.",
+      "t": "Open External Client App Manager",
+      "d": "In Setup, search for App Manager and click New External Client App.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://developer.salesforce.com/docs/platform/sfdx-dev/guide/sfdx-dev-auth-eca.html",
+      "link": {
+        "label": "Open Salesforce login",
+        "url": "https://login.salesforce.com/"
+      }
     },
     {
-      "t": "Create an External Client App",
-      "d": "Setup → App Manager. Older orgs call this a Connected App.",
+      "t": "Fill in the basics",
+      "d": "Enter the app name, API name and contact email, and choose Local or Packaged as the distribution state.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://developer.salesforce.com/docs/platform/mobile-sdk/guide/eca-create.html"
     },
     {
-      "t": "AppExchange security review",
-      "d": "Only to list publicly. Timelines vary widely.",
+      "t": "Enable OAuth and add your callback URL",
+      "d": "Under API (Enable OAuth Settings), tick Enable OAuth and enter your Callback URL.",
       "o": "you",
-      "e": "uncertain"
+      "e": "docs",
+      "source": "https://developer.salesforce.com/docs/platform/sfdx-dev/guide/sfdx-dev-auth-eca.html"
+    },
+    {
+      "t": "Choose OAuth scopes",
+      "d": "Select only the scopes you need, such as <code>api</code> and <code>refresh_token</code>.",
+      "o": "agent",
+      "e": "docs",
+      "source": "https://developer.salesforce.com/docs/platform/sfdx-dev/guide/sfdx-dev-auth-eca.html"
+    },
+    {
+      "t": "Copy the consumer key and secret",
+      "d": "On the Settings tab, open OAuth Settings, click Consumer Key and Secret and verify your identity.",
+      "o": "you",
+      "e": "docs",
+      "source": "https://developer.salesforce.com/docs/platform/sfdx-dev/guide/sfdx-dev-auth-eca.html"
     }
   ],
   "blockers": [
     {
-      "b": "Naming changed",
-      "s": "Docs mix \"Connected App\" and \"External Client App\", so check which your org uses."
+      "b": "Connected apps are retired",
+      "s": "New connected apps can no longer be created, so use an external client app.",
+      "source": "https://developer.salesforce.com/docs/platform/mobile-sdk/guide/eca-create.html"
+    },
+    {
+      "b": "Security review to distribute",
+      "s": "Managed packages and API solutions must pass Salesforce's security review to be distributed on AgentExchange.",
+      "source": "https://developer.salesforce.com/docs/platform/isvforce/guide/security-review-guidelines.html"
     }
   ],
   "agent": [
-    "Fill callback URL and scopes"
+    "Choose the OAuth scopes you need",
+    "Write the callback URL"
   ],
   "you": [
-    "Create the org and app",
-    "Submit for security review"
+    "Create the external client app in Setup",
+    "Copy the consumer key and secret",
+    "Submit for the security review, if you list"
   ],
   "sources": [
     [
-      "External Client Apps",
-      "help.salesforce.com/s/articleView?id=xcloud.external_client_apps.htm&type=5"
+      "Create an external client app in your org",
+      "developer.salesforce.com/docs/platform/sfdx-dev/guide/sfdx-dev-auth-eca.html"
     ],
     [
-      "AppExchange security review",
+      "Create an external client app",
+      "developer.salesforce.com/docs/platform/mobile-sdk/guide/eca-create.html"
+    ],
+    [
+      "Pass the security review",
       "developer.salesforce.com/docs/platform/isvforce/guide/security-review-guidelines.html"
     ]
+  ],
+  "diffReason": "Hard: the docs say distributing on AgentExchange needs a security review, and sharing beyond your own org means packaging the app (the pages read only partly confirm this)",
+  "diffConfirmed": false,
+  "checklist": [
+    {
+      "key": "register_url",
+      "status": "found",
+      "answer": "In Setup, search for App Manager, click <code>New External Client App</code> and fill in the basic information.",
+      "source": "https://developer.salesforce.com/docs/platform/sfdx-dev/guide/sfdx-dev-auth-eca.html"
+    },
+    {
+      "key": "app_types",
+      "status": "found",
+      "answer": "Salesforce now uses external client apps. New connected apps can no longer be created.",
+      "source": "https://developer.salesforce.com/docs/platform/mobile-sdk/guide/eca-create.html"
+    },
+    {
+      "key": "required_fields",
+      "status": "found",
+      "answer": "The form asks for a name, an API name and a contact email, and you choose a distribution state.",
+      "source": "https://developer.salesforce.com/docs/platform/mobile-sdk/guide/eca-create.html"
+    },
+    {
+      "key": "redirect_uris",
+      "status": "found",
+      "answer": "Under API (Enable OAuth Settings), tick Enable OAuth and enter your Callback URL.",
+      "source": "https://developer.salesforce.com/docs/platform/sfdx-dev/guide/sfdx-dev-auth-eca.html"
+    },
+    {
+      "key": "credentials",
+      "status": "found",
+      "answer": "On the Settings tab, open OAuth Settings and click Consumer Key and Secret. You verify your identity with a code sent by email, then copy the consumer key and, if it's required, the consumer secret.",
+      "source": "https://developer.salesforce.com/docs/platform/sfdx-dev/guide/sfdx-dev-auth-eca.html"
+    },
+    {
+      "key": "scopes",
+      "status": "found",
+      "answer": "Pick scopes in the OAuth Scopes section, such as <code>api</code>, <code>web</code> and <code>refresh_token</code>.",
+      "source": "https://developer.salesforce.com/docs/platform/sfdx-dev/guide/sfdx-dev-auth-eca.html"
+    },
+    {
+      "key": "review",
+      "status": "found",
+      "answer": "To distribute managed packages or API solutions on AgentExchange, they must pass Salesforce's security review.",
+      "source": "https://developer.salesforce.com/docs/platform/isvforce/guide/security-review-guidelines.html"
+    },
+    {
+      "key": "review_timeline",
+      "status": "not_found",
+      "answer": ""
+    },
+    {
+      "key": "test_limits",
+      "status": "found",
+      "answer": "Choose Local to develop an app for your own org, or Packaged to package and distribute it.",
+      "source": "https://developer.salesforce.com/docs/platform/mobile-sdk/guide/eca-create.html"
+    },
+    {
+      "key": "rejection_reasons",
+      "status": "not_found",
+      "answer": ""
+    }
   ]
 }

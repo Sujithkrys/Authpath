@@ -7,34 +7,132 @@
   "tested": false,
   "setup": "~15 min",
   "wait": "None",
-  "review": "No",
+  "review": "Listing only",
   "waitKey": "none",
   "site": "notion.so/my-integrations",
   "steps": [
     {
-      "t": "Create a public integration",
-      "d": "notion.so/my-integrations → New integration → Public.",
+      "t": "Create a public connection",
+      "d": "Open the Developer portal and create a new public connection.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://developers.notion.com/guides/get-started/authorization",
+      "link": {
+        "label": "Open the Notion Developer portal",
+        "url": "https://www.notion.so/my-integrations"
+      }
     },
     {
-      "t": "Add company details",
-      "d": "Public integrations need a website, privacy policy and redirect URI.",
+      "t": "Set the redirect URI and scope",
+      "d": "Enter your redirect URI under the OAuth configuration section and choose Any workspace or Selected workspaces only. You can't change the scope later.",
+      "o": "you",
+      "e": "docs",
+      "source": "https://developers.notion.com/guides/get-started/authorization"
+    },
+    {
+      "t": "Copy your client ID and secret",
+      "d": "Find them in the connection's Configuration tab, and keep them out of source code.",
+      "o": "you",
+      "e": "docs",
+      "source": "https://developers.notion.com/guides/get-started/authorization"
+    },
+    {
+      "t": "Send users to the authorization URL",
+      "d": "Link users to the authorization URL from the Developer portal. Notion then redirects them to your redirect URI with a code.",
       "o": "agent",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://developers.notion.com/guides/get-started/authorization"
     }
   ],
-  "blockers": [],
+  "blockers": [
+    {
+      "b": "Authorization URL waits for submission",
+      "s": "Notion's docs say the Authorization URL field fills in after a public connection is submitted for review.",
+      "source": "https://developers.notion.com/guides/get-started/authorization"
+    }
+  ],
   "agent": [
-    "Draft privacy and terms links checklist"
+    "Draft your redirect URI and listing copy"
   ],
   "you": [
-    "Create the integration"
+    "Create the public connection in the Developer portal",
+    "Copy the client ID and secret",
+    "Submit a Marketplace listing, if you want one"
   ],
   "sources": [
     [
       "Authorization",
       "developers.notion.com/guides/get-started/authorization"
+    ],
+    [
+      "Notion connections",
+      "developers.notion.com/guides/get-started/overview"
+    ],
+    [
+      "List on the Marketplace",
+      "developers.notion.com/guides/get-started/marketplace-listing"
     ]
+  ],
+  "diffReason": "Easy: you can create and use a public connection without listing it, and only the optional Marketplace listing is reviewed",
+  "checklist": [
+    {
+      "key": "register_url",
+      "status": "found",
+      "answer": "Open the Developer portal and create a new public connection.",
+      "source": "https://developers.notion.com/guides/get-started/authorization"
+    },
+    {
+      "key": "app_types",
+      "status": "found",
+      "answer": "Notion has internal connections, personal access tokens and public connections. Only public connections use OAuth 2.0, so other people can install them.",
+      "source": "https://developers.notion.com/guides/get-started/authorization"
+    },
+    {
+      "key": "required_fields",
+      "status": "found",
+      "answer": "The form takes your connection details, your redirect URIs and an installation scope, either Any workspace or Selected workspaces only. The scope can't be changed after creation.",
+      "source": "https://developers.notion.com/guides/get-started/authorization"
+    },
+    {
+      "key": "redirect_uris",
+      "status": "found",
+      "answer": "The redirect URI is where users are sent after they authorize the connection. You enter it under the OAuth configuration section.",
+      "source": "https://developers.notion.com/guides/get-started/authorization"
+    },
+    {
+      "key": "credentials",
+      "status": "found",
+      "answer": "Find the connection's secrets in the Configuration tab of the Developer portal, and keep them out of source code.",
+      "source": "https://developers.notion.com/guides/get-started/authorization"
+    },
+    {
+      "key": "scopes",
+      "status": "found",
+      "answer": "Access is granted per page: users pick which workspace pages to share when they authorize the connection.",
+      "source": "https://developers.notion.com/guides/get-started/authorization"
+    },
+    {
+      "key": "review",
+      "status": "found",
+      "answer": "Public connections must go through a Notion security review before they're listed on the Marketplace. You can create and use one without listing it.",
+      "source": "https://developers.notion.com/guides/get-started/overview"
+    },
+    {
+      "key": "review_timeline",
+      "status": "found",
+      "answer": "“After submission, expect to hear back from our team within 5-10 business days via email.”",
+      "source": "https://developers.notion.com/guides/get-started/marketplace-listing"
+    },
+    {
+      "key": "test_limits",
+      "status": "not_found",
+      "answer": ""
+    },
+    {
+      "key": "rejection_reasons",
+      "status": "found",
+      "answer": "Listings are rejected for reasons that range from brand or trademark issues to quality concerns, or when the baseline criteria aren't met.",
+      "source": "https://developers.notion.com/guides/get-started/marketplace-listing"
+    }
   ]
 }

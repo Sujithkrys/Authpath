@@ -8,7 +8,7 @@
   "tested": false,
   "setup": "~10 min",
   "wait": "None",
-  "review": "No",
+  "review": "Listing only",
   "waitKey": "none",
   "site": "github.com/settings/developers",
   "steps": [
@@ -16,31 +16,40 @@
       "t": "Pick OAuth App or GitHub App",
       "d": "GitHub Apps get fine-grained permissions and GitHub generally prefers them; OAuth Apps act only on behalf of the user.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/differences-between-github-apps-and-oauth-apps"
     },
     {
       "t": "Register the app",
       "d": "Settings → Developer settings → OAuth Apps → New OAuth App. Enter the application name, homepage URL and callback URL.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+      "link": {
+        "label": "Register a new OAuth app",
+        "url": "https://github.com/settings/applications/new"
+      }
     },
     {
       "t": "Set the callback URL",
       "d": "Paste your redirect URI, e.g. <code>https://yourapp.com/api/auth/callback/github</code>. You can add up to 10.",
       "o": "agent",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
     },
     {
-      "t": "Generate a client secret",
-      "d": "On the app's settings page, click Generate a new client secret, then store it as an env var.",
+      "t": "Store your client secret",
+      "d": "Use the client ID and client secret GitHub gives your app, and store the secret securely, for example as an env var.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/best-practices-for-creating-an-oauth-app"
     }
   ],
   "blockers": [
     {
       "b": "Org access restrictions",
-      "s": "Organizations with OAuth app access restrictions must approve your app before it can reach their private data."
+      "s": "Organizations with OAuth app access restrictions must approve your app before it can reach their private data.",
+      "source": "https://docs.github.com/en/organizations/managing-oauth-access-to-your-organizations-data/about-oauth-app-access-restrictions"
     }
   ],
   "agent": [
@@ -50,21 +59,97 @@
   ],
   "you": [
     "Sign in and click Register",
-    "Generate and store the client secret",
+    "Store the client secret securely",
     "Ask org admins to approve, if restricted"
   ],
   "sources": [
-    [
-      "Creating an OAuth app",
-      "docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
-    ],
     [
       "Differences between GitHub Apps and OAuth apps",
       "docs.github.com/en/apps/oauth-apps/building-oauth-apps/differences-between-github-apps-and-oauth-apps"
     ],
     [
+      "Creating an OAuth app",
+      "docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
+    ],
+    [
+      "Best practices for creating an OAuth app",
+      "docs.github.com/en/apps/oauth-apps/building-oauth-apps/best-practices-for-creating-an-oauth-app"
+    ],
+    [
+      "Authorizing OAuth apps",
+      "docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps"
+    ],
+    [
+      "Scopes for OAuth apps",
+      "docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps"
+    ],
+    [
+      "Submitting your listing for publication",
+      "docs.github.com/en/apps/github-marketplace/listing-an-app-on-github-marketplace/submitting-your-listing-for-publication"
+    ],
+    [
       "About OAuth app access restrictions",
       "docs.github.com/en/organizations/managing-oauth-access-to-your-organizations-data/about-oauth-app-access-restrictions"
     ]
+  ],
+  "checklist": [
+    {
+      "key": "register_url",
+      "status": "found",
+      "answer": "Go to Settings, then Developer settings, then OAuth Apps, and click <code>New OAuth App</code>. You can register it under your personal account or an organization.",
+      "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
+    },
+    {
+      "key": "app_types",
+      "status": "found",
+      "answer": "OAuth apps act only on behalf of a user. GitHub Apps can act as a user or on their own, use finer permissions, and are generally preferred by GitHub.",
+      "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/differences-between-github-apps-and-oauth-apps"
+    },
+    {
+      "key": "required_fields",
+      "status": "found",
+      "answer": "The form asks for <code>Application name</code>, <code>Homepage URL</code> and <code>Authorization callback URL</code>. A description is optional, and you can add up to 10 callback URLs.",
+      "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
+    },
+    {
+      "key": "redirect_uris",
+      "status": "found",
+      "answer": "With wildcard matching off, the redirect URL must match a callback URL exactly. With it on, the host and port must match and the path can be a subdirectory.",
+      "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps"
+    },
+    {
+      "key": "credentials",
+      "status": "found",
+      "answer": "GitHub gives you a client ID and a client secret. The secret is needed to get access tokens, except with the device flow. PKCE is supported, with the <code>S256</code> method only.",
+      "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps"
+    },
+    {
+      "key": "scopes",
+      "status": "found",
+      "answer": "Each scope grants a named level of access. <code>repo</code> grants full access to repositories, and with no scope a token only gets read-only access to public information.",
+      "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps"
+    },
+    {
+      "key": "review",
+      "status": "found",
+      "answer": "A review only comes up if you list the app on GitHub Marketplace, where you can request a review by an onboarding expert.",
+      "source": "https://docs.github.com/en/apps/github-marketplace/listing-an-app-on-github-marketplace/submitting-your-listing-for-publication"
+    },
+    {
+      "key": "review_timeline",
+      "status": "not_found",
+      "answer": ""
+    },
+    {
+      "key": "test_limits",
+      "status": "found",
+      "answer": "A user or organization can own up to 100 OAuth apps.",
+      "source": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
+    },
+    {
+      "key": "rejection_reasons",
+      "status": "not_found",
+      "answer": ""
+    }
   ]
 }

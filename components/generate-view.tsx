@@ -11,7 +11,7 @@ import { STAGES } from "@/lib/agent/events";
 import { formatGeneratedAt } from "@/lib/format";
 
 /** Already generated on the live site, so a demo click opens instantly. */
-const EXAMPLES = ["Linear", "Calendly", "Composio"];
+const EXAMPLES = ["linear.app", "calendly.com", "composio.dev"];
 
 const HIGHLIGHTS = [
   { icon: FileCheck2, text: "Official docs only" },

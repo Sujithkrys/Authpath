@@ -14,37 +14,47 @@
   "steps": [
     {
       "t": "Create the app",
-      "d": "api.slack.com/apps → Create New App → From scratch. Give it a name and pick a development workspace.",
+      "d": "On the Slack apps page, choose Create an app, then Blank app. Give it a name and pick a development workspace.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://docs.slack.dev/app-management/quickstart-app-settings",
+      "link": {
+        "label": "Open Slack app settings",
+        "url": "https://api.slack.com/apps"
+      }
     },
     {
       "t": "Add redirect URL and scopes",
-      "d": "OAuth & Permissions → add an HTTPS redirect URL with no <code>#</code>, and only the bot scopes you use. PKCE is optional.",
+      "d": "Add an HTTPS redirect URL with no <code>#</code>, and only the bot scopes you use. PKCE is optional.",
       "o": "agent",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://docs.slack.dev/authentication/installing-with-oauth"
     },
     {
       "t": "Turn on public distribution",
-      "d": "Manage Distribution → complete the checklist → Activate Public Distribution. Other workspaces can then install it without a review.",
+      "d": "In Manage Distribution, complete the checklist and click Activate Public Distribution. Other workspaces can then install it without a review.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://docs.slack.dev/app-management/distribution"
     },
     {
       "t": "Submit to the Marketplace (optional)",
       "d": "Only needed to be listed. The app must be installed on 10 or more active workspaces first.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide"
     }
   ],
   "blockers": [
     {
       "b": "Rate limits for unlisted apps",
-      "s": "Since May 29, 2025, new apps outside the Marketplace are limited to 1 request a minute and 15 objects on conversations.history and conversations.replies."
+      "s": "Since May 29, 2025, new apps outside the Marketplace are limited to 1 request a minute and 15 objects on conversations.history and conversations.replies.",
+      "source": "https://docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps"
     },
     {
       "b": "Marketplace review takes weeks",
-      "s": "Slack's published estimate: up to 10 business days for the preliminary review, then up to 10 weeks for the functional review of a new submission."
+      "s": "Slack's published estimate: up to 10 business days for the preliminary review, then up to 10 weeks for the functional review of a new submission.",
+      "source": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide"
     }
   ],
   "agent": [
@@ -59,24 +69,90 @@
   ],
   "sources": [
     [
-      "Installing with OAuth",
-      "docs.slack.dev/authentication/installing-with-oauth"
+      "Quickstart: app settings",
+      "docs.slack.dev/app-management/quickstart-app-settings"
     ],
     [
-      "Using PKCE",
-      "docs.slack.dev/authentication/using-pkce"
+      "Installing with OAuth",
+      "docs.slack.dev/authentication/installing-with-oauth"
     ],
     [
       "App lifecycle and distribution",
       "docs.slack.dev/app-management/distribution"
     ],
     [
-      "Rate limit changes for non-Marketplace apps",
-      "docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps"
-    ],
-    [
       "Slack Marketplace review process",
       "docs.slack.dev/slack-marketplace/slack-marketplace-review-guide"
+    ],
+    [
+      "Using PKCE",
+      "docs.slack.dev/authentication/using-pkce"
+    ],
+    [
+      "Rate limit changes for non-Marketplace apps",
+      "docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps"
     ]
+  ],
+  "checklist": [
+    {
+      "key": "register_url",
+      "status": "found",
+      "answer": "Create the app from the Slack apps page by choosing Create an app, then pick Blank app.",
+      "source": "https://docs.slack.dev/app-management/quickstart-app-settings"
+    },
+    {
+      "key": "app_types",
+      "status": "found",
+      "answer": "A Slack app lives in one workspace unless you distribute it. You can distribute it unlisted, or list it in the Slack Marketplace after review.",
+      "source": "https://docs.slack.dev/app-management/distribution"
+    },
+    {
+      "key": "required_fields",
+      "status": "found",
+      "answer": "Creating an app needs an <code>App Name</code> and a development workspace.",
+      "source": "https://docs.slack.dev/app-management/quickstart-app-settings"
+    },
+    {
+      "key": "redirect_uris",
+      "status": "found",
+      "answer": "Redirect URLs must use HTTPS and can't contain an anchor (<code>#</code>). Your <code>redirect_uri</code> must match a configured Redirect URL or be a subdirectory of one.",
+      "source": "https://docs.slack.dev/authentication/installing-with-oauth"
+    },
+    {
+      "key": "credentials",
+      "status": "found",
+      "answer": "PKCE is optional. Turning it on marks your app as a public client, and that can't be undone.",
+      "source": "https://docs.slack.dev/authentication/using-pkce"
+    },
+    {
+      "key": "scopes",
+      "status": "found",
+      "answer": "Add bot scopes with <code>scope=</code> and user scopes with <code>user_scope=</code>, comma separated.",
+      "source": "https://docs.slack.dev/authentication/installing-with-oauth"
+    },
+    {
+      "key": "review",
+      "status": "found",
+      "answer": "Unlisted public distribution needs no Slack review. Apps listed in the Slack Marketplace are reviewed against Slack's requirements and guidelines.",
+      "source": "https://docs.slack.dev/app-management/distribution"
+    },
+    {
+      "key": "review_timeline",
+      "status": "found",
+      "answer": "“Currently, the preliminary part of the review takes up to 10 business days to receive feedback, while the functional review takes up to 10 weeks for new submissions and 6 weeks for published apps resubmitting changes.”",
+      "source": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide"
+    },
+    {
+      "key": "test_limits",
+      "status": "found",
+      "answer": "Since May 29, 2025, new apps outside the Marketplace are limited to 1 request per minute and 15 objects per request on <code>conversations.history</code> and <code>conversations.replies</code>.",
+      "source": "https://docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps"
+    },
+    {
+      "key": "rejection_reasons",
+      "status": "found",
+      "answer": "Slack returns apps that arrive with bugs, poor user experience or repeated quality problems, and asks you to fix them before you resubmit.",
+      "source": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide"
+    }
   ]
 }

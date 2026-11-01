@@ -4,7 +4,7 @@
   "init": "G",
   "color": "#4285F4",
   "diff": "hard",
-  "diffReason": "Hard: sensitive and restricted scopes need Google verification before more than 100 users can connect, and restricted scopes also need an annual security assessment",
+  "diffReason": "Hard: sensitive and restricted scopes must complete Google's verification, and restricted scopes may also need a security assessment",
   "tested": false,
   "setup": "~30 min",
   "wait": "Up to 6 weeks",
@@ -14,41 +14,64 @@
   "steps": [
     {
       "t": "Create a Cloud project",
-      "d": "console.cloud.google.com → new project.",
+      "d": "In the Google Cloud console, go to IAM & Admin → Create a project and give it a name.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://developers.google.com/workspace/guides/create-project",
+      "link": {
+        "label": "Open the Google Cloud console",
+        "url": "https://console.cloud.google.com/projectcreate"
+      }
     },
     {
-      "t": "Configure branding and audience",
-      "d": "Add the app name, support email, home page, privacy policy and authorized domains, and choose External or Internal users.",
+      "t": "Configure branding",
+      "d": "Add the app name, support email, home page, privacy policy and authorized domains.",
       "o": "agent",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://support.google.com/cloud/answer/15549049?hl=en",
+      "link": {
+        "label": "Open Branding",
+        "url": "https://console.cloud.google.com/auth/branding"
+      }
     },
     {
       "t": "Create the OAuth client",
       "d": "Google Auth Platform → Clients → Create client. Add your HTTPS redirect URIs, then save the client secret: it's shown only once.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://support.google.com/cloud/answer/15549257?hl=en",
+      "link": {
+        "label": "Open Clients",
+        "url": "https://console.cloud.google.com/auth/clients"
+      }
     },
     {
       "t": "Submit for verification",
-      "d": "Needed for sensitive or restricted scopes, after you publish to production. Restricted scopes such as full Gmail also need a security assessment.",
+      "d": "Needed for sensitive or restricted scopes. Restricted scopes may also need a security assessment.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://support.google.com/cloud/answer/13463073?hl=en",
+      "link": {
+        "label": "Open Verification Center",
+        "url": "https://console.cloud.google.com/auth/verification"
+      }
     }
   ],
   "blockers": [
     {
-      "b": "100-user cap until verified",
-      "s": "In Testing, only up to 100 listed test users can sign in, and their authorizations expire after seven days."
+      "b": "100-user cap in Testing",
+      "s": "In Testing, only up to 100 listed test users can sign in, and their authorizations expire after seven days.",
+      "source": "https://support.google.com/cloud/answer/15549945?hl=en"
     },
     {
       "b": "Restricted scopes",
-      "s": "Restricted scopes need an annual third-party security assessment. Google estimates restricted scope verification at 6 weeks."
+      "s": "Restricted scopes need additional verification and potentially a security assessment.",
+      "source": "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification"
     },
     {
       "b": "Domain verification",
-      "s": "Authorized domains must be verified in Search Console."
+      "s": "Authorized domains must be verified in Google Search Console.",
+      "source": "https://support.google.com/cloud/answer/15549049?hl=en"
     }
   ],
   "agent": [
@@ -61,12 +84,16 @@
   ],
   "sources": [
     [
-      "Manage OAuth clients",
-      "support.google.com/cloud/answer/15549257?hl=en"
+      "Create a Google Cloud project",
+      "developers.google.com/workspace/guides/create-project"
     ],
     [
-      "Manage app audience",
-      "support.google.com/cloud/answer/15549945?hl=en"
+      "Manage app branding",
+      "support.google.com/cloud/answer/15549049?hl=en"
+    ],
+    [
+      "Manage OAuth clients",
+      "support.google.com/cloud/answer/15549257?hl=en"
     ],
     [
       "OAuth app verification",
@@ -77,8 +104,78 @@
       "support.google.com/cloud/answer/13463817?hl=en"
     ],
     [
+      "Manage app audience",
+      "support.google.com/cloud/answer/15549945?hl=en"
+    ],
+    [
+      "Verification requirements",
+      "support.google.com/cloud/answer/13464321?hl=en"
+    ],
+    [
       "Restricted scope verification",
       "developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification"
     ]
+  ],
+  "checklist": [
+    {
+      "key": "register_url",
+      "status": "found",
+      "answer": "In the Google Cloud console, open Google Auth Platform, go to Clients and click <code>Create client</code>. You first have to register the app under Branding.",
+      "source": "https://support.google.com/cloud/answer/15549257?hl=en"
+    },
+    {
+      "key": "app_types",
+      "status": "found",
+      "answer": "Client types are Web application, Android, iOS, Chrome Extension, TVs and Limited-input devices, and Desktop app.",
+      "source": "https://support.google.com/cloud/answer/15549257?hl=en"
+    },
+    {
+      "key": "required_fields",
+      "status": "found",
+      "answer": "Branding asks for an app name, a user support email, an app home page, privacy policy and terms of service links, authorized domains and developer contact information.",
+      "source": "https://support.google.com/cloud/answer/15549049?hl=en"
+    },
+    {
+      "key": "redirect_uris",
+      "status": "found",
+      "answer": "Redirect URIs must use HTTPS, except localhost. They can't contain wildcards or fragments.",
+      "source": "https://support.google.com/cloud/answer/15549257?hl=en"
+    },
+    {
+      "key": "credentials",
+      "status": "found",
+      "answer": "You get a client ID and a client secret. The secret is shown only once, when you create the client, so store it securely.",
+      "source": "https://support.google.com/cloud/answer/15549257?hl=en"
+    },
+    {
+      "key": "scopes",
+      "status": "found",
+      "answer": "The console marks each scope you add to the project as non-sensitive, sensitive or restricted.",
+      "source": "https://support.google.com/cloud/answer/13463073?hl=en"
+    },
+    {
+      "key": "review",
+      "status": "found",
+      "answer": "Apps that request sensitive or restricted scopes must complete Google's OAuth app verification. Apps that use only non-sensitive scopes don't have to.",
+      "source": "https://support.google.com/cloud/answer/13463073?hl=en"
+    },
+    {
+      "key": "review_timeline",
+      "status": "found",
+      "answer": "Google's estimates are 2-3 business days for brand verification, 10 business days for sensitive scopes and 6 weeks for restricted scopes. They aren't guaranteed.",
+      "source": "https://support.google.com/cloud/answer/13463817?hl=en"
+    },
+    {
+      "key": "test_limits",
+      "status": "found",
+      "answer": "In Testing status, only up to 100 listed test users can sign in, and their authorizations expire after seven days.",
+      "source": "https://support.google.com/cloud/answer/15549945?hl=en"
+    },
+    {
+      "key": "rejection_reasons",
+      "status": "found",
+      "answer": "A verification request can be rejected if your scope justification is judged insufficient, or if the app home page isn't hosted on a domain you've verified.",
+      "source": "https://support.google.com/cloud/answer/13464321?hl=en"
+    }
   ]
 }

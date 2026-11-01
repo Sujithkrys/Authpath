@@ -12,29 +12,140 @@
   "site": "marketplace.zoom.us",
   "steps": [
     {
-      "t": "Build a General App",
-      "d": "marketplace.zoom.us → Develop → Build App.",
+      "t": "Create a General app",
+      "d": "In the Zoom App Marketplace, click Developer, then Develop and Build an app. Select General app and click Create.",
       "o": "you",
-      "e": "docs"
+      "e": "docs",
+      "source": "https://developers.zoom.us/docs/integrations/create/",
+      "link": {
+        "label": "Open the Zoom App Marketplace",
+        "url": "https://marketplace.zoom.us/"
+      }
     },
     {
-      "t": "Submit for publishing",
-      "d": "Needed for other accounts to install.",
+      "t": "Set your OAuth redirect URL",
+      "d": "Enter your redirect URL and add it to the OAuth allow lists. Both are required.",
+      "o": "agent",
+      "e": "docs",
+      "source": "https://developers.zoom.us/docs/integrations/create/"
+    },
+    {
+      "t": "Add your scopes",
+      "d": "On the Scopes page, add only the scopes you need and explain why each is needed.",
+      "o": "agent",
+      "e": "docs",
+      "source": "https://developers.zoom.us/docs/integrations/create/"
+    },
+    {
+      "t": "Test in your own account",
+      "d": "On the Local Test page, select Add App Now and then Allow.",
       "o": "you",
-      "e": "uncertain"
+      "e": "docs",
+      "source": "https://developers.zoom.us/docs/integrations/create/"
+    },
+    {
+      "t": "Submit for review to publish",
+      "d": "Other accounts can install the app after it passes Zoom's App Submission Review.",
+      "o": "you",
+      "e": "docs",
+      "source": "https://developers.zoom.us/docs/distribute/"
     }
   ],
-  "blockers": [],
+  "blockers": [
+    {
+      "b": "Security review of scopes",
+      "s": "Adding a scope is a request to the Zoom Security Review team, which may reject scopes your app doesn't need.",
+      "source": "https://developers.zoom.us/docs/integrations/create/"
+    },
+    {
+      "b": "Marketplace review before publishing",
+      "s": "Public apps go through a Marketplace review and a security audit before external users can install them.",
+      "source": "https://developers.zoom.us/docs/distribute/"
+    }
+  ],
   "agent": [
-    "Fill redirect and scopes"
+    "Choose scopes and explain why each is needed",
+    "Write the redirect URL"
   ],
   "you": [
-    "Submit app for review"
+    "Create the General app in the Marketplace",
+    "Test it in your own account",
+    "Submit the app for review"
   ],
   "sources": [
     [
-      "OAuth for apps",
-      "developers.zoom.us/docs/integrations/oauth/"
+      "Create an OAuth app",
+      "developers.zoom.us/docs/integrations/create/"
+    ],
+    [
+      "App distribution",
+      "developers.zoom.us/docs/distribute/"
+    ],
+    [
+      "Common reasons for app rejection",
+      "developers.zoom.us/docs/distribute/app-submission/common-rejection-issues/"
     ]
+  ],
+  "diffReason": "Moderate: beta apps can only be shared inside your own Zoom account, and other accounts can install the app only after it passes Zoom's review",
+  "checklist": [
+    {
+      "key": "register_url",
+      "status": "found",
+      "answer": "In the Zoom App Marketplace, click Developer, then Develop and Build an app. Select General app and click Create.",
+      "source": "https://developers.zoom.us/docs/integrations/create/"
+    },
+    {
+      "key": "app_types",
+      "status": "found",
+      "answer": "Apps can be admin-managed, added by account admins, or user-managed, added by individual users. A separate server-to-server OAuth app type also exists.",
+      "source": "https://developers.zoom.us/docs/integrations/create/"
+    },
+    {
+      "key": "required_fields",
+      "status": "found",
+      "answer": "The OAuth redirect URL and the OAuth allow lists are required. Strict Mode URL and the subdomain check are optional.",
+      "source": "https://developers.zoom.us/docs/integrations/create/"
+    },
+    {
+      "key": "redirect_uris",
+      "status": "found",
+      "answer": "Strict Mode allows only redirects that exactly match your OAuth redirect URLs. The subdomain check allows only redirects that match the subdomain exactly.",
+      "source": "https://developers.zoom.us/docs/integrations/create/"
+    },
+    {
+      "key": "credentials",
+      "status": "found",
+      "answer": "Zoom generates a client ID and client secret for your app. Development and production credentials differ, so use the production ones when you publish.",
+      "source": "https://developers.zoom.us/docs/integrations/create/"
+    },
+    {
+      "key": "scopes",
+      "status": "found",
+      "answer": "Add scopes on the Scopes page and explain why each is needed. Adding one is a request to the Zoom Security Review team, which may reject a scope you don't need.",
+      "source": "https://developers.zoom.us/docs/integrations/create/"
+    },
+    {
+      "key": "review",
+      "status": "found",
+      "answer": "All public apps must pass Zoom's App Submission Review for security, functionality and information. Apps for users in your own account don't need the standard Marketplace review.",
+      "source": "https://developers.zoom.us/docs/distribute/"
+    },
+    {
+      "key": "review_timeline",
+      "status": "not_found",
+      "answer": ""
+    },
+    {
+      "key": "test_limits",
+      "status": "found",
+      "answer": "Beta apps are for testing. They can be shared only with members of your own Zoom account, and they can't be published to the Marketplace.",
+      "source": "https://developers.zoom.us/docs/integrations/create/"
+    },
+    {
+      "key": "rejection_reasons",
+      "status": "found",
+      "answer": "Apps can be rejected if the long description lacks detail about features and functionality. Even unlisted apps still need listing details such as images and descriptions.",
+      "source": "https://developers.zoom.us/docs/distribute/app-submission/common-rejection-issues/"
+    }
   ]
 }
