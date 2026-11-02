@@ -1,0 +1,56 @@
+{
+  "base": "https://authpath-sujith.vercel.app",
+  "capturedAt": "2026-11-02T07:54:45.026Z",
+  "pages": {
+    "calendly": {
+      "status": 200,
+      "h1": "Calendly",
+      "tag": "EASY",
+      "verdict": "Self-serve in about 20 minutes. No review needed.",
+      "stats": [
+        "DIFFICULTY Easy You register the app yourself, and the review pages read describe no review before real users connect",
+        "YOUR SETUP TIME ~20 min Rough estimate",
+        "APPROVAL WAIT None Provider-side",
+        "REVIEW NEEDED No Before launch"
+      ],
+      "steps": 4,
+      "sources": 11
+    },
+    "google": {
+      "status": 200,
+      "h1": "Google",
+      "tag": "HARD",
+      "verdict": "Takes 30 to 60 minutes to set up. You can test with up to 100 test users. Sensitive and restricted scopes need Google's review before you go public.",
+      "stats": [
+        "DIFFICULTY Hard You can test right away, but sensitive and restricted scopes must complete Google's verification before you go public, and restricted scopes may also need a security assessment",
+        "YOUR SETUP TIME 30-60 min Hands-on work",
+        "APPROVAL WAIT Up to 6 weeks Provider-side",
+        "REVIEW NEEDED Sensitive scopes Before launch"
+      ],
+      "steps": 6,
+      "sources": 17
+    },
+    "composio": {
+      "status": 200,
+      "h1": "Composio",
+      "tag": "Integration platform",
+      "verdict": null,
+      "stats": [],
+      "steps": 0,
+      "sources": 3
+    },
+    "postmark": {
+      "status": 200,
+      "h1": "Postmark",
+      "tag": "No OAuth for third parties",
+      "verdict": null,
+      "stats": [],
+      "steps": 0,
+      "sources": 3
+    }
+  },
+  "links": {
+    "/": 200,
+    "/generate": 200
+  }
+}

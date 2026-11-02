@@ -181,7 +181,9 @@ export const anthropicProvider: LlmProvider = {
     }
     if (read) tools.push(webFetchTool(read.maxUses, read.allowedDomains));
 
-    const pages = read?.urls.length ? `\n\nThese pages can be fetched:\n${read.urls.join("\n")}` : "";
+    const skip = new Set((read?.skip ?? []).map(urlKey));
+    const fetchable = (read?.urls ?? []).filter((url) => !skip.has(urlKey(url)));
+    const pages = fetchable.length ? `\n\nThese pages can be fetched:\n${fetchable.join("\n")}` : "";
     return plainErrors(() => runStage({ ...stage, user: `${stage.user}${pages}`, tools }));
   },
 

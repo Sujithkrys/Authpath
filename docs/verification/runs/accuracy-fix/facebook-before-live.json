@@ -1,0 +1,19 @@
+{
+  "source": "https://authpath-sujith.vercel.app/guides/facebook",
+  "capturedAt": "2026-11-02T08:42:09.106Z",
+  "tag": "HARD",
+  "checker": "Checked against cited pages: all 3 claims supported",
+  "verdict": "Takes about 15 minutes to set up. A review is required before real users can connect.",
+  "answeredItems": [
+    "Review or verification",
+    "Development or test-mode limits",
+    "Common rejection reasons"
+  ],
+  "notFoundLine": "Not found in official docs: where to register the app, app types, required registration fields, redirect uri rules, credentials, scopes, published review timeline.",
+  "steps": [
+    "1 Review app usage You Determine if your app will be used by anyone without an app or business role. Read App Review details Not confirmed",
+    "2 Check test user limits You Note that unapproved permissions only work for users with an app role. Read test limits Not confirmed",
+    "3 Prepare review submission You Ensure your app is accessible for testing to prevent rejection. Read rejection reasons Not confirmed"
+  ],
+  "agentPanel": "The agent can do Prepare review submission"
+}

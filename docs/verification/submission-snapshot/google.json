@@ -1,0 +1,51 @@
+{
+  "url": "https://authpath-sujith.vercel.app/guides/google",
+  "status": 200,
+  "capturedAt": "2026-11-02T07:54:38.758Z",
+  "h1": "Google",
+  "tag": "HARD",
+  "verdict": "Takes 30 to 60 minutes to set up. You can test with up to 100 test users. Sensitive and restricted scopes need Google's review before you go public.",
+  "stats": [
+    "DIFFICULTY Hard You can test right away, but sensitive and restricted scopes must complete Google's verification before you go public, and restricted scopes may also need a security assessment",
+    "YOUR SETUP TIME 30-60 min Hands-on work",
+    "APPROVAL WAIT Up to 6 weeks Provider-side",
+    "REVIEW NEEDED Sensitive scopes Before launch"
+  ],
+  "steps": [
+    "1 Create a Cloud project You In the Google Cloud console, go to IAM & Admin → Create a project and give it a name. Open the Google Cloud console From provider docs developers.google.com/workspace/guides/create-project",
+    "2 Enable the APIs you need You In APIs & Services → Library, open each API you want, such as the Gmail API or Sheets API, and click Enable. One project can hold many. Open the API Library From provider docs developers.google.com/workspace/guides/enable-apis",
+    "3 Set up the consent screen You Fill in Branding, choose a user type under Audience, and add yourself as a test user. Open Branding From provider docs developers.google.com/workspace/guides/configure-oauth-consent",
+    "4 Add your scopes Agent can do In Data Access, click Add or Remove Scopes and choose the minimum your app needs. Open Data Access From provider docs developers.google.com/workspace/guides/configure-oauth-consent",
+    "5 Create the OAuth client You Google Auth Platform → Clients → Create client. Add your HTTPS redirect URIs, then save the client secret: it's shown only once. Open Clients From provider docs support.google.com/cloud/answer/15549257?hl=en",
+    "6 Submit for verification (only to go public) You Needed for sensitive or restricted scopes. Restricted scopes may also need a security assessment. Open Verification Center From provider docs support.google.com/cloud/answer/13463073?hl=en"
+  ],
+  "sources": [
+    "https://console.cloud.google.com",
+    "https://support.google.com/cloud/answer/15549257?hl=en",
+    "https://support.google.com/cloud/answer/15549049?hl=en",
+    "https://developers.google.com/workspace/guides/configure-oauth-consent",
+    "https://support.google.com/cloud/answer/13463073?hl=en",
+    "https://support.google.com/cloud/answer/13463817?hl=en",
+    "https://support.google.com/cloud/answer/15549945?hl=en",
+    "https://support.google.com/cloud/answer/13464321?hl=en",
+    "https://console.cloud.google.com/projectcreate",
+    "https://developers.google.com/workspace/guides/create-project",
+    "https://console.cloud.google.com/apis/library",
+    "https://developers.google.com/workspace/guides/enable-apis",
+    "https://console.cloud.google.com/auth/branding",
+    "https://console.cloud.google.com/auth/scopes",
+    "https://console.cloud.google.com/auth/clients",
+    "https://console.cloud.google.com/auth/verification",
+    "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification"
+  ],
+  "headings": [
+    "Google",
+    "What you'll need",
+    "Setup steps",
+    "What could block you",
+    "The agent can do",
+    "You take over",
+    "Sources checked"
+  ],
+  "mainText": "All guides\nGoogle\nHARD\nFrom provider docs\nOpen developer console\nShare guide\n\nTakes 30 to 60 minutes to set up. You can test with up to 100 test users. Sensitive and restricted scopes need Google's review before you go public.\n\nDIFFICULTY\nHard\nYou can test right away, but sensitive and restricted scopes must complete Google's verification before you go public, and restricted scopes may also need a security assessment\nYOUR SETUP TIME\n30-60 min\nHands-on work\nAPPROVAL WAIT\nUp to 6 weeks\nProvider-side\nREVIEW NEEDED\nSensitive scopes\nBefore launch\nWhat you'll need\nWhere to register the app\n\nIn the Google Cloud console, open Google Auth Platform, go to Clients and click Create client\n. You first have to register the app under Branding.\n\nsupport.google.com/cloud/answer/15549257?hl=en\nRequired registration fields\n\nBranding asks for an app name, a user support email, an app home page, privacy policy and terms of service links, authorized domains and developer contact information.\n\nsupport.google.com/cloud/answer/15549049?hl=en\nRedirect URI rules\n\nRedirect URIs must use HTTPS, except localhost. They can't contain wildcards or fragments.\n\nsupport.google.com/cloud/answer/15549257?hl=en\nCredentials\n\nYou get a client ID and a client secret. The secret is shown only once, when you create the client, so store it securely.\n\nsupport.google.com/cloud/answer/15549257?hl=en\nScopes\n\nIn Data Access, click Add or Remove Scopes and pick the minimum your app needs. The console lists them as non-sensitive, sensitive or restricted.\n\ndevelopers.google.com/workspace/guides/configure-oauth-consent\nMore details (5)\nApp types\n\nClient types are Web application, Android, iOS, Chrome Extension, TVs and Limited-input devices, and Desktop app.\n\nsupport.google.com/cloud/answer/15549257?hl=en\nReview or verification\n\nApps that request sensitive or restricted scopes must complete Google's OAuth app verification. Apps that use only non-sensitive scopes don't have to.\n\nsupport.google.com/cloud/answer/13463073?hl=en\nPublished review timeline\n\nGoogle's estimates are 2-3 business days for brand verification, 10 business days for sensitive scopes and 6 weeks for restricted scopes. They aren't guaranteed.\n\nsupport.google.com/cloud/answer/13463817?hl=en\nDevelopment or test-mode limits\n\nIn Testing status, only up to 100 listed test users can sign in, and their authorizations expire after seven days.\n\nsupport.google.com/cloud/answer/15549945?hl=en\nCommon rejection reasons\n\nA verification request can be rejected if your scope justification is judged insufficient, or if the app home page isn't hosted on a domain you've verified.\n\nsupport.google.com/cloud/answer/13464321?hl=en\nSetup steps\n1\nCreate a Cloud project\nYou\n\nIn the Google Cloud console, go to IAM & Admin → Create a project and give it a name.\n\nOpen the Google Cloud console\nFrom provider docs\ndevelopers.google.com/workspace/guides/create-project\n2\nEnable the APIs you need\nYou\n\nIn APIs & Services → Library, open each API you want, such as the Gmail API or Sheets API, and click Enable. One project can hold many.\n\nOpen the API Library\nFrom provider docs\ndevelopers.google.com/workspace/guides/enable-apis\n3\nSet up the consent screen\nYou\n\nFill in Branding, choose a user type under Audience, and add yourself as a test user.\n\nOpen Branding\nFrom provider docs\ndevelopers.google.com/workspace/guides/configure-oauth-consent\n4\nAdd your scopes\nAgent can do\n\nIn Data Access, click Add or Remove Scopes and choose the minimum your app needs.\n\nOpen Data Access\nFrom provider docs\ndevelopers.google.com/workspace/guides/configure-oauth-consent\n5\nCreate the OAuth client\nYou\n\nGoogle Auth Platform → Clients → Create client. Add your HTTPS redirect URIs, then save the client secret: it's shown only once.\n\nOpen Clients\nFrom provider docs\nsupport.google.com/cloud/answer/15549257?hl=en\n6\nSubmit for verification (only to go public)\nYou\n\nNeeded for sensitive or restricted scopes. Restricted scopes may also need a security assessment.\n\nOpen Verification Center\nFrom provider docs\nsupport.google.com/cloud/answer/13463073?hl=en\nWhat could block you\n100-user cap in Testing\nIn Testing, only up to 100 listed test users can sign in, and their authorizations expire after seven days.\nsupport.google.com/cloud/answer/15549945?hl=en\nRestricted scopes\nRestricted scopes need additional verification and potentially a security assessment.\ndevelopers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification\nDomain verification\nAuthorized domains must be verified in Google Search Console.\nsupport.google.com/cloud/answer/15549049?hl=en\nThe agent can do\nWrite consent-screen text and privacy copy\nMap your features to the least sensitive scopes\nYou take over\nVerify your domain\nSubmit verification and answer Google's questions\nSources checked\nCreate a Google Cloud project\ndevelopers.google.com/workspace/guides/create-project\nEnable Google Workspace APIs\ndevelopers.google.com/workspace/guides/enable-apis\nConfigure the OAuth consent screen and choose scopes\ndevelopers.google.com/workspace/guides/configure-oauth-consent\nManage OAuth clients\nsupport.google.com/cloud/answer/15549257?hl=en\nOAuth app verification\nsupport.google.com/cloud/answer/13463073?hl=en\nManage app branding\nsupport.google.com/cloud/answer/15549049?hl=en\nVerification FAQ and timelines\nsupport.google.com/cloud/answer/13463817?hl=en\nManage app audience\nsupport.google.com/cloud/answer/15549945?hl=en\nVerification requirements\nsupport.google.com/cloud/answer/13464321?hl=en\nRestricted scope verification\ndevelopers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification\n\nApproval times are the provider's stated ranges unless marked tested.\n\nGuides are built from official provider docs and checked claim by claim. They aren't tested hands-on."
+}

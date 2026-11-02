@@ -80,7 +80,14 @@ function describe(event) {
 const wait = (seconds) => new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 
 const options = parseArgs(process.argv.slice(2));
-const apps = options.apps.length > 0 ? options.apps : appsFromFile();
+// Saved results linked from outside the site. They must never be generated again.
+const PROTECTED = new Set(["calendly", "composio", "postmark"]);
+const isProtected = (app) => PROTECTED.has(app.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split(/[./\s]/)[0]);
+const requested = options.apps.length > 0 ? options.apps : appsFromFile();
+const skipped = requested.filter(isProtected);
+if (skipped.length > 0) console.log(`Skipping protected apps: ${skipped.join(", ")}
+`);
+const apps = requested.filter((app) => !isProtected(app));
 console.log(`Warming ${apps.length} apps on ${options.base}, at most one new generation every ${options.gapSeconds}s\n`);
 
 let failed = 0;

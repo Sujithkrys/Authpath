@@ -106,6 +106,15 @@ export const ApprovalResult = z.object({
 });
 export type ApprovalResult = z.infer<typeof ApprovalResult>;
 
+/** The second, independent gate decision: the same question, asked once more of the same pages. */
+export const GateResult = z.object({ gates: ApprovalResult.shape.gates });
+export type GateResult = z.infer<typeof GateResult>;
+
+/** Items the gap-filling round can answer: every checklist item but the timeline, which only the quote rule decides. */
+export const GAP_KEYS = [...READ_KEYS, ...APPROVAL_KEYS] as const;
+export const GapResult = z.object({ items: checklistItems(GAP_KEYS).describe("One entry for each key you were asked about.") });
+export type GapResult = z.infer<typeof GapResult>;
+
 const checklistKey = z.enum(CHECKLIST.map((item) => item.key) as [string, ...string[]]);
 
 export const GuideDraft = z.object({
@@ -193,8 +202,8 @@ export const GeneratedGuideSchema = z
       .min(1)
       .max(8),
     blockers: z.array(z.object({ b: z.string().min(1), s: z.string().min(1), source: httpsUrl.optional() })),
-    agent: z.array(z.string().min(1)).min(1),
-    you: z.array(z.string().min(1)).min(1),
+    agent: z.array(z.string().min(1)),
+    you: z.array(z.string().min(1)),
     sources: z.array(source).min(1).max(6),
     otherPages: z.array(source),
     checklist: z
@@ -202,12 +211,12 @@ export const GeneratedGuideSchema = z
         z
           .object({
             key: checklistKey,
-            status: z.enum(["found", "uncertain", "not_found"]),
+            status: z.enum(["found", "uncertain", "not_found", "unreadable"]),
             answer: z.string(),
             source: httpsUrl.optional(),
           })
           .refine((item) => item.status !== "found" || item.source, "a found item needs a source")
-          .refine((item) => item.status === "not_found" || item.answer.trim(), "an answered item needs an answer"),
+          .refine((item) => item.status === "not_found" || item.status === "unreadable" || item.answer.trim(), "an answered item needs an answer"),
       )
       .length(CHECKLIST.length),
     claimCheck: z.object({
@@ -216,6 +225,14 @@ export const GeneratedGuideSchema = z
       downgraded: z.number().int().min(0),
       dropped: z.number().int().min(0),
     }),
+    incomplete: z.array(z.enum(["create_app", "credentials"])).optional(),
+    readMethods: z.record(z.string(), z.enum(["fetch", "url_context", "markdown", "llms_txt", "sitemap", "openid_discovery"])).optional(),
+    openid: z
+      .object({ url: httpsUrl, authorizationEndpoint: httpsUrl, tokenEndpoint: httpsUrl.optional(), scopes: z.array(z.string().min(1)) })
+      .optional(),
+    gapFill: z.object({ searched: z.array(checklistKey), filled: z.array(checklistKey) }).optional(),
+    gateRuns: z.tuple([z.string(), z.string()]).optional(),
+    unreadPages: z.array(z.string().min(1)).optional(),
   })
   .strict();
 

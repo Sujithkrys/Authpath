@@ -13,11 +13,12 @@ import Link from "next/link";
 
 import { CopyValue } from "@/components/copy-value";
 import { ShareButton } from "@/components/share-button";
-import { OtherPages, SourceList } from "@/components/source-list";
+import { OtherPages, SourceList, UnreadPages } from "@/components/source-list";
 import { AppLogo, DifficultyTag, buttonGhost, describeClaimCheck, panel, panelHeader, pill, rail } from "@/components/ui";
+import { LIMITED_GUIDE_UNREADABLE } from "@/lib/agent/evidence";
 import { formatGeneratedAt } from "@/lib/format";
-import { verdictLine } from "@/lib/verdict";
-import { CHECKLIST, type ChecklistItem, type Evidence, type GuideWithLogo, type StepLink as StepLinkData, type StepOwner } from "@/types/guide";
+import { claimCheckLineBefore6, usesNewRules, verdictLine } from "@/lib/verdict";
+import { CHECKLIST, type ChecklistItem, type OpenIdDiscovery, type Evidence, type GuideWithLogo, type StepLink as StepLinkData, type StepOwner } from "@/types/guide";
 
 const capitalize = (text: string) => text[0].toUpperCase() + text.slice(1);
 
@@ -87,14 +88,37 @@ function NeedList({ rows }: { rows: { key: string; label: string; item: Checklis
 }
 
 /** The stored research checklist, in its fixed order. Every item stays available. */
-function WhatYoullNeed({ items }: { items: ChecklistItem[] }) {
+/** Endpoints from the provider's OpenID discovery file. Only guides made by the new rules, and only when the file exists. */
+function DiscoveryEndpoints({ openid }: { openid: OpenIdDiscovery }) {
+  return (
+    <div className="-mt-[22px] mb-[34px] rounded-lg border border-border bg-surface px-[18px] py-3.5">
+      <b className="mb-1 block text-[14px] font-semibold">OAuth endpoints</b>
+      <p className="text-[14px] text-text-2 [overflow-wrap:anywhere]">
+        Authorization: <CopyValue value={openid.authorizationEndpoint} />
+      </p>
+      {openid.tokenEndpoint && (
+        <p className="mt-1 text-[14px] text-text-2 [overflow-wrap:anywhere]">
+          Token: <CopyValue value={openid.tokenEndpoint} />
+        </p>
+      )}
+      <a href={openid.url} target="_blank" rel="noreferrer" title={openid.url} className="mt-1 block max-w-full truncate font-mono text-[11.5px] text-text-3 hover:text-text">
+        OpenID discovery file · {openid.url.replace(/^https:\/\//, "")}
+      </a>
+    </div>
+  );
+}
+
+function WhatYoullNeed({ items, appName }: { items: ChecklistItem[]; appName: string }) {
   const byKey = new Map(items.map((item) => [item.key, item]));
   const all = CHECKLIST.flatMap(({ key, label }) => {
     const item = byKey.get(key);
     return item ? [{ key: key as string, label, item }] : [];
   });
-  const answered = all.filter(({ item }) => item.status !== "not_found");
+  const answered = all.filter(({ item }) => item.status === "found" || item.status === "uncertain");
   const missing = all.filter(({ item }) => item.status === "not_found");
+  // Pages we couldn't read are not the same as docs that don't say.
+  const unread = all.filter(({ item }) => item.status === "unreadable");
+  const labels = (rows: typeof all) => rows.map(({ label }) => label.toLowerCase()).join(", ");
   const starter = answered.filter(({ key }) => STARTER_KEYS.has(key));
   const later = answered.filter(({ key }) => !STARTER_KEYS.has(key));
 
@@ -113,11 +137,12 @@ function WhatYoullNeed({ items }: { items: ChecklistItem[] }) {
           </div>
         </details>
       )}
-      {missing.length > 0 && (
-        <p className="mt-3 text-[13.5px] text-text-3">
-          Not found in official docs: {missing.map(({ label }) => label.toLowerCase()).join(", ")}.
+      {unread.length > 0 && (
+        <p className="mt-3 text-[13.5px] text-warn">
+          Couldn&apos;t read {appName}&apos;s docs for {unread.length === 1 ? "this" : "these"}: {labels(unread)}. Check the official docs.
         </p>
       )}
+      {missing.length > 0 && <p className="mt-3 text-[13.5px] text-text-3">Not found in official docs: {labels(missing)}.</p>}
     </div>
   );
 }
@@ -209,6 +234,13 @@ function Stat({ label, value, note }: { label: string; value: string; note: stri
 
 export function GuideView({ guide }: { guide: GuideWithLogo }) {
   const estimated = guide.diff !== "unknown" && guide.diffConfirmed === false;
+  const unreadCount = (guide.checklist ?? []).filter((item) => item.status === "unreadable").length;
+  const limited = unreadCount >= LIMITED_GUIDE_UNREADABLE;
+  // Guides made by the new rules list tasks by each step's owner, so the panel
+  // can't disagree with a step's tag. Older saved guides show what they always did.
+  const newRules = usesNewRules(guide);
+  const agentTasks = newRules ? guide.steps.filter((step) => step.o === "agent").map((step) => step.t) : guide.agent;
+  const yourTasks = newRules ? guide.steps.filter((step) => step.o === "you").map((step) => step.t) : guide.you;
   return (
     <section aria-labelledby="guide-heading">
       <Link
@@ -231,6 +263,12 @@ export function GuideView({ guide }: { guide: GuideWithLogo }) {
             </h1>
             <div className="flex flex-wrap items-center gap-2 text-[15px] text-text-2">
               <DifficultyTag diff={guide.diff} />
+              {guide.incomplete && guide.incomplete.length > 0 && (
+                <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-warn">
+                  <TriangleAlert size={13} strokeWidth={1.8} aria-hidden="true" />
+                  Incomplete
+                </span>
+              )}
               {estimated && <span className="text-[13px] text-text-2">Not fully confirmed</span>}
               {guide.generated ? (
                 <>
@@ -252,7 +290,7 @@ export function GuideView({ guide }: { guide: GuideWithLogo }) {
             </div>
             {guide.claimCheck && (
               <p className="mt-1.5 text-[13px] text-text-2">
-                Checked against cited pages: {describeClaimCheck(guide.claimCheck)}
+                {newRules ? `Claim checker: ${describeClaimCheck(guide.claimCheck, guide.steps)}` : claimCheckLineBefore6(guide.claimCheck)}
               </p>
             )}
           </div>
@@ -266,6 +304,16 @@ export function GuideView({ guide }: { guide: GuideWithLogo }) {
           <ShareButton />
         </div>
       </div>
+
+      {limited && (
+        <div role="note" className="mt-5 flex gap-3 rounded-md border border-l-[3px] border-border border-l-warn bg-surface px-4 py-3.5">
+          <TriangleAlert size={18} strokeWidth={1.8} className="mt-px flex-none text-warn" aria-hidden="true" />
+          <p className="text-[14px] text-text-2">
+            <b className="text-text">Limited guide: we couldn&apos;t read most of {guide.name}&apos;s docs.</b> Everything below comes only from the pages we
+            could read. Check {guide.name}&apos;s official docs for the rest.
+          </p>
+        </div>
+      )}
 
       <p className="mt-5 text-[16px] font-medium [overflow-wrap:anywhere]">{verdictLine(guide)}</p>
 
@@ -282,7 +330,8 @@ export function GuideView({ guide }: { guide: GuideWithLogo }) {
 
       <div className="grid grid-cols-[minmax(0,1fr)_340px] items-start gap-8 max-lg:grid-cols-1">
         <div>
-          {guide.checklist && guide.checklist.length > 0 && <WhatYoullNeed items={guide.checklist} />}
+          {guide.checklist && guide.checklist.length > 0 && <WhatYoullNeed items={guide.checklist} appName={guide.name} />}
+          {guide.openid && <DiscoveryEndpoints openid={guide.openid} />}
           <div className="mb-[34px]">
             <h2 className={sectionHeading}>Setup steps</h2>
             <ol className="overflow-hidden rounded-lg border border-border">
@@ -344,13 +393,14 @@ export function GuideView({ guide }: { guide: GuideWithLogo }) {
 
         <div className={rail}>
           <div className={panel}>
+            {agentTasks.length > 0 && (
             <div className={whoBlock}>
               <h2 className={whoHeading}>
                 <Bot size={16} strokeWidth={1.8} className="text-accent" aria-hidden="true" />
                 The agent can do
               </h2>
               <ul className={whoList}>
-                {guide.agent.map((item) => (
+                {agentTasks.map((item) => (
                   <li key={item} className={whoItem}>
                     <Check size={14} strokeWidth={2.4} className="mt-[3px] text-accent" aria-hidden="true" />
                     {item}
@@ -358,13 +408,15 @@ export function GuideView({ guide }: { guide: GuideWithLogo }) {
                 ))}
               </ul>
             </div>
+            )}
+            {yourTasks.length > 0 && (
             <div className={whoBlock}>
               <h2 className={whoHeading}>
                 <UserRound size={16} strokeWidth={1.8} aria-hidden="true" />
                 You take over
               </h2>
               <ul className={whoList}>
-                {guide.you.map((item) => (
+                {yourTasks.map((item) => (
                   <li key={item} className={whoItem}>
                     <ChevronRight size={14} className="mt-[3px] text-text-3" aria-hidden="true" />
                     {item}
@@ -372,14 +424,16 @@ export function GuideView({ guide }: { guide: GuideWithLogo }) {
                 ))}
               </ul>
             </div>
+            )}
           </div>
 
           <div className={panel}>
             <div className={panelHeader}>
               <h2>Sources checked</h2>
             </div>
-            <SourceList sources={guide.sources} />
-            {guide.otherPages && <OtherPages pages={guide.otherPages} />}
+            <SourceList sources={guide.sources} methods={guide.readMethods} />
+            {guide.otherPages && <OtherPages pages={guide.otherPages} methods={guide.readMethods} />}
+            {guide.unreadPages && <UnreadPages pages={guide.unreadPages} />}
             <p className="border-t border-border px-4 py-3 text-[13px] text-text-2">
               Approval times are the provider&apos;s stated ranges unless marked tested.
             </p>

@@ -2,7 +2,7 @@ import type { ApprovalResult, GuideDraft } from "@/lib/agent/schemas";
 import { MIN_STEPS, isProviderLink, resolveOwner } from "@/lib/agent/rules";
 import { pageWeight } from "@/lib/agent/sources";
 import { stripProtocol, urlKey } from "@/lib/agent/urls";
-import type { ChecklistItem, Difficulty, Guide, GuideBlocker, GuideStep } from "@/types/guide";
+import type { ChecklistItem, CoreStep, Difficulty, Guide, GuideBlocker, GuideStep, ReadMethod } from "@/types/guide";
 import { CHECKLIST, GENERATED_VERSION } from "@/types/guide";
 
 export { hostOf, isUnder, stripProtocol, urlKey } from "@/lib/agent/urls";
@@ -18,6 +18,8 @@ export interface FetchedPage {
   title: string;
   /** Page text. Empty until read, and for PDFs, which come back as base64. */
   text: string;
+  /** How the text was read: a plain fetch, URL context, a markdown copy, llms.txt, a sitemap page, or the OpenID discovery file. */
+  via?: ReadMethod;
 }
 
 export const NOT_PUBLISHED = "Not published";
@@ -134,8 +136,14 @@ export function resolveTimeline(approval: ApprovalResult, pages: Map<string, Fet
 
 /** Absolute page links in a page's HTML, or in a sitemap's <loc> entries. */
 export function linksIn(markup: string, baseUrl: string): string[] {
-  const found = [...markup.matchAll(/href=["']([^"'#]+)|<loc>\s*([^<\s]+)/gi)].map((match) => match[1] ?? match[2]);
+  // HTML links and sitemap entries. Markdown links only in plain text (llms.txt,
+  // .md pages): in an HTML page the same pattern matches script code like a[0](r).
+  const isMarkup = /<(html|head|body|urlset|sitemapindex)\b/i.test(markup.slice(0, 5000));
+  const pattern = isMarkup ? /href=["']([^"'#]+)|<loc>\s*([^<\s]+)/gi : /href=["']([^"'#]+)|<loc>\s*([^<\s]+)|\]\(([^)\s#"]+)\)/gi;
+  const found = [...markup.matchAll(pattern)].map((match) => match[1] ?? match[2] ?? match[3]);
   return found.flatMap((link) => {
+    // Template placeholders in code samples, e.g. {SERVER_ENDPOINT_OAUTH}, aren't pages.
+    if (/[{}]|%7B|%7D/i.test(link)) return [];
     try {
       return [new URL(link, baseUrl).toString().split("#")[0]];
     } catch {
@@ -143,6 +151,9 @@ export function linksIn(markup: string, baseUrl: string): string[] {
     }
   });
 }
+
+/** A path word covers a topic if it is the word, or starts with a topic of 4+ letters ("creat" -> "creating"). "app" never matches "applinks". */
+const matchesTopic = (word: string, topic: string) => word === topic || (topic.length >= 4 && word.startsWith(topic));
 
 /**
  * Picks the links most likely to cover a topic. Topics match whole path words
@@ -160,8 +171,8 @@ export function rankLinks(links: string[], topics: string[], isAllowed: (url: st
     const parents = segments.slice(0, -1).join("-").split(/[-_.]+/).filter(Boolean);
     const score = topics.reduce((total, topic, index) => {
       const weight = topics.length - index;
-      if (own.some((word) => word.startsWith(topic))) return total + weight;
-      return parents.some((word) => word.startsWith(topic)) ? total + weight / 3 : total;
+      if (own.some((word) => matchesTopic(word, topic))) return total + weight;
+      return parents.some((word) => matchesTopic(word, topic)) ? total + weight / 3 : total;
     }, 0);
     if (score > 0) scored.set(urlKey(url), { url, score: score * pageWeight(url) });
   }
@@ -279,11 +290,12 @@ export const setupEstimate = (stepCount: number) => `~${Math.max(stepCount, MIN_
  * Sources are only the pages something cites, in the order first cited and
  * at most six. Every other page read goes to `otherPages`.
  */
-export function splitSources(guide: Guide, pages: Map<string, FetchedPage>): Pick<Guide, "sources" | "otherPages"> {
+export function splitSources(guide: Guide, pages: Map<string, FetchedPage>, alsoCited: string[] = []): Pick<Guide, "sources" | "otherPages"> {
   const cited = [
     ...guide.steps.map((step) => step.source),
     ...(guide.checklist ?? []).map((item) => item.source),
     ...guide.blockers.map((blocker) => blocker.source),
+    ...alsoCited,
   ].filter((url): url is string => Boolean(url));
 
   const seen = new Set<string>();
@@ -298,4 +310,56 @@ export function splitSources(guide: Guide, pages: Map<string, FetchedPage>): Pic
     sources: ordered.slice(0, MAX_SOURCES).map(entry),
     otherPages: [...ordered.slice(MAX_SOURCES), ...others].map(entry),
   };
+}
+
+/**
+ * What a page has to talk about to be "the right page" for an item. Review,
+ * timeline, limits and rejections all live on the review pages, and app types
+ * and form fields on the registration page, so those share a test.
+ */
+const REGISTRATION_TOPIC =
+  /\b(creat\w*|register\w*|set(ting)? up|add\w*) (an? |your |a new |the )?(oauth |facebook |new )?(app|apps|application|client|integration)\b|\bapp (registration|dashboard)\b|\bdeveloper (console|portal|dashboard)\b/i;
+const REVIEW_TOPIC = /\b(review|reviewed|verification|verified|certif\w*|approv\w*|development mode|test users?|sandbox)\b/i;
+const ITEM_TOPIC: Record<ChecklistItem["key"], RegExp> = {
+  register_url: REGISTRATION_TOPIC,
+  app_types: REGISTRATION_TOPIC,
+  required_fields: REGISTRATION_TOPIC,
+  redirect_uris: /\b(redirect|callback)\b/i,
+  credentials: /\b(client|app|consumer) ?(id|secret|key)\b|\bapp_?secret\b|\bclient_(id|secret)\b/i,
+  scopes: /\b(scopes?|permissions?)\b/i,
+  review: REVIEW_TOPIC,
+  review_timeline: REVIEW_TOPIC,
+  test_limits: REVIEW_TOPIC,
+  rejection_reasons: REVIEW_TOPIC,
+};
+
+/**
+ * "Not found in official docs" is only fair when the right page was read and
+ * doesn't say. An item becomes "unreadable" when some page chosen for reading
+ * couldn't be read and no page that was read even talks about the item's topic.
+ * When every chosen page was read, a missing answer stays "not found".
+ */
+export function markUnreadable(checklist: ChecklistItem[], readTexts: string[], somePagesUnread: boolean): ChecklistItem[] {
+  if (!somePagesUnread) return checklist;
+  return checklist.map((item) =>
+    item.status === "not_found" && !readTexts.some((text) => ITEM_TOPIC[item.key].test(text)) ? { ...item, status: "unreadable" } : item,
+  );
+}
+
+/** Five or more items we couldn't read makes a guide "limited". */
+export const LIMITED_GUIDE_UNREADABLE = 5;
+
+const CREATE_STEP = /\b(create|register|add|make|set up|start)\b[^.]{0,40}\b(app|apps|application|client|integration|project)\b|\bnew (app|application|client|integration)\b/i;
+const CREDENTIALS_STEP = /\b(client|app|consumer) ?(id|secret|key)s?\b|\bcredentials?\b|\bclient_(id|secret)\b|\bapi keys?\b/i;
+
+/**
+ * The core steps a guide lacks. A step counts when it was built from that
+ * checklist item, or plainly says it (e.g. "Copy the App ID and App Secret").
+ */
+export function missingCoreSteps(steps: { t: string; d: string; from?: string[] }[]): CoreStep[] {
+  const has = (key: string, pattern: RegExp) => steps.some((step) => step.from?.includes(key) || pattern.test(`${step.t} ${step.d}`));
+  return [
+    ...(has("register_url", CREATE_STEP) ? [] : (["create_app"] as const)),
+    ...(has("credentials", CREDENTIALS_STEP) ? [] : (["credentials"] as const)),
+  ];
 }

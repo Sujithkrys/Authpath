@@ -2,7 +2,7 @@ import { Search } from "lucide-react";
 import type { ComponentProps } from "react";
 
 import { isDarkMark } from "@/lib/logos";
-import type { ClaimCheck, Difficulty, GuideWithLogo } from "@/types/guide";
+import type { Difficulty, GuideWithLogo } from "@/types/guide";
 
 export const buttonBase =
   "inline-flex items-center justify-center gap-2 h-9 px-3.5 rounded-sm font-semibold text-[13.5px] whitespace-nowrap transition-colors duration-150";
@@ -25,14 +25,7 @@ const DIFFICULTY_STYLE: Record<Difficulty, string> = {
 };
 
 /** "2 claims removed, 1 marked uncertain", or a plain all-clear. */
-export function describeClaimCheck({ checked, downgraded, dropped }: ClaimCheck): string {
-  const parts = [
-    dropped > 0 && `${dropped} ${dropped === 1 ? "claim" : "claims"} removed`,
-    downgraded > 0 && `${downgraded} marked uncertain`,
-  ].filter(Boolean);
-  if (parts.length > 0) return parts.join(", ");
-  return `all ${checked} ${checked === 1 ? "claim" : "claims"} supported`;
-}
+export { describeClaimCheck } from "@/lib/verdict";
 
 export function DifficultyTag({ diff, className = "" }: { diff: Difficulty; className?: string }) {
   return (

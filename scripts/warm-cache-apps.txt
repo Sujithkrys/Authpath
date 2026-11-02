@@ -1,7 +1,6 @@
 # Apps to generate before a demo, one per line. Edit this list freely.
 # Library apps (GitHub, Slack, Google, ...) don't need warming.
-Calendly
+# Calendly, Composio and Postmark are linked from outside the site and must never
+# be generated again; warm-cache skips them even if they're listed.
 Xero
 Linear
-Composio
-Postmark

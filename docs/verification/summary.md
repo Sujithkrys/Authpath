@@ -54,3 +54,30 @@ The full list, with causes, is in [problems-found-and-fixed.md](problems-found-a
 - **Docs that need JavaScript.** Pages like these can't be read as text, so guides for those providers will be thin.
 - **Hands-on truth.** Everything here is checked against documentation. Nobody has registered these apps and completed the flows.
 - **The final UI.** The verdict line and "What you'll need" use stored data and don't change what the agent generates.
+
+## Changes after submission (2 November 2026)
+
+Everything above describes the submitted version and is unchanged. This section covers the `accuracy-fix` branch, which is not merged. The live site and the pages linked from the submission don't change: Calendly, Composio and Postmark are protected in the store and are never generated again, and guides saved earlier keep their original display. A snapshot of those pages is in [submission-snapshot](submission-snapshot).
+
+What changed for new guides:
+
+- **More ways to read official docs.** When a plain fetch fails or returns too little text, the agent tries Gemini URL context, then a markdown copy (`.md`, llms.txt, llms-full.txt), then another official page from the sitemap. Each page records how it was read.
+- **Login product pages are read.** A filter treated any `/facebook-login/` page as account sign-in help, so Facebook's OAuth docs were thrown away. Fixed.
+- **A gap-filling round.** At most 4 lookups per guide, for items still empty or missing their specifics, then one call reads what was found. Google Search grounding isn't available on the Gemini free tier, so the lookups use the docs site's own index.
+- **The OpenID discovery file** is used when the provider publishes one.
+- **"Couldn't read" vs "Not found",** a "Limited guide" warning, and "Incomplete" when there's no create-app or credentials step.
+- **The gate decision runs twice.** If the two disagree on difficulty, the less certain result is shown, marked "not fully confirmed".
+- **Clearer labels.** The checker line explains steps marked "Not confirmed", and "The agent can do" lists only agent steps.
+
+Results on the branch, run on 2 November 2026 in compare mode (nothing saved). Raw runs are in [runs/accuracy-fix](runs/accuracy-fix).
+
+| App | Before | After |
+|---|---|---|
+| Facebook | 3 of 10 items, 7 "Not found", steps only for App Review | 8 of 10 (1 partly confirmed), Hard. Create app, redirect URIs (exact match, Strict Mode), credentials, scopes |
+| GitHub | 7 of 10, Easy, 8 model calls | 6 of 10 (2 partly confirmed), Easy, 11 calls. App types was missed |
+| Slack | 7 of 10, Easy, 8 calls | 8 of 10, all 12 claims confirmed, Easy (the key says Moderate), 10 calls |
+| Gmail | No earlier run (Google: 9 of 10) | 8 of 10, all 11 claims confirmed, Hard (not fully confirmed: the two gate decisions disagreed), 12 calls. 3 of 4 attempts failed first (writing rules twice, classification once) |
+| Xero, twice | Varied between Unknown, Moderate and Hard | Both runs: gate "security assessment" in both decisions, shown as Unknown because the create-app step couldn't be read from Xero's JavaScript-only docs |
+| Calendly | Easy | Easy, 11 calls. No extra reading method used; the gap round found nothing to add |
+
+Still missing for Facebook: Live-mode requirements, and which permissions work without App Review (found in one run, not the last). A guide now costs 10 to 12 model calls instead of 8.

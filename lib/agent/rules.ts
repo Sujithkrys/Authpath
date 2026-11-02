@@ -71,7 +71,8 @@ const STEP_VERBS = new Set(
   prepare draft write describe attach ensure make start finish switch turn toggle allow map decide determine obtain get
   retrieve fetch send redirect handle protect secure move launch deploy plan schedule follow add replace include whitelist
   allowlist append restrict limit reduce remove delete answer complete pass meet supply upload host serve point register
-  share join apply request verify list describe enrol enroll email notify`.split(/\s+/),
+  share join apply request verify list describe enrol enroll email notify declare identify assign designate activate
+  customize customise`.split(/\s+/),
 );
 
 /** Text with <code> values replaced by one placeholder word each. */
@@ -312,7 +313,9 @@ export function decideGate(evidence: GateEvidence): GateDecision {
   // A gate the research suspected but couldn't prove is Unknown, never Easy.
   const suspected = candidates.some(({ gate }) => STRICTNESS.indexOf(gate) > STRICTNESS.indexOf("listing_only"));
   const registered = fromStatus(registration?.status);
-  if (!reviewProposed && !suspected && registered !== "no") return { gate: "none", detail: "", confirmed: registered === "yes" };
+  // No review can only be concluded from review pages that were read.
+  const reviewUnread = review?.status === "unreadable";
+  if (!reviewProposed && !suspected && !reviewUnread && registered !== "no") return { gate: "none", detail: "", confirmed: registered === "yes" };
   return { gate: "unknown", detail: "", confirmed: false };
 }
 
@@ -326,4 +329,39 @@ export function difficultyFor(decision: GateDecision): { diff: Difficulty; reaso
   const reason = gate !== "unknown" && specific && specific.length <= 110 ? specific : GATE_MEANING[gate];
   const estimate = gate !== "unknown" && !confirmed ? " (the cited page only partly confirms this)" : "";
   return { diff, reason: `${capitalize(diff)}: ${reason}${estimate}`, confirmed: gate !== "unknown" && confirmed };
+}
+
+/**
+ * The gate decision is made twice, independently, from the same pages. If the
+ * two give the same difficulty, the first stands. If they don't, the less
+ * certain one is shown, never one picked at random: a decision the checker
+ * didn't fully confirm before one it did, else the stricter gate. Either way
+ * it's marked not fully confirmed.
+ */
+export function reconcileGates(first: GateDecision, second: GateDecision | null): { decision: GateDecision; disagreed: boolean } {
+  if (!second || GATE_DIFFICULTY[first.gate] === GATE_DIFFICULTY[second.gate]) return { decision: first, disagreed: false };
+  const lessCertain =
+    first.gate === "unknown" || second.gate === "unknown"
+      ? first.gate === "unknown"
+        ? first
+        : second
+      : first.confirmed !== second.confirmed
+        ? first.confirmed
+          ? second
+          : first
+        : STRICTNESS.indexOf(second.gate) > STRICTNESS.indexOf(first.gate)
+          ? second
+          : first;
+  return { decision: { ...lessCertain, confirmed: false }, disagreed: true };
+}
+
+/** The rating and reason when the two decisions disagreed: says so, and which way each went. */
+export function disagreementRating(shown: GateDecision, first: GateDecision, second: GateDecision): { diff: Difficulty; reason: string; confirmed: boolean } {
+  const diff = GATE_DIFFICULTY[shown.gate];
+  const [a, b] = [capitalize(GATE_DIFFICULTY[first.gate]), capitalize(GATE_DIFFICULTY[second.gate])];
+  return {
+    diff,
+    reason: `${capitalize(diff)}: two separate readings of the review rules disagreed (${a} and ${b}), so this shows the less certain one`,
+    confirmed: false,
+  };
 }

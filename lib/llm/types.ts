@@ -43,6 +43,8 @@ export interface ResearchRequest<T extends z.ZodType> extends StageRequest<T> {
     pinned?: string[];
     /** Without search, whether to ask the model for more pages first. Defaults to true. */
     propose?: boolean;
+    /** Pages already read. Links are still found on them, but they aren't read again. */
+    skip?: string[];
   };
   /** Pages to confirm exist when a provider can't search, taken from the stage's result. */
   candidates?: (result: z.infer<T>) => string[];
@@ -50,6 +52,24 @@ export interface ResearchRequest<T extends z.ZodType> extends StageRequest<T> {
 }
 
 export type WriteRequest<T extends z.ZodType> = StageRequest<T>;
+
+/** One targeted lookup in the gap-filling round. */
+export interface FindPagesRequest {
+  /** A search query, e.g. "Facebook OAuth redirect URI". */
+  query: string;
+  /** Words in a URL that suggest a page covers the item. */
+  topics: string[];
+  domains: string[];
+  ledger: RunLedger;
+  signal: AbortSignal;
+}
+
+export interface FindPagesResult {
+  /** Official pages not read yet, best first. */
+  urls: string[];
+  /** Google Search, or the site's own index (sitemap, llms.txt, links on pages read). */
+  method: "search" | "site_index";
+}
 
 /** What the pipeline needs from a model. Everything else stays provider-neutral. */
 export interface LlmProvider {
@@ -62,4 +82,6 @@ export interface LlmProvider {
   write<T extends z.ZodType>(request: WriteRequest<T>): Promise<z.infer<T>>;
   /** The text of a page recorded in the ledger, for checking quotes against it. */
   pageText(url: string, ledger: RunLedger, signal: AbortSignal): Promise<string>;
+  /** Pages for one unanswered checklist item. A provider without it skips the gap-filling round. */
+  findPages?(request: FindPagesRequest): Promise<FindPagesResult>;
 }

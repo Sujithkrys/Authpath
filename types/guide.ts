@@ -60,9 +60,10 @@ export interface ChecklistItem {
   /**
    * found: the cited page directly supports the answer.
    * uncertain: the cited page only partly supports it.
-   * not_found: the official pages read don't say.
+   * not_found: the right official pages were read and don't say.
+   * unreadable: the pages that would say couldn't be read by any method.
    */
-  status: "found" | "uncertain" | "not_found";
+  status: "found" | "uncertain" | "not_found" | "unreadable";
   /** One or two short sentences. May contain inline <code>. Empty when not_found. */
   answer: string;
   /** The page the answer rests on. Absent when not_found. */
@@ -82,7 +83,7 @@ export interface ClaimCheck {
 }
 
 /** Bumped when generated results change shape or how they're researched. Older ones aren't served from the cache. */
-export const GENERATED_VERSION = 5;
+export const GENERATED_VERSION = 6;
 
 export interface Guide {
   /** Also the URL slug: /guides/[id]. */
@@ -123,7 +124,36 @@ export interface Guide {
   checklist?: ChecklistItem[];
   /** Generated guides only. */
   claimCheck?: ClaimCheck;
+  /** Core steps the docs read didn't give: creating the app, getting its credentials. Generated guides only. */
+  incomplete?: CoreStep[];
+  /** How each page was read, by address without protocol. Guides made by the new rules only. */
+  readMethods?: Record<string, ReadMethod>;
+  /** Endpoints and scopes from the provider's OpenID discovery file, when it has one. */
+  openid?: OpenIdDiscovery;
+  /** What the gap-filling round did: items it looked for and items it answered. */
+  gapFill?: { searched: ChecklistKey[]; filled: ChecklistKey[] };
+  /** The gate each of the two independent decisions reached, when they disagreed. */
+  gateRuns?: [string, string];
+  /** Pages chosen for reading that couldn't be read, without protocol. Generated guides only. */
+  unreadPages?: string[];
 }
+
+/**
+ * How a page's text was obtained: a plain fetch, Gemini URL context, a markdown
+ * copy (.md or a linked alternate), the site's llms.txt files, another page
+ * found in the sitemap, or the OpenID discovery file.
+ */
+export type ReadMethod = "fetch" | "url_context" | "markdown" | "llms_txt" | "sitemap" | "openid_discovery";
+
+export interface OpenIdDiscovery {
+  url: string;
+  authorizationEndpoint: string;
+  tokenEndpoint?: string;
+  scopes: string[];
+}
+
+/** The steps every OAuth setup needs. A guide missing one is marked incomplete. */
+export type CoreStep = "create_app" | "credentials";
 
 /**
  * What kind of app it is.

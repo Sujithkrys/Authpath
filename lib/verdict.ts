@@ -1,6 +1,8 @@
-import type { Guide } from "@/types/guide";
+import type { ClaimCheck, Guide } from "@/types/guide";
 
-type VerdictFields = Pick<Guide, "diff" | "diffConfirmed" | "setup" | "wait" | "review"> & Partial<Pick<Guide, "checklist">>;
+type VerdictFields = Pick<Guide, "diff" | "diffConfirmed" | "setup" | "wait" | "review"> & Partial<Pick<Guide, "checklist" | "incomplete">>;
+
+const MISSING_STEP: Record<string, string> = { create_app: "creating the app", credentials: "getting its credentials" };
 
 /** "~15 min" reads as "about 15 minutes", and "30-60 min" as "30 to 60 minutes". Anything else is used as it is. */
 function aboutTime(setup: string): string {
@@ -41,7 +43,12 @@ function listingName(review: string): string | null {
  * One plain sentence for the top of a guide, built only from what it already
  * stores: "Self-serve in about 15 minutes. No review needed unless you list on the Marketplace."
  */
-export function verdictLine({ diff, diffConfirmed, setup, wait, review, checklist }: VerdictFields): string {
+export function verdictLine({ diff, diffConfirmed, setup, wait, review, checklist, incomplete }: VerdictFields): string {
+  // An incomplete guide says so first, and claims no setup time: its steps aren't the whole setup.
+  if (incomplete && incomplete.length > 0) {
+    const missing = incomplete.map((step) => MISSING_STEP[step] ?? step).join(" or ");
+    return `Incomplete guide: the docs we read didn't give a step for ${missing}, so this isn't the full setup. Check the official docs before you start.`;
+  }
   const time = aboutTime(setup);
   const opening = diff === "easy" ? `Self-serve in ${time}.` : `Takes ${time} to set up.`;
 
@@ -63,4 +70,35 @@ export function verdictLine({ diff, diffConfirmed, setup, wait, review, checklis
   const waitSentence = !showWait ? "" : listing ? ` That review can take ${known}.` : ` Expect a wait of ${known}.`;
   const estimate = diff !== "unknown" && diffConfirmed === false ? " This rating is a best estimate." : "";
   return `${opening} ${approval}${waitSentence}${estimate}`;
+}
+
+/**
+ * What the checker did, and, when steps carry "Not confirmed" for another
+ * reason, why: a step with no source page has nothing to check against. The
+ * count and the step tags then can't seem to disagree.
+ */
+export function describeClaimCheck({ checked, downgraded, dropped }: ClaimCheck, steps?: { e: string; source?: string }[]): string {
+  const plural = (count: number, noun: string) => `${count} ${noun}${count === 1 ? "" : "s"}`;
+  const parts = [dropped > 0 && `${plural(dropped, "claim")} removed`, downgraded > 0 && `${downgraded} marked uncertain`].filter(Boolean);
+  const checkedPart =
+    parts.length > 0 ? `${plural(checked, "claim")} checked, ${parts.join(", ")}` : `all ${plural(checked, "claim")} it checked are supported`;
+  const unsourced = steps?.filter((step) => step.e === "uncertain" && !step.source).length ?? 0;
+  if (unsourced === 0) return checkedPart;
+  return `${checkedPart}. ${plural(unsourced, "step")} had no source page to check against, so ${unsourced === 1 ? "it shows" : "they show"} "Not confirmed"`;
+}
+
+/**
+ * Guides generated from this version on use the newer display rules (the agent
+ * panel built from step owners, the checker line below). Guides saved earlier
+ * keep showing exactly what they showed when they were made.
+ */
+export const NEW_RULES_VERSION = 6;
+
+export const usesNewRules = (guide: { generated?: boolean; version?: number }) => Boolean(guide.generated) && (guide.version ?? 0) >= NEW_RULES_VERSION;
+
+/** The header line exactly as guides saved before version 6 show it. */
+export function claimCheckLineBefore6({ checked, downgraded, dropped }: ClaimCheck): string {
+  const parts = [dropped > 0 && `${dropped} ${dropped === 1 ? "claim" : "claims"} removed`, downgraded > 0 && `${downgraded} marked uncertain`].filter(Boolean);
+  if (parts.length > 0) return `Checked against cited pages: ${parts.join(", ")}`;
+  return `Checked against cited pages: all ${checked} ${checked === 1 ? "claim" : "claims"} supported`;
 }

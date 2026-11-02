@@ -76,6 +76,20 @@ const ASSET = /\.(png|jpe?g|svg|gif|webp|css|js|ico|woff2?|xml|zip|json|txt|mp4|
 /** Tutorials built around a third-party tool, whose example values (e.g. Postman's callback URL) aren't yours. */
 const THIRD_PARTY_TOOL_PAGE = /(^|[/\-_.])(postman|insomnia|zapier|n8n|ifttt|pipedream|retool)([/\-_.]|$)/i;
 
+/**
+ * One API endpoint's reference page, e.g. /api-docs/.../post-oauth-revoke. They
+ * never hold setup steps, so they aren't worth the extra ways of reading.
+ */
+export function isEndpointReferencePage(url: string): boolean {
+  try {
+    const path = new URL(url).pathname.toLowerCase().replace(/\/$/, "");
+    const last = path.split("/").at(-1) ?? "";
+    return /^(get|post|put|patch|delete|list)-[a-z0-9-]+$/.test(last) || /(^|\/)(api-?reference|reference)\//.test(path);
+  } catch {
+    return false;
+  }
+}
+
 /** True when a host is the provider's own site or one of its docs-type subdomains. */
 export function isOfficialHost(host: string, domains: string[]): boolean {
   const bare = host.toLowerCase().replace(/^www\./, "");
@@ -94,13 +108,13 @@ export function isOfficialHost(host: string, domains: string[]): boolean {
 
 const isDocsHost = (host: string) => host.split(".").some((label) => DOCS_LABELS.has(label));
 
-/** SDK tutorials, quickstarts and sample apps: useful, but never ahead of the provider's main docs. */
+/** SDK tutorials, quickstarts, sample apps and per-platform SDK pages: useful, but never ahead of the provider's main docs. */
 const SECONDARY_PAGE =
-  /(^|\/)(tools|sdks?|libraries|client-libraries|bolt(-[a-z]+)?|samples?|examples?|tutorials?|quickstarts?|codelabs?|how-?tos?|cookbooks?|recipes|walkthroughs?|articles?|article)(\/|$)|(^|[/\-_])(tutorial|quickstart|sample|example)s?([/\-_.]|$)/i;
+  /(^|\/)(tools|sdks?|libraries|client-libraries|bolt(-[a-z]+)?|samples?|examples?|tutorials?|quickstarts?|codelabs?|how-?tos?|cookbooks?|recipes|walkthroughs?|articles?|article|ios|android|unity|react-native|flutter|xamarin|macos|tvos|watchos)(\/|$)|(^|[/\-_])(tutorial|quickstart|sample|example)s?([/\-_.]|$)/i;
 
 /** The main OAuth reference and app-registration pages, whatever the provider calls them. */
 const MAIN_PAGE =
-  /(^|\/)(oauth2?|authentication|authorization|authorizing|scopes?|pkce|using-pkce)(\/?$)|(creat|regist|install|authoriz|authenticat|using)[a-z]*-[a-z0-9-]*(oauth|apps?\b|pkce)|oauth[a-z0-9-]*-(creat|regist|flow|install|guide|app)|(^|[/\-])(web-server|redirect|consent|production-readiness|verification)([/\-]|$)/i;
+  /(^|\/)(oauth2?|authentication|authorization|authorizing|scopes?|pkce|using-pkce)(\/?$)|(creat|regist|install|authoriz|authenticat|using)[a-z]*-[a-z0-9-]*(oauth|apps?\b|pkce)|oauth[a-z0-9-]*-(creat|regist|flow|install|guide|app)|(^|[/\-])(web-server|redirect|consent|production-readiness|verification)([/\-]|$)|(^|\/)(manual|login|auth|code|authorization-code)-flow\/?$/i;
 
 /** Weighs a page by what kind it is: main docs first, reference and tutorials later. */
 export function pageWeight(url: string): number {
@@ -121,9 +135,17 @@ export function pageWeight(url: string): number {
 const ACCOUNT_HELP_PAGE =
   /(^|[/\-_])(two-factor|2fa|mfa|password|passwords|saml|sso|login|log-in|signin|sign-in|dkim|spf|dmarc|billing|invoices?)([/\-_.]|$)|manage-your-[a-z0-9-]*account/i;
 
+/**
+ * A login product developers build on, such as Facebook Login (/facebook-login/),
+ * "Sign in with Apple" or "Login with Amazon". These are the OAuth docs
+ * themselves, not help with signing in to an account.
+ */
+const LOGIN_PRODUCT_PAGE = /(^|\/)((?!(account|user|customer|member|admin|troubleshoot)-)[a-z]+-(login|sign-in)|(login|sign-in)-with-[a-z-]+)(\/|$)/i;
+
 export function isAccountHelpPage(url: string): boolean {
   try {
-    return ACCOUNT_HELP_PAGE.test(new URL(url).pathname);
+    const path = new URL(url).pathname;
+    return ACCOUNT_HELP_PAGE.test(path) && !LOGIN_PRODUCT_PAGE.test(path);
   } catch {
     return false;
   }
@@ -184,6 +206,8 @@ export function isOfficialSource(url: string, domains: string[]): boolean {
   } catch {
     return false;
   }
+  // llms.txt and llms-full.txt are the docs site's own plain-text copies, not assets.
+  if (/^\/llms(-full)?\.txt$/.test(path)) return true;
   if (ASSET.test(path) || BLOCKED_PATH.test(path) || THIRD_PARTY_TOOL_PAGE.test(path)) return false;
   if (!isDocsHost(host) && MARKETING_ON_MAIN_SITE.test(path)) return false;
   if (ENDPOINT_REFERENCE.test(path) && !AUTH_PATH.test(path)) return false;
