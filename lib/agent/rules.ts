@@ -365,3 +365,133 @@ export function disagreementRating(shown: GateDecision, first: GateDecision, sec
     confirmed: false,
   };
 }
+
+/* ---------- Repairing a draft ---------- */
+
+/** Words writers start steps with that aren't on the list, and the verb that means the same. */
+const VERB_FOR: Record<string, string> = {
+  declare: "add",
+  establish: "create",
+  input: "enter",
+  setup: "set up",
+  acquire: "get",
+  locate: "find",
+  modify: "edit",
+  adjust: "edit",
+  insert: "add",
+  register: "register",
+  copy: "copy",
+};
+
+/** A verb that fits the step, for a title that starts with a noun, e.g. "OAuth consent screen" -> "Configure". */
+function verbForTopic(title: string): string {
+  const text = title.toLowerCase();
+  if (/\b(scopes?|permissions?)\b/.test(text)) return "Choose";
+  if (/\b(redirects?|callbacks?|uris?)\b/.test(text)) return "Add";
+  if (/\b(credentials?|secrets?|client id|keys?)\b/.test(text)) return "Copy";
+  if (/\b(review|verification|submission)\b/.test(text)) return "Submit";
+  if (/\b(consent|screen|branding|settings?)\b/.test(text)) return "Configure";
+  if (/\b(app|application|project|client)\b/.test(text)) return "Create";
+  return "Complete";
+}
+
+const capitalizeFirst = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+
+/** A title that starts with an allowed imperative verb. */
+export function fixTitleVerb(title: string): string {
+  const words = title.trim().split(/\s+/);
+  const first = (words[0] ?? "").toLowerCase().replace(/[^a-z]/g, "");
+  if (STEP_VERBS.has(first)) return title.trim();
+  // Another form of an allowed verb: "Configuring" -> "Configure", "Creates" -> "Create", "Setting" -> "Set".
+  const forms = [first.replace(/ing$/, ""), first.replace(/ing$/, "e"), first.replace(/([a-z])\1ing$/, "$1"), first.replace(/es$/, ""), first.replace(/s$/, "")];
+  const verb = forms.find((form) => form !== first && STEP_VERBS.has(form)) ?? VERB_FOR[first];
+  const rest = words.slice(1).join(" ");
+  if (verb) return capitalizeFirst(`${verb} ${rest}`.trim());
+  // Lowercase the old first letter, unless it starts an acronym like OAuth or API.
+  const trimmed = title.trim();
+  const keepCase = /^[A-Z]{2}|^[A-Z][a-z]*[A-Z]/.test(trimmed);
+  return `${verbForTopic(trimmed)} ${keepCase ? trimmed : trimmed.charAt(0).toLowerCase() + trimmed.slice(1)}`;
+}
+
+/** Words and whole <code> values, in order, so a cut never splits a value. */
+const tokens = (text: string) => text.match(/<code>[\s\S]*?<\/code>\S*|\S+/g) ?? [];
+
+/** The first `count` words (a <code> value counts as one), ending with a full stop. */
+function firstWords(text: string, count: number, endWithStop = true): string {
+  const kept = tokens(text).slice(0, Math.max(count, 0)).join(" ").replace(/[,;:]$/, "");
+  return endWithStop && kept && !/[.!?]$/.test(kept) ? `${kept}.` : kept;
+}
+
+/** The first `count` sentences. A full stop inside a <code> value doesn't end one. */
+function firstSentences(text: string, count: number): string {
+  const kept: string[] = [];
+  let sentences = 0;
+  for (const token of tokens(text)) {
+    kept.push(token);
+    if (!token.startsWith("<code>") && /[.!?]$/.test(token) && ++sentences >= count) break;
+  }
+  return kept.join(" ");
+}
+
+const tidy = (text: string) =>
+  text
+    .replace(/\s+/g, " ")
+    .replace(/\s+([.,;:!?])/g, "$1")
+    .replace(/([.,;:])\1+/g, "$1")
+    .trim();
+
+const BARE_URL = /<code>[\s\S]*?<\/code>|https?:\/\/[^\s<)]+|\bwww\.[^\s<)]+|\b[a-z0-9-]+(\.[a-z0-9-]+)*\.(com|dev|io|app|org|net|co|us|so|ai|eu|uk|de)\/[^\s<)]*/gi;
+
+/**
+ * Fixes a step that breaks the writing rules without asking the model again:
+ * a non-imperative first word, too many words or sentences, a raw URL (moved
+ * into the step's link when it's the provider's), a <code> value nobody pastes,
+ * other markup, or a bad link label. Nothing is added that wasn't in the step.
+ */
+export function repairStep<S extends StepDraftLike>(step: S, domains: string[]): S {
+  let link = step.link;
+  const keepAsLink = (url: string) => {
+    if (!link && isProviderLink(url, domains)) link = { label: "Open the page", url };
+  };
+  const moveUrls = (text: string) =>
+    text.replace(BARE_URL, (match) => {
+      if (match.startsWith("<code>")) return match;
+      keepAsLink(/^https?:\/\//i.test(match) ? match.replace(/[.,;:]$/, "") : `https://${match.replace(/[.,;:]$/, "")}`);
+      return "the linked page";
+    });
+
+  let description = step.description.replace(/<(?!\/?code>)[^>]+>/gi, "");
+  description = description.replace(/<code>([\s\S]*?)<\/code>/g, (whole, value: string) => {
+    if (isCopyableValue(value, domains)) return whole;
+    const url = value.trim().match(/^https?:\/\/\S+$/)?.[0];
+    if (url) {
+      keepAsLink(url);
+      return "the linked page";
+    }
+    return value;
+  });
+  description = moveUrls(description);
+  let title = fixTitleVerb(moveUrls(step.title.replace(/<[^>]+>/g, "")));
+  title = tidy(firstWords(title, MAX_TITLE_WORDS, false));
+
+  description = firstSentences(description, 2);
+  const room = MAX_STEP_WORDS - wordCount(title);
+  if (wordCount(description) > room) description = firstWords(description, room);
+  description = tidy(description);
+
+  if (link && !isProviderLink(link.url, domains)) link = null;
+  if (link && (RAW_URL.test(link.label) || wordCount(link.label) > MAX_LINK_LABEL_WORDS || !link.label.trim())) link = { ...link, label: "Open the page" };
+  return { ...step, title, description, link };
+}
+
+/**
+ * Repairs every step, keeps at most MAX_STEPS, and drops any step that still
+ * breaks a rule or has nothing left to say. The caller decides whether what's
+ * left is enough.
+ */
+export function repairSteps<S extends StepDraftLike>(steps: S[], domains: string[]): S[] {
+  return steps
+    .slice(0, MAX_STEPS)
+    .map((step) => repairStep(step, domains))
+    .filter((step) => step.description.trim() !== "" && writingProblems([step], domains, 0).length === 0);
+}

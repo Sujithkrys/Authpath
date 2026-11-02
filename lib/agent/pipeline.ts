@@ -8,13 +8,14 @@ import {
   mergeChecklist,
   missingCoreSteps,
   quoteAppearsIn,
+  rankLinks,
   resolveTimeline,
   setupEstimate,
   slugify,
   splitSources,
 } from "@/lib/agent/evidence";
 import type { GenerateEvent, StageId } from "@/lib/agent/events";
-import { GATE_CLAIM, GATE_REVIEW_LABEL, type Gate, decideGate, difficultyFor, disagreementRating, reconcileGates, writingProblems } from "@/lib/agent/rules";
+import { GATE_CLAIM, GATE_REVIEW_LABEL, type Gate, decideGate, difficultyFor, disagreementRating, reconcileGates, repairSteps, writingProblems } from "@/lib/agent/rules";
 import { authHostsIn, discoveryPage, findOpenIdDiscovery } from "@/lib/agent/openid";
 import {
   AppCardSchema,
@@ -50,6 +51,8 @@ import { type AppCard, type ChecklistItem, type CoreStep, GENERATED_VERSION, typ
 const WRITE_ATTEMPTS = 3;
 /** The gap-filling round: at most this many lookups per guide, to stay inside the free quota. */
 const MAX_GAP_SEARCHES = 4;
+/** Pages already read that the gap round looks at again, best match first. */
+const REREAD_PAGES = 2;
 /** Unanswered items, most needed first: the round looks up the first four. */
 const GAP_ORDER: GapResult["items"][number]["key"][] = ["register_url", "credentials", "redirect_uris", "scopes", "required_fields", "review", "test_limits", "rejection_reasons", "app_types"];
 /** What to look up for each item, and the URL words that suggest a page covers it. */
@@ -95,6 +98,8 @@ const MAX_CARD_SOURCES = 3;
 const CLASSIFY_EXCERPT_WORDS =
   "oauth client id secret register app developer api key token integration platform connect apps toolkits unified authentication";
 
+/** Pages about authenticating to the API, for a second classify read when the first pages were too general. */
+const AUTH_TOPICS = ["oauth", "oauth2", "auth", "authorization", "authorizing", "authentication", "scopes", "credentials", "consent", "authorize"];
 const CLASSIFY_TOPICS = ["oauth", "authentication", "auth", "developers", "developer", "api", "docs", "quickstart", "introduction", "overview", "getting"];
 const REGISTRATION_TOPICS = ["creating", "registering", "register", "create", "installing", "pkce", "oauth", "oauth2", "authorization", "authorizing", "authentication", "auth", "scopes", "scope", "redirect", "credentials", "client", "apps", "app", "consent", "permissions", "flow", "login"];
 const APPROVAL_TOPICS = ["review", "verification", "sensitive", "restricted", "security", "assessment", "limits", "rate", "unverified", "distribution", "distributing", "certification", "verify", "verified", "approval", "marketplace", "listing", "publish", "publishing", "submission", "submit", "guidelines", "requirements", "partner"];
@@ -471,6 +476,32 @@ export async function runPipeline(
       }
     }
   }
+  // Still nothing confirmed, or the pages read were too general to say (Gmail's
+  // first pages were Workspace overviews): read up to three of the provider's
+  // auth pages once more before settling on "couldn't confirm".
+  if (!quoteHolds || classified.category === "unknown") {
+    const again = await provider
+      .research({
+        system: CLASSIFY_PROMPT,
+        user: `App: ${appName}`,
+        schema: ClassifyResult,
+        read: { maxUses: 3, allowedDomains: domains, urls: [...official.docsUrls, ...fetchedUrls(ledger)], topics: AUTH_TOPICS, propose: false, skip: fetchedUrls(ledger) },
+        ledger,
+        onDomains: showDomains("classify"),
+        signal,
+      })
+      .catch((error: unknown) => {
+        if (error instanceof QuotaExhausted || signal.aborted) throw error;
+        console.error("second classify read failed", error);
+        return null;
+      });
+    const checked = again && again.category !== "unknown" ? await holds(again) : null;
+    if (again && checked?.ok) {
+      classified = again;
+      evidencePage = checked.page;
+      quoteHolds = true;
+    }
+  }
   let category = classified.category;
   let registrationPage: string | null = null;
   if (category === "oauth_provider" && !quoteHolds) {
@@ -587,20 +618,28 @@ export async function runPipeline(
       const best = found?.urls.find((url) => !leads.some((lead) => urlKey(lead) === urlKey(url)));
       if (best) leads.push(best);
     }
-    if (leads.length > 0) {
+    // A focused second look too: the pages already read that best match the
+    // missing items. A model often leaves out an item a page it read does cover.
+    const gapTopics = gaps.flatMap((key) => lookupFor(key).topics);
+    const readWithText = fetchedPages(ledger)
+      .filter((page) => page.text && page.via !== "openid_discovery")
+      .map((page) => page.url);
+    const reread = rankLinks(readWithText, gapTopics, () => true, REREAD_PAGES);
+    const pagesForGaps = [...new Set([...leads, ...reread])];
+    if (pagesForGaps.length > 0) {
       const filled = await provider
         .research({
           system: GAP_PROMPT,
           user: `App: ${appName}\n\nAnswer only these items: ${gaps.join(", ")}. Mark every other item not_found.`,
           schema: GapResult,
           read: {
-            maxUses: leads.length,
+            maxUses: pagesForGaps.length,
             allowedDomains: domains,
-            urls: leads,
-            pinned: leads,
-            topics: gaps.flatMap((key) => lookupFor(key).topics),
+            urls: pagesForGaps,
+            pinned: pagesForGaps,
+            topics: gapTopics,
             propose: false,
-            skip: fetchedUrls(ledger),
+            skip: fetchedUrls(ledger).filter((url) => !reread.some((page) => urlKey(page) === urlKey(url))),
           },
           ledger,
           onDomains: showDomains("approval"),
@@ -676,10 +715,15 @@ export async function runPipeline(
           });
   const gatesAgain = second ? await Promise.all(second.gates.map(async (gate) => ({ ...gate, page: await locateQuote(gate.quote, gate.url) }))) : null;
 
-  // 4. Write the steps from the checklist. A draft that breaks the writing rules is retried with the reasons.
+  // 4. Write the steps from the checklist. A draft that breaks the writing rules
+  // is repaired in code (verbs, length, URLs, <code>) rather than failed; only
+  // when repair leaves too few steps is it retried with the reasons. After the
+  // last attempt, whatever valid steps repair kept are used.
   start("write");
   let draft: GuideDraft | null = null;
   let lastProblem = "";
+  let salvage: GuideDraft | null = null;
+  let repairedProblems = 0;
   for (let attempt = 0; attempt < WRITE_ATTEMPTS && !draft; attempt++) {
     try {
       const candidate = await provider.write({
@@ -699,12 +743,23 @@ ${lastProblem ? `\nYour previous attempt broke these rules. Fix every one:\n${la
       });
       const problems = writingProblems(candidate.steps, domains);
       if (problems.length === 0) draft = candidate;
-      else lastProblem = problems.map((problem) => `- ${problem}`).join("\n");
+      else {
+        const fixed = { ...candidate, steps: repairSteps(candidate.steps, domains) };
+        if (writingProblems(fixed.steps, domains).length === 0) {
+          draft = fixed;
+          repairedProblems = problems.length;
+        } else {
+          if (fixed.steps.length > (salvage?.steps.length ?? 0)) salvage = fixed;
+          lastProblem = problems.map((problem) => `- ${problem}`).join("\n");
+        }
+      }
     } catch (error) {
       if (!(error instanceof ZodError)) throw error;
       lastProblem = error.issues.map((issue) => `- ${issue.path.join(".")}: ${issue.message}`).join("\n");
     }
   }
+  // Fewer steps than usual is better than no guide. With no valid step at all, it fails.
+  if (!draft && salvage && salvage.steps.length > 0) draft = salvage;
   if (!draft) {
     throw new AgentError("The agent couldn't produce a valid guide.", true, lastProblem.slice(0, 500));
   }
@@ -728,7 +783,7 @@ ${lastProblem ? `\nYour previous attempt broke these rules. Fix every one:\n${la
     pages: ledger.fetched,
     generatedAt: new Date().toISOString(),
   });
-  done("write", `${count(guide.steps.length, "step")} written from the checklist`);
+  done("write", `${count(guide.steps.length, "step")} written from the checklist`, { repairedProblems, salvaged: draft === salvage });
 
   // 5. Check every claim. First, a cited page must really be about OAuth or app
   // registration; then a separate model call checks each claim against its page.
